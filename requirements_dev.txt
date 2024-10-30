@@ -1,0 +1,7 @@
+-r requirements.txt
+
+mock~=5.1.0
+moto[server]==4.2.14.dev12
+pyinstaller==6.3.0
+pytest==8.1.1
+setuptools==69.0.3
