@@ -1,7 +1,7 @@
-# water-column-sonar-processing
+# Water Column Sonar Processing
 Processing tool for converting L0 data to L1 and L2 as well as generating geospatial information
 
-## Setting up the Python Environment
+# Setting up the Python Environment
 > Python 3.10.12
 
 # MacOS Pyenv Installation Instructions
@@ -28,7 +28,7 @@ Processing tool for converting L0 data to L1 and L2 as well as generating geospa
      2. ```pyenv local 3.10.12 water-column-sonar-processing```
      3. ```pyenv activate water-column-sonar-processing```
 
-## Setting up IntelliJ
+# Setting up IntelliJ
 
   1. Install the IntelliJ Python plugin
   2. Set up pyenv
@@ -41,24 +41,35 @@ Processing tool for converting L0 data to L1 and L2 as well as generating geospa
      2. Facets -> + -> Python 
      3. Set interpreter 
 
-## Installing Dependencies
+# Installing Dependencies
 
   1. Add dependencies with versions to requirements.txt
   2. ```pip install --upgrade pip && pip install -r requirements_dev.txt```
 
 
-## Pytest
+# Pytest
 ```commandline
 pytest --disable-warnings
 ```
 
-## Security scanning for keys
+## Instructions
+Following this tutorial:
+https://packaging.python.org/en/latest/tutorials/packaging-projects/
 
-> trufflehog git file://water-column-sonar-processing --only-verified
+# To Publish To TEST
+```commandline
+python -m build
+python -m twine upload --repository testpypi dist/*
+pytho -m pip install --index-url https://test.pypi.org/simple/ hello-pypi-rudy-klucik
+python
+```
+```python
+from water-column-sonar-processing import ZarrManager
+example.add_one(2)
+```
 
-```bash
-#trufflehog filesystem water-column-sonar-processing/ --only-verified
-# {"chunks": 81804, "bytes": 453020391, "verified_secrets": 3, "unverified_secrets": 0, "scan_duration": "12.384960625s", "trufflehog_version": "3.82.13"}
-trufflehog git file://water-column-sonar-processing/ --only-verified
-# {"chunks": 674, "bytes": 498742, "verified_secrets": 0, "unverified_secrets": 0, "scan_duration": "253.11925ms", "trufflehog_version": "3.82.13"}
+# To Publish To PROD
+```commandline
+python -m build
+python -m twine upload --repository pypi dist/*
 ```
