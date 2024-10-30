@@ -7,6 +7,7 @@ aiohttp~=3.9.1
 boto3==1.33.13
 botocore~=1.33.13
 echopype==0.8.3
+fiona==1.10.1
 geopandas==0.14.3
 numcodecs==0.11.0
 numpy==1.26.2

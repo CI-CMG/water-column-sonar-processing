@@ -19,7 +19,6 @@ Processing tool for converting L0 data to L1 and L2 as well as generating geospa
          1. ```eval "$(pyenv virtualenv-init -)"```
   3. Open a new terminal
   4. Install Python version
-     1. ```env PYTHON_CONFIGURE_OPTS="--enable-shared"```
      2. ```env CONFIGURE_OPTS='--enable-optimizations' arch -arm64 pyenv install 3.10.12```
   5. Create virtual env (to delete 'pyenv uninstall 3.10.12/water-column-sonar-processing')
      1. ```pyenv virtualenv 3.10.12 water-column-sonar-processing```
