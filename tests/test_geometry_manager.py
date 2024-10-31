@@ -2,7 +2,7 @@ import numpy as np
 import echopype as ep
 from dotenv import load_dotenv, find_dotenv
 
-from geometry_manager import GeometryManager
+from geometry_manager.geometry_manager import GeometryManager
 
 #######################################################
 def setup_module():

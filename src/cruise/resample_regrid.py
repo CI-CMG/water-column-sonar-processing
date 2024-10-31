@@ -6,9 +6,9 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 
-from ..aws_manager.dynamodb_manager import DynamoDBManager
-from ..zarr_manager.zarr_manager import ZarrManager
-# from ..geometry_manager.geometry_manager import GeometryManager
+from aws_manager.dynamodb_manager import DynamoDBManager
+from zarr_manager.zarr_manager import ZarrManager
+from geometry_manager.geometry_manager import GeometryManager
 
 
 numcodecs.blosc.use_threads = False
@@ -123,7 +123,7 @@ class ResampleRegrid:
         try:
             zarr_manager = ZarrManager()
             # s3_manager = S3Manager()
-            geo_manager = GeoManager()
+            geo_manager = GeometryManager()
             # get zarr_manager store
             output_zarr_store = zarr_manager.open_s3_zarr_store_with_zarr(
                 ship_name=ship_name,

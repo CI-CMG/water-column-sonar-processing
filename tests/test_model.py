@@ -425,7 +425,7 @@ def test_model_happy_path():
 
     #############################################################
     model_instance = Model()
-    # run the water-column-sonar-processing
+    # run the src
     model_instance.execute()
     #############################################################
 

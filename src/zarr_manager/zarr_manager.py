@@ -5,9 +5,9 @@ import numpy as np
 import xarray as xr
 from numcodecs import Blosc
 
-from ..utility.constants import Constants, Coordinates
-from ..utility.timestamp import Timestamp
-from ..aws_manager.s3fs_manager import S3FSManager
+from utility.constants import Constants, Coordinates
+from utility.timestamp import Timestamp
+from aws_manager.s3fs_manager import S3FSManager
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)

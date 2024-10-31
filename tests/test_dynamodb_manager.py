@@ -2,20 +2,8 @@ import numpy as np
 from moto import mock_aws
 from dotenv import load_dotenv, find_dotenv
 
-# from aws_manager.dynamodb_manager import DynamoDBManager
-
-from aws_manager import DynamoDBManager
-from utility import PipelineStatus
-
-# from aws_manager.dynamodb_manager import DynamoDBManager
-
-
-# from src.aws_manager.dynamodb_manager import DynamoDBManager
-
-
-# from src.water-column-sonar-processing.aws_manager.dynamodb_manager import DynamoDBManager
-# from src.water_column_sonar_processing.utility.pipeline_status import PipelineStatus
-
+from aws_manager.dynamodb_manager import DynamoDBManager
+from utility.pipeline_status import PipelineStatus
 
 #######################################################
 def setup_module():
@@ -194,7 +182,7 @@ def test_dynamodb_manager():
     )
     assert response['Item']['PIPELINE_STATUS'] == 'PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE'
 
-    # ---Change Items in Table (using water-column-sonar-processing)--- #
+    # ---Change Items in Table (using src)--- #
     dynamo_db_manager.update_item(
         table_name=table_name,
         key={

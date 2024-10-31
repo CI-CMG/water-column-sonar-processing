@@ -114,7 +114,7 @@ class MockHttpClientResponse(aiohttp.client_reqrep.ClientResponse):
 #         """
 #         def patched_convert_to_response_dict(
 #                 http_response: botocore.awsrequest.AWSResponse,
-#                 operation_model: botocore.water-column-sonar-processing.OperationModel,
+#                 operation_model: botocore.src.OperationModel,
 #         ) -> Any:
 #             return original(MockAWSResponse(http_response), operation_model)
 #         return patched_convert_to_response_dict
@@ -130,7 +130,7 @@ class MockHttpClientResponse(aiohttp.client_reqrep.ClientResponse):
 #         def factory(original: Callable) -> Callable:
 #             def patched_convert_to_response_dict(
 #                     http_response: botocore.awsrequest.AWSResponse,
-#                     operation_model: botocore.water-column-sonar-processing.OperationModel,
+#                     operation_model: botocore.src.OperationModel,
 #             ):
 #                 return original(MockAWSResponse(http_response), operation_model)
 #

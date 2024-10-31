@@ -34,7 +34,7 @@ def test_s3_manager():
     print(s3_manager.list_buckets())
     # s3.create_bucket(bucket_name=test_bucket_name)
 
-    # --- tests the water-column-sonar-processing --- #
+    # --- tests the src --- #
     s3_manager.put(
         bucket_name=test_bucket_name,
         key="the_key",

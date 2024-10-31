@@ -2,10 +2,10 @@ import os
 import numcodecs
 import numpy as np
 
-from ..utility.cleaner import Cleaner
-from ..aws_manager.dynamodb_manager import DynamoDBManager
-from ..aws_manager.s3_manager import S3Manager
-from ..zarr_manager.zarr_manager import ZarrManager
+from utility.cleaner import Cleaner
+from aws_manager.dynamodb_manager import DynamoDBManager
+from aws_manager.s3_manager import S3Manager
+from zarr_manager.zarr_manager import ZarrManager
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)

@@ -1,6 +1,6 @@
 from dotenv import load_dotenv, find_dotenv
 
-from index_manager import IndexManager
+from index_manager.index_manager import IndexManager
 
 
 # from src.model.index_manager.index_manager import IndexManager

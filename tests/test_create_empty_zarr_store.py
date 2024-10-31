@@ -3,7 +3,7 @@ import pytest
 from moto import mock_aws
 from dotenv import load_dotenv, find_dotenv
 
-from cruise import CreateEmptyZarrStore
+from cruise.create_empty_zarr_store import CreateEmptyZarrStore
 
 
 # from src.model.cruise.create_empty_zarr_store import CreateEmptyZarrStore
@@ -24,7 +24,7 @@ def teardown_module():
 
 #######################################################
 @mock_aws
-@pytest.mark.skip(reason="no way of currently testing this")
+# @pytest.mark.skip(reason="no way of currently testing this")
 def test_create_empty_zarr_store(tmp_path):
     # temporary_directory = str(tmp_path)
     temporary_directory = str(tmp_path)

@@ -1,9 +1,7 @@
-# from moto import mock_s3
 from dotenv import load_dotenv, find_dotenv
-# from pathlib import Path
-from cruise.resample_regrid import ResampleRegrid
 import pytest
 from moto import mock_aws
+from cruise.resample_regrid import ResampleRegrid
 
 #######################################################
 def setup_module():

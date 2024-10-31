@@ -16,13 +16,9 @@ import os
 import numpy as np
 # import pandas as pd
 import xarray as xr
-# from pathlib import Path
-# from botocore import UNSIGNED
-# from botocore.client import Config
-# from pathlib import Path
 
 from aws_manager.s3_manager import S3Manager
-from zarr_manager import ZarrManager
+from zarr_manager.zarr_manager import ZarrManager
 
 
 #######################################################
@@ -36,9 +32,11 @@ def setup_module():
 def teardown_module():
     print('teardown')
 
+TEMPDIR = "/tmp"
+
 #######################################################
 @mock_aws
-def test_zarr_manager(tmp_path):
+def test_zarr_manager(tmp_path=TEMPDIR):
     # Tests creating zarr_manager store and opening with both xarray and
     # zarr_manager libraries
 

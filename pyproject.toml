@@ -22,10 +22,12 @@ Homepage = "https://github.com/CI-CMG/water-column-sonar-processing"
 Issues = "https://github.com/CI-CMG/water-column-sonar-processing/issues"
 
 #[pytest]
-#pythonpath = "water-column-sonar-processing"
+#pythonpath = "src"
 #testpaths = "tests"
 
-#[tool.pytest.ini_options]
-#addopts = [
-#    "--import-mode=importlib",
-#]
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
