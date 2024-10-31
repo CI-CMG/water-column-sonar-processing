@@ -1,44 +1,43 @@
-import os
+# import os
 import zarr
 import numcodecs
-import numpy as np
-import xarray as xr
-from moto import mock_s3
+# import numpy as np
+# import xarray as xr
+# from moto import mock_s3
+from moto import mock_aws
 from dotenv import load_dotenv, find_dotenv
-import warnings
+# import warnings
 
-import gc
+# import gc
 import os
-import time
-import boto3
-import shutil
+# import time
+# import boto3
+# import shutil
 import numpy as np
-import pandas as pd
+# import pandas as pd
 import xarray as xr
-from pathlib import Path
-from botocore import UNSIGNED
-from botocore.client import Config
-from pathlib import Path
+# from pathlib import Path
+# from botocore import UNSIGNED
+# from botocore.client import Config
+# from pathlib import Path
 
 from aws_manager.s3_manager import S3Manager
-from zarr_manager.zarr_manager import ZarrManager
-
-
-# from zarr_manager.zarr_manager import ZarrManager
+from zarr_manager import ZarrManager
 
 
 #######################################################
-def setup_module(module):
+# def setup_module(module):
+def setup_module():
     print('setup')
     env_file = find_dotenv('.env-test')
     load_dotenv(dotenv_path=env_file, override=True)
 
 
-def teardown_module(module):
+def teardown_module():
     print('teardown')
 
 #######################################################
-@mock_s3
+@mock_aws
 def test_zarr_manager(tmp_path):
     # Tests creating zarr_manager store and opening with both xarray and
     # zarr_manager libraries
@@ -109,7 +108,7 @@ def test_zarr_manager(tmp_path):
 
 
 #######################################################
-@mock_s3
+@mock_aws
 def test_open_zarr_with_zarr_read_write(tmp_path):
     temporary_directory = str(tmp_path)
 
@@ -146,7 +145,7 @@ def test_open_zarr_with_zarr_read_write(tmp_path):
 
 
 #######################################################
-@mock_s3
+@mock_aws
 def test_open_zarr_with_xarray(tmp_path):
     # TODO: open with xarray
     #  [1] check timestamps are in proper format

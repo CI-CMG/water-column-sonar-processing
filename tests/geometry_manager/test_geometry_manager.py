@@ -1,26 +1,18 @@
-from pathlib import Path
-import geopandas
 import numpy as np
-import shapely
-import xarray as xr
-import pandas as pd
 import echopype as ep
-# from s3fs import S3Map, S3FileSystem
-# from moto import mock_s3
 from dotenv import load_dotenv, find_dotenv
-# from aws_manager.s3_manager import S3Manager
-from geometry_manager.geometry_manager import GeoManager
 
+from geometry_manager import GeometryManager
 
 #######################################################
-def setup_module(module):
+def setup_module():
     print('setup')
-    # env_file = find_dotenv('.env-test')
-    env_file = find_dotenv('.env-prod')
+    env_file = find_dotenv('.env-test')
+    # env_file = find_dotenv('.env-prod')
     load_dotenv(dotenv_path=env_file, override=True)
 
 
-def teardown_module(module):
+def teardown_module():
     print('teardown')
 
 #######################################################
@@ -48,9 +40,9 @@ def test_geometry_manager(tmp_path):
         storage_options={'anon': True}
     )
 
-    geo_manager = GeoManager()
+    geometry_manager = GeometryManager()
 
-    time, lat, lon = geo_manager.read_echodata_gps_data(
+    time, lat, lon = geometry_manager.read_echodata_gps_data(
         echodata=echodata,
         ship_name=ship_name,
         cruise_name=cruise_name,

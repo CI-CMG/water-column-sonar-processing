@@ -6,9 +6,10 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 
-from ..geometry_manager.geometry_manager import GeoManager
 from ..aws_manager.dynamodb_manager import DynamoDBManager
 from ..zarr_manager.zarr_manager import ZarrManager
+# from ..geometry_manager.geometry_manager import GeometryManager
+
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)

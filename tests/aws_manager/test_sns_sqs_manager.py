@@ -1,9 +1,9 @@
 import os
 import json
 from dotenv import load_dotenv, find_dotenv
-from moto import mock_sns, mock_sqs
+from moto import mock_aws
 from aws_manager.sns_manager import SNSManager
-from aws_manager.sqs_manager import SQSManager
+from aws_manager import SQSManager
 
 
 # from aws_manager.sns_manager import SNSManager
@@ -14,19 +14,18 @@ from aws_manager.sqs_manager import SQSManager
 
 
 #######################################################
-def setup_module(module):
+def setup_module():
     print('setup')
     env_file = find_dotenv('.env-test')
     load_dotenv(dotenv_path=env_file, override=True)
 
 
-def teardown_module(module):
+def teardown_module():
     print('teardown')
 
 
 #######################################################
-@mock_sns
-@mock_sqs
+@mock_aws
 def test_sns_manager():
     print(os.environ.get("AWS_REGION"))
     # --- Initialize --- #

@@ -1,6 +1,6 @@
 import os
 
-from moto import mock_s3
+from moto import mock_aws
 from dotenv import load_dotenv, find_dotenv
 
 from aws_manager.s3_manager import S3Manager, chunked
@@ -13,17 +13,17 @@ output_bucket_name = 'example_output_bucket'
 
 
 #######################################################
-def setup_module(module):
+def setup_module():
     print('setup')
     env_file = find_dotenv('.env-test')
     load_dotenv(dotenv_path=env_file, override=True)
 
 
-def teardown_module(module):
+def teardown_module():
     print('teardown')
 
 #######################################################
-@mock_s3
+@mock_aws
 def test_s3_manager():
     # test-input-bucket
     test_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
@@ -60,7 +60,7 @@ def test_chunked():
         assert len(batch) == 2
 
 #######################################################
-@mock_s3
+@mock_aws
 def test_create_bucket():
     test_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
 
@@ -72,39 +72,39 @@ def test_create_bucket():
     assert len(s3_manager.list_buckets()['Buckets']) == 3
     assert "test-input-bucket" in [i["Name"] for i in s3_manager.list_buckets()['Buckets']]
 
-@mock_s3
+@mock_aws
 def test_list_buckets():
     pass
 
-@mock_s3
+@mock_aws
 def test_upload_files_with_thread_pool_executor():
     pass
 
-@mock_s3
+@mock_aws
 def test_list_objects():
     pass
 
-@mock_s3
+@mock_aws
 def test_get_child_objects():
     pass
 
-@mock_s3
+@mock_aws
 def test_download_file():
     pass
 
-@mock_s3
+@mock_aws
 def test_delete_object():
     pass
 
-@mock_s3
+@mock_aws
 def test_delete_objects():
     pass
 
-@mock_s3
+@mock_aws
 def test_put():
     pass
 
-@mock_s3
+@mock_aws
 def test_get():
     pass
 

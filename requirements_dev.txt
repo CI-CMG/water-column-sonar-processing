@@ -1,8 +1,8 @@
 -r requirements.txt
 
 mock~=5.1.0
-moto[server]==4.2.14.dev12
+#moto[server]==4.2.14.dev12
+#moto==5.0.18
 pyinstaller==6.3.0
-pytest==8.1.1
 setuptools==75.3.0
 twine

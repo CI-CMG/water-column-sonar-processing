@@ -6,7 +6,7 @@ from dotenv import load_dotenv, find_dotenv
 # import moto
 
 from typing import Any  # Callable
-from moto import mock_s3
+from moto import mock_aws
 from unittest.mock import MagicMock
 
 import aiobotocore.awsrequest
@@ -38,7 +38,7 @@ from aws_manager.s3fs_manager import S3FSManager
 
 
 #######################################################
-def setup_module(module):
+def setup_module():
     print('setup')
     env_file = find_dotenv('.env-test')
     load_dotenv(dotenv_path=env_file, override=True)
@@ -46,7 +46,7 @@ def setup_module(module):
     # free_port = 5000
 
 
-def teardown_module(module):
+def teardown_module():
     print('teardown')
 
 
@@ -237,7 +237,7 @@ class MockHttpClientResponse(aiohttp.client_reqrep.ClientResponse):
 
 #####################################################################
 #####################################################################
-@mock_s3
+@mock_aws
 def test_add_file(tmp_path):
     # with socketserver.TCPServer(("localhost", 0), None) as s:
     #     free_port = s.server_address[1]

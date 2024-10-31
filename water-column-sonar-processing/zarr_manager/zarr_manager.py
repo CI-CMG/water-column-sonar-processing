@@ -4,9 +4,10 @@ import numcodecs
 import numpy as np
 import xarray as xr
 from numcodecs import Blosc
-from ..aws_manager.s3fs_manager import S3FSManager
+
 from ..utility.constants import Constants, Coordinates
 from ..utility.timestamp import Timestamp
+from ..aws_manager.s3fs_manager import S3FSManager
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)
@@ -62,7 +63,7 @@ class ZarrManager:
             max_echo_range: float,
             calibration_status: bool = False  # Assume uncalibrated
     ) -> str:
-        print(f'Creating local zarr_manager store at {cruise_name}.zarr_manager for ship {ship_name}')
+        print(f'Creating local zarr_manager store at {cruise_name}.zarr for ship {ship_name}')
 
         # There should be no repeated frequencies
         assert len(frequencies) == len(set(frequencies))
@@ -70,7 +71,7 @@ class ZarrManager:
 
         print(f"Debugging number of threads: {self.__num_threads}")
 
-        zarr_path = f"{path}/{cruise_name}.zarr_manager"
+        zarr_path = f"{path}/{cruise_name}.zarr"
         store = zarr.DirectoryStore(path=zarr_path, normalize_keys=False)
         root = zarr.group(store=store, overwrite=self.__overwrite, cache_attrs=True)
 
@@ -215,7 +216,7 @@ class ZarrManager:
         zarr.consolidate_metadata(store)
         #####################################################################
         """
-        # zzz = zarr_manager.open('https://echofish-dev-master-118234403147-echofish-zarr-store.s3.us-west-2.amazonaws.com/GU1002_resample.zarr')
+        # zzz = zarr.open('https://echofish-dev-master-118234403147-echofish-zarr-store.s3.us-west-2.amazonaws.com/GU1002_resample.zarr')
         # zzz.time[0] = 1274979445.423
         # Initialize all to origin time, will be overwritten late
         """
@@ -249,7 +250,7 @@ class ZarrManager:
         print('Opening Zarr store with Zarr.')
         try:
             s3fs_manager = S3FSManager()
-            root = f'{self.output_bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr_manager'
+            root = f'{self.output_bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr'
             store = s3fs_manager.s3_map(s3_zarr_store_path=root)
             # synchronizer = zarr_manager.ProcessSynchronizer(f"/tmp/{ship_name}_{cruise_name}.sync")
             cruise_zarr = zarr.open(store=store, mode="r+")
@@ -269,7 +270,7 @@ class ZarrManager:
     ) -> xr.Dataset:
         print('Opening Zarr store in S3 as Xarray.')
         try:
-            zarr_path = f"s3://{self.output_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr_manager"
+            zarr_path = f"s3://{self.output_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr"
             s3fs_manager = S3FSManager()
             store_s3_map = s3fs_manager.s3_map(s3_zarr_store_path=zarr_path)
             ds = xr.open_zarr(store=store_s3_map, consolidated=None)  # synchronizer=SYNCHRONIZER

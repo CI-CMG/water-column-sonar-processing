@@ -20,3 +20,12 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/CI-CMG/water-column-sonar-processing"
 Issues = "https://github.com/CI-CMG/water-column-sonar-processing/issues"
+
+#[pytest]
+#pythonpath = "water-column-sonar-processing"
+#testpaths = "tests"
+
+#[tool.pytest.ini_options]
+#addopts = [
+#    "--import-mode=importlib",
+#]

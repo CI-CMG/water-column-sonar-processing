@@ -1,51 +1,9 @@
 import unittest
-from mock import patch, MagicMock
+from mock import patch
 from zarr_manager.foo import foo
 
 
 class TestFoo(unittest.TestCase):
-
-    # @patch("water-column-sonar-processing.zarr_manager.foo.Bar.biz")  # not -> @patch("bar.Bar.biz")
-    # def test_foo(self, mock_biz):
-    #     self.assertFalse(mock_biz.called)
-    #
-    #     foo()
-    #
-    #     self.assertTrue(mock_biz.called)
-    #     self.assertEqual(mock_biz.call_count, 1)
-    #     self.assertIsInstance(mock_biz, MagicMock)
-
-    # @patch("water-column-sonar-processing.zarr_manager.bar.requests.get")
-    # @patch("water-column-sonar-processing.zarr_manager.bar.requests.put")
-    # def test_foo(self, mock_put, mock_get):
-    #     bar = Bar()
-    #     bar.sync(id=42, query_first=False)
-    #
-    #     self.assertFalse(mock_get.called)
-    #
-    #     self.assertTrue(mock_put.called)
-    #
-    #     bar.sync(id=43, query_first=True)
-    #
-    #     self.assertTrue(mock_get.called)
-
-    # @patch("water-column-sonar-processing.zarr_manager.foo.Bar.biz")
-    # def test_foo(self, mock_biz):
-    #     url = '/api/users/{id}'.format(id=1)
-    #     data = {'phone_number': '+17025551000'}
-    #     method = 'PUT'
-    #     headers = {"Authorization": "JWT <your_token>"}
-    #
-    #     foo(url, method, data=data, headers=headers)
-    #
-    #     self.assertTrue(mock_biz.called)
-    #     self.assertEqual(mock_biz.call_count, 1)
-    #     self.assertEqual(mock_biz.call_args[0][0], url)
-    #     self.assertEqual(mock_biz.call_args[0][1], method)
-    #     self.assertEqual(mock_biz.call_args[1]['data'], data)
-    #     self.assertEqual(mock_biz.call_args[1]['headers'], headers)
-
-
     def test_foo(self):
         ret = foo()
         self.assertEqual(ret, 1)

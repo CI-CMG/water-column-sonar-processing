@@ -1,33 +1,35 @@
 import os
 import pytest
-from moto import mock_s3
+from moto import mock_aws
 from dotenv import load_dotenv, find_dotenv
 
-from cruise.create_empty_zarr_store import CreateEmptyZarrStore
+from cruise import CreateEmptyZarrStore
 
 
 # from src.model.cruise.create_empty_zarr_store import CreateEmptyZarrStore
 
 
 #######################################################
-def setup_module(module):
+def setup_module():
     print('setup')
 
     env_file = find_dotenv('.env-test')
     # env_file = find_dotenv('.env-prod')
-
     load_dotenv(dotenv_path=env_file, override=True)
 
 
-def teardown_module(module):
+def teardown_module():
     print('teardown')
 
 
 #######################################################
-@mock_s3
+@mock_aws
 @pytest.mark.skip(reason="no way of currently testing this")
 def test_create_empty_zarr_store(tmp_path):
     # temporary_directory = str(tmp_path)
+    temporary_directory = str(tmp_path)
+
+    # cruise_name = "test_cruise"
 
     # TODO:
     #  [1] load dynamodb
@@ -101,7 +103,7 @@ def test_create_empty_zarr_store(tmp_path):
             table_name="r2d2-dev-echofish-EchoFish-File-Info",
         )
 
-    assert os.path.exists(f"{temporary_directory}/{cruise_name}.zarr")
+    assert os.path.exists(f"{temporary_directory}/{cruise[0]}.zarr")
 
 
 #######################################################

@@ -3,10 +3,10 @@ from dotenv import load_dotenv, find_dotenv
 # from pathlib import Path
 from cruise.resample_regrid import ResampleRegrid
 import pytest
-from moto import mock_s3
+from moto import mock_aws
 
 #######################################################
-def setup_module(module):
+def setup_module():
     print('setup')
 
     # env_file = find_dotenv('.env-test')
@@ -15,14 +15,14 @@ def setup_module(module):
     load_dotenv(dotenv_path=env_file, override=True)
 
 
-def teardown_module(module):
+def teardown_module():
     print('teardown')
 
 
 #######################################################
 
 ### Test Interpolation ###
-@mock_s3
+@mock_aws
 @pytest.mark.skip(reason="no way of currently testing this")
 def test_resample_regrid():
     # Opens s3 input zarr_manager store as xr and writes data to output zarr_manager store

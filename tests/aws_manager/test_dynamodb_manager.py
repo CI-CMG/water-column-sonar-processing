@@ -1,9 +1,11 @@
 import numpy as np
-from moto import mock_dynamodb
+from moto import mock_aws
 from dotenv import load_dotenv, find_dotenv
 
 # from aws_manager.dynamodb_manager import DynamoDBManager
-from aws_manager.dynamodb_manager import DynamoDBManager
+
+from aws_manager import DynamoDBManager
+from utility import PipelineStatus
 
 # from aws_manager.dynamodb_manager import DynamoDBManager
 
@@ -16,13 +18,13 @@ from aws_manager.dynamodb_manager import DynamoDBManager
 
 
 #######################################################
-def setup_module(module):
+def setup_module():
     print('setup')
     env_file = find_dotenv('.env-test')
     load_dotenv(dotenv_path=env_file, override=True)
 
 
-def teardown_module(module):
+def teardown_module():
     print('teardown')
 
 
@@ -80,7 +82,7 @@ def test_serializer_deserializer():
 
 
 #######################################################
-@mock_dynamodb
+@mock_aws
 def test_dynamodb_manager():
     # ---Initialize--- #
     table_name = 'test_table'
