@@ -1,10 +1,13 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = [
+    "setuptools>=61.0",
+    "wheel >= 0.29.0",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "water_column_sonar_processing"
-version = "0.0.5"
+version = "0.0.6"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
@@ -16,6 +19,10 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dynamic = ["dependencies"]
+#dependencies = [
+#  'boto3',
+#]
 
 [project.urls]
 Homepage = "https://github.com/CI-CMG/water-column-sonar-processing"
@@ -31,3 +38,6 @@ minversion = "6.0"
 testpaths = [
     "tests",
 ]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}

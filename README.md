@@ -58,6 +58,8 @@ https://packaging.python.org/en/latest/tutorials/packaging-projects/
 # To Publish To TEST
 ```commandline
 python -m build
+# python -m build --sdist
+# python -m build --wheel
 python -m twine upload --repository testpypi dist/*
 pytho -m pip install --index-url https://test.pypi.org/simple/ hello-pypi-rudy-klucik
 python

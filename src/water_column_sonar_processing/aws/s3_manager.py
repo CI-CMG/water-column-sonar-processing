@@ -1,10 +1,7 @@
 import json
 import os
 import boto3
-# import pandas as pd
 from collections.abc import Generator
-
-# import geopandas
 from botocore.config import Config
 from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError
