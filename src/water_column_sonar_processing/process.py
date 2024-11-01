@@ -1,10 +1,10 @@
 import os
 import json
 import numpy as np
-from aws.s3_manager import S3Manager
-from aws.s3fs_manager import S3FSManager
-from aws.sns_manager import SNSManager
-from aws.dynamodb_manager import DynamoDBManager
+from water_column_sonar_processing.aws.s3_manager import S3Manager
+from water_column_sonar_processing.aws.s3fs_manager import S3FSManager
+from water_column_sonar_processing.aws.sns_manager import SNSManager
+from water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
 
 ###########################################################
 class Process:

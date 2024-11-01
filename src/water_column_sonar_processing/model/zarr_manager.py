@@ -4,9 +4,9 @@ import numcodecs
 import numpy as np
 import xarray as xr
 from numcodecs import Blosc
-from utility.constants import Constants, Coordinates
-from utility.timestamp import Timestamp
-from aws.s3fs_manager import S3FSManager
+from water_column_sonar_processing.utility.constants import Constants, Coordinates
+from water_column_sonar_processing.utility.timestamp import Timestamp
+from water_column_sonar_processing.aws.s3fs_manager import S3FSManager
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)

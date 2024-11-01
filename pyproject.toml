@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "water-column-sonar-processing"
-version = "0.0.1"
+name = "water_column_sonar_processing"
+version = "0.0.4"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]

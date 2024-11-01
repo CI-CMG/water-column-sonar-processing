@@ -6,9 +6,9 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 
-from aws.dynamodb_manager import DynamoDBManager
-from model.zarr_manager import ZarrManager
-from geometry.geometry_manager import GeometryManager
+from water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
+from water_column_sonar_processing.model.zarr_manager import ZarrManager
+from water_column_sonar_processing.geometry.geometry_manager import GeometryManager
 
 
 numcodecs.blosc.use_threads = False

@@ -19,7 +19,7 @@ Processing tool for converting L0 data to L1 and L2 as well as generating geospa
          1. ```eval "$(pyenv virtualenv-init -)"```
   3. Open a new terminal
   4. Install Python version
-     2. ```env CONFIGURE_OPTS='--enable-optimizations' arch -arm64 pyenv install 3.10.12```
+     1. ```env CONFIGURE_OPTS='--enable-optimizations' arch -arm64 pyenv install 3.10.12```
   5. Create virtual env (to delete 'pyenv uninstall 3.10.12/water-column-sonar-processing')
      1. ```pyenv virtualenv 3.10.12 water-column-sonar-processing```
   6. Set local version of python (if not done already)
@@ -51,7 +51,7 @@ Processing tool for converting L0 data to L1 and L2 as well as generating geospa
 pytest --disable-warnings
 ```
 
-## Instructions
+# Instructions
 Following this tutorial:
 https://packaging.python.org/en/latest/tutorials/packaging-projects/
 
@@ -62,7 +62,7 @@ python -m twine upload --repository testpypi dist/*
 pytho -m pip install --index-url https://test.pypi.org/simple/ hello-pypi-rudy-klucik
 python
 ```
-```python
+```
 from water-column-sonar-processing import ZarrManager
 example.add_one(2)
 ```
@@ -72,3 +72,8 @@ example.add_one(2)
 python -m build
 python -m twine upload --repository pypi dist/*
 ```
+
+
+# Linting
+Ruff
+https://plugins.jetbrains.com/plugin/20574-ruff
