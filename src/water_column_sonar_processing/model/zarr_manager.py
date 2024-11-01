@@ -4,20 +4,18 @@ import numcodecs
 import numpy as np
 import xarray as xr
 from numcodecs import Blosc
-
 from utility.constants import Constants, Coordinates
 from utility.timestamp import Timestamp
-from aws_manager.s3fs_manager import S3FSManager
+from aws.s3fs_manager import S3FSManager
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)
 
 
-# TODO: when ready switch to version 3 of zarr_manager spec
+# TODO: when ready switch to version 3 of model spec
 # ZARR_V3_EXPERIMENTAL_API = 1
 
 # creates the latlon data: foo = ep.consolidate.add_location(ds_Sv, echodata)
-
 class ZarrManager:
     #######################################################
     def __init__(
@@ -37,7 +35,7 @@ class ZarrManager:
             max_echo_range: float = 100.,  # maximum depth measured from whole cruise
     ):
         # Gets the set of depth values that will be used when resampling and
-        # regridding the data to a cruise level zarr_manager store.
+        # regridding the data to a cruise level model store.
         # Note: returned values do not start at zero.
         print('Getting depth values.')
         all_cruise_depth_values = np.linspace(
@@ -252,7 +250,7 @@ class ZarrManager:
             s3fs_manager = S3FSManager()
             root = f'{self.output_bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr'
             store = s3fs_manager.s3_map(s3_zarr_store_path=root)
-            # synchronizer = zarr_manager.ProcessSynchronizer(f"/tmp/{ship_name}_{cruise_name}.sync")
+            # synchronizer = model.ProcessSynchronizer(f"/tmp/{ship_name}_{cruise_name}.sync")
             cruise_zarr = zarr.open(store=store, mode="r+")
         except Exception as err:  # Failure
             print(f'Exception encountered opening Zarr store with Zarr.: {err}')
@@ -284,12 +282,12 @@ class ZarrManager:
 
     #######################################################
     # def create_process_synchronizer(self):
-    #     # TODO: explore aws_manager redis options
+    #     # TODO: explore aws redis options
     #     pass
 
     #######################################################
     # def verify_cruise_store_data(self):
-    #     # TODO: run a check on a finished zarr_manager store to ensure that
+    #     # TODO: run a check on a finished model store to ensure that
     #     #   none of the time, latitude, longitude, or depth values
     #     #   are NaN.
     #     pass

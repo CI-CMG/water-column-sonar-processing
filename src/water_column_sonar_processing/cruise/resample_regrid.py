@@ -6,16 +6,16 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 
-from aws_manager.dynamodb_manager import DynamoDBManager
-from zarr_manager.zarr_manager import ZarrManager
-from geometry_manager.geometry_manager import GeometryManager
+from aws.dynamodb_manager import DynamoDBManager
+from model.zarr_manager import ZarrManager
+from geometry.geometry_manager import GeometryManager
 
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)
 
 
-# TODO: when ready switch to version 3 of zarr_manager spec
+# TODO: when ready switch to version 3 of model spec
 #  ZARR_V3_EXPERIMENTAL_API = 1
 #  creates the latlon data: foo = ep.consolidate.add_location(ds_Sv, echodata)
 
@@ -115,7 +115,7 @@ class ResampleRegrid:
     ) -> None:
         """
         The goal here is to interpolate the data against the depth values already populated
-        in the existing file level zarr_manager stores. We open the cruise-level store with zarr_manager for
+        in the existing file level model stores. We open the cruise-level store with model for
         read/write operations. We open the file-level store with Xarray to leverage tools for
         resampling and subsetting the data.
         """
@@ -124,7 +124,7 @@ class ResampleRegrid:
             zarr_manager = ZarrManager()
             # s3_manager = S3Manager()
             geo_manager = GeometryManager()
-            # get zarr_manager store
+            # get model store
             output_zarr_store = zarr_manager.open_s3_zarr_store_with_zarr(
                 ship_name=ship_name,
                 cruise_name=cruise_name,
@@ -157,7 +157,7 @@ class ResampleRegrid:
                 # TODO: filter rows by enum success, filter the dataframe just for enums >= LEVEL_1_PROCESSING
                 #  df[df['PIPELINE_STATUS'] < PipelineStatus.LEVEL_1_PROCESSING] = np.nan
 
-                # Get index_manager from all cruise files. Note: should be based on which are included in cruise.
+                # Get index from all cruise files. Note: should be based on which are included in cruise.
                 index = cruise_df.index[cruise_df['FILE_NAME'] == f"{file_name_stem}.raw"][0]
 
                 # get input store
@@ -169,7 +169,7 @@ class ResampleRegrid:
                 )
                 #########################################################################
                 # [3] Get needed indices
-                # Offset from start index_manager to insert new data. Note that missing values are excluded.
+                # Offset from start index to insert new data. Note that missing values are excluded.
                 ping_time_cumsum = np.insert(
                     np.cumsum(cruise_df['NUM_PING_TIME_DROPNA'].dropna().to_numpy(dtype=int)),
                     obj=0,
@@ -223,7 +223,7 @@ class ResampleRegrid:
                 print(f"start_ping_time_index: {start_ping_time_index}, end_ping_time_index: {end_ping_time_index}")
 
                 #########################################################################
-                # write Sv values to cruise-level-zarr_manager-store
+                # write Sv values to cruise-level-model-store
                 for channel in range(len(input_xr.channel.values)):  # doesn't like being written in one fell swoop :(
                     output_zarr_store.Sv[
                         :,

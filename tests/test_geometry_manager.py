@@ -1,16 +1,14 @@
 import numpy as np
 import echopype as ep
 from dotenv import load_dotenv, find_dotenv
+from water_column_sonar_processing.geometry.geometry_manager import GeometryManager
 
-from geometry_manager.geometry_manager import GeometryManager
 
 #######################################################
 def setup_module():
     print('setup')
     env_file = find_dotenv('.env-test')
-    # env_file = find_dotenv('.env-prod')
     load_dotenv(dotenv_path=env_file, override=True)
-
 
 def teardown_module():
     print('teardown')
@@ -29,7 +27,7 @@ def test_geometry_manager(tmp_path):
     sensor_name = 'EK60'
 
     s3_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
-    # s3_path = f"r2d2-testing-level-2-data/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr_manager"
+    # s3_path = f"r2d2-testing-level-2-data/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model"
 
     print(s3_path)
 

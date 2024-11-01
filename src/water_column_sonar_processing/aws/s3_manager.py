@@ -139,12 +139,12 @@ class S3Manager:
         return all_uploads
 
     #####################################################################
-    def upload_zarr_files_to_bucket(  # noaa-wcsd-zarr_manager-pds
+    def upload_zarr_files_to_bucket(  # noaa-wcsd-model-pds
             self,
             local_directory,
             remote_directory,
     ):
-        # Right now this is just for uploading a zarr_manager store to s3
+        # Right now this is just for uploading a model store to s3
         print('Uploading files to output bucket.')
         store_name = os.path.basename(local_directory)
         all_files = []
@@ -162,8 +162,8 @@ class S3Manager:
         return all_uploads
 
     #####################################################################
-    # used: raw-to-zarr_manager
-    def list_objects(  # noaa-wcsd-pds and noaa-wcsd-zarr_manager-pds
+    # used: raw-to-model
+    def list_objects(  # noaa-wcsd-pds and noaa-wcsd-model-pds
             self,
             bucket_name,
             prefix
@@ -179,7 +179,7 @@ class S3Manager:
                 keys.extend([k['Key'] for k in page['Contents']])
         return keys
 
-    def list_nodd_objects(  # These are used by the geometry_manager for uploading data
+    def list_nodd_objects(  # These are used by the geometry for uploading data
             self,
             prefix,
     ):
@@ -250,8 +250,8 @@ class S3Manager:
         return raw_files
 
     #####################################################################
-    def get_object(  # TODO: Move this to index_manager.py
-                     # noaa-wcsd-pds or noaa-wcsd-zarr_manager-pds
+    def get_object(  # TODO: Move this to index.py
+                     # noaa-wcsd-pds or noaa-wcsd-model-pds
             self,
             bucket_name,
             key_name,
@@ -272,9 +272,9 @@ class S3Manager:
         return response
 
     #####################################################################
-    # used raw-to-zarr_manager
+    # used raw-to-model
     def download_file(  # TODO: change to download_object
-                        # noaa-wcsd-pds or noaa-wcsd-zarr_manager-pds
+                        # noaa-wcsd-pds or noaa-wcsd-model-pds
             self,
             bucket_name,
             key,
@@ -289,7 +289,7 @@ class S3Manager:
 
     #####################################################################
     # not used
-    # def delete_nodd_object(  # noaa-wcsd-zarr_manager-pds
+    # def delete_nodd_object(  # noaa-wcsd-model-pds
     #         self,
     #         bucket_name,
     #         key
@@ -319,7 +319,7 @@ class S3Manager:
 
     #####################################################################
     # not used TODO: remove
-    def put(  # noaa-wcsd-zarr_manager-pds
+    def put(  # noaa-wcsd-model-pds
             self,
             bucket_name,
             key,

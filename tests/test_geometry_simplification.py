@@ -1,8 +1,4 @@
-import pytest
-import unittest
 from dotenv import load_dotenv, find_dotenv
-
-# import os
 
 # s3fs.core.setup_logging("DEBUG")
 
@@ -33,7 +29,7 @@ def teardown_module():
 
 # @mock_s3
 def test_geometry_simplification():
-    # bucket_name = 'noaa-wcsd-zarr_manager-pds'
+    # bucket_name = 'noaa-wcsd-model-pds'
     pass
 
 #######################################################

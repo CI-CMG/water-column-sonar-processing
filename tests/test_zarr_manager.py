@@ -1,44 +1,29 @@
-# import os
 import zarr
 import numcodecs
-# import numpy as np
-# import xarray as xr
-# from moto import mock_s3
 from moto import mock_aws
 from dotenv import load_dotenv, find_dotenv
-# import warnings
-
-# import gc
 import os
-# import time
-# import boto3
-# import shutil
 import numpy as np
-# import pandas as pd
 import xarray as xr
+from water_column_sonar_processing.aws.s3_manager import S3Manager
+from water_column_sonar_processing.model.zarr_manager import ZarrManager
 
-from aws_manager.s3_manager import S3Manager
-from zarr_manager.zarr_manager import ZarrManager
 
-
+TEMPDIR = "/tmp"
 #######################################################
-# def setup_module(module):
 def setup_module():
     print('setup')
     env_file = find_dotenv('.env-test')
     load_dotenv(dotenv_path=env_file, override=True)
 
-
 def teardown_module():
     print('teardown')
-
-TEMPDIR = "/tmp"
 
 #######################################################
 @mock_aws
 def test_zarr_manager(tmp_path=TEMPDIR):
-    # Tests creating zarr_manager store and opening with both xarray and
-    # zarr_manager libraries
+    # Tests creating model store and opening with both xarray and
+    # model libraries
 
     temporary_directory = str(tmp_path)
 
@@ -66,7 +51,7 @@ def test_zarr_manager(tmp_path=TEMPDIR):
     numcodecs.blosc.use_threads = False
     numcodecs.blosc.set_nthreads(1)
 
-    # synchronizer = zarr_manager.ProcessSynchronizer(f"/mnt/zarr_manager/{ship_name}_{cruise_name}.sync")
+    # synchronizer = model.ProcessSynchronizer(f"/mnt/model/{ship_name}_{cruise_name}.sync")
 
     cruise_zarr = zarr.open(store=f"{temporary_directory}/{cruise_name}.zarr", mode="r")  # synchronizer=synchronizer)
     print(cruise_zarr.info)
@@ -79,7 +64,7 @@ def test_zarr_manager(tmp_path=TEMPDIR):
     file_xr = xr.open_zarr(store=f"{temporary_directory}/{cruise_name}.zarr", consolidated=None)  # synchronizer=SYNCHRONIZER)
     print(file_xr)
 
-    # for newly initialized zarr_manager store all the timestamps will be 0 epoch time
+    # for newly initialized model store all the timestamps will be 0 epoch time
     assert file_xr.time.values[0] == np.datetime64('1970-01-01T00:00:00.000000000')
     assert str(file_xr.time.values[0].dtype) == 'datetime64[ns]'
 
@@ -110,14 +95,14 @@ def test_zarr_manager(tmp_path=TEMPDIR):
 def test_open_zarr_with_zarr_read_write(tmp_path):
     temporary_directory = str(tmp_path)
 
-    # TODO: open with zarr_manager python library and check format
+    # TODO: open with model python library and check format
     test_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 
     # create a bucket
     s3_manager = S3Manager()
     s3_manager.create_bucket(bucket_name=test_bucket_name)
 
-    # initialize zarr_manager store
+    # initialize model store
     ship_name = "test_ship"
     cruise_name = "test_cruise"
     sensor_name = "test_sensor"
@@ -138,7 +123,7 @@ def test_open_zarr_with_zarr_read_write(tmp_path):
 
     # TODO: copy store to bucket
 
-    # TODO: open zarr_manager store with zarr_manager
+    # TODO: open model store with model
     pass
 
 
@@ -149,7 +134,7 @@ def test_open_zarr_with_xarray(tmp_path):
     #  [1] check timestamps are in proper format
     #  [2] check that lat/lons are formatted (need data)
     #  [3] check
-    # TODO: open with zarr_manager python library and check format
+    # TODO: open with model python library and check format
     ship_name = "Okeanos_Explorer"
     cruise_name = "EX1404L2"
     sensor_name = "EK60"
@@ -163,8 +148,8 @@ def test_open_zarr_with_xarray(tmp_path):
     s3_manager = S3Manager()
     s3_manager.create_bucket(bucket_name=bucket_name)
 
-    # initialize zarr_manager store
-    # zarr_name = f"{cruise_name}.zarr_manager"
+    # initialize model store
+    # zarr_name = f"{cruise_name}.model"
     min_echo_range = 0.50
     max_echo_range = 250.0
 
@@ -189,13 +174,13 @@ def test_open_zarr_with_xarray(tmp_path):
     )
 
     # copy store to bucket
-    # TODO: create function to get list of files in zarr_manager store
+    # TODO: create function to get list of files in model store
     # s3_manager.upload_files_to_bucket(
     #       local_path,  # TODO: change to path
     #       s3_path
     # )
 
-    # open zarr_manager store with zarr_manager
+    # open model store with model
 
     #assert root.Sv.shape == (501, 1201, 4)
 

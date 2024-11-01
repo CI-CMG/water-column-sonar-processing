@@ -4,7 +4,7 @@ import geopandas
 import pandas as pd
 
 from utility.cleaner import Cleaner
-from aws_manager.s3_manager import S3Manager
+from aws.s3_manager import S3Manager
 
 """
 //  [Decimal / Places / Degrees	/ Object that can be recognized at scale / N/S or E/W at equator, E/W at 23N/S, E/W at 45N/S, E/W at 67N/S]

@@ -23,7 +23,7 @@ class PMTileGeneration(object):
 
     #######################################################
     def generate_geojson_feature_collection(self):
-        # This was used to read from noaa-wcsd-zarr_manager-pds bucket geojson files and then to
+        # This was used to read from noaa-wcsd-model-pds bucket geojson files and then to
         # generate the geopandas dataframe which could be exported to another comprehensive
         # geojson file. That
         result = list(Path("/Users/r2d2/Documents/echofish/geojson").rglob("*.json"))

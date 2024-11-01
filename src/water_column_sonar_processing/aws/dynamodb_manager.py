@@ -23,7 +23,7 @@ class DynamoDBManager:
         self.type_deserializer = TypeDeserializer()
 
     #####################################################################
-    ### defined in raw-to-zarr_manager, not used
+    ### defined in raw-to-model, not used
     # def put_item(
     #         self,
     #         table_name,

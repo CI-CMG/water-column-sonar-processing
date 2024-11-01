@@ -1,12 +1,7 @@
 import os
-import pytest
 from moto import mock_aws
 from dotenv import load_dotenv, find_dotenv
-
-from cruise.create_empty_zarr_store import CreateEmptyZarrStore
-
-
-# from src.model.cruise.create_empty_zarr_store import CreateEmptyZarrStore
+from water_column_sonar_processing.cruise.create_empty_zarr_store import CreateEmptyZarrStore
 
 
 #######################################################
@@ -21,35 +16,35 @@ def setup_module():
 def teardown_module():
     print('teardown')
 
+TEMPDIR = "/tmp"
 
 #######################################################
 @mock_aws
-# @pytest.mark.skip(reason="no way of currently testing this")
-def test_create_empty_zarr_store(tmp_path):
+def test_create_empty_zarr_store(tmp_path=TEMPDIR):
     # temporary_directory = str(tmp_path)
     temporary_directory = str(tmp_path)
 
-    # cruise_name = "test_cruise"
+    cruise_name = "HB0706A" # HB0706
 
     # TODO:
     #  [1] load dynamodb
     #  [2] create empty bucket
-    # cruises = [
-    #     "HB0706",
-    #     "HB0711",
-    #     "HB0806",
-    #     "HB0903",
-    #     "HB1402",
-    #     "HB1904",
-    #     "HB2006",
-    #     "HB2007",
-    #     "HB20ORT",
-    #     "HB20TR",
-    # ]
+    create_empty_zarr_store = CreateEmptyZarrStore()
+    create_empty_zarr_store.create_cruise_level_zarr_store(
+        ship_name="Henry_B._Bigelow",
+        cruise_name=cruise_name,
+        sensor_name="EK60",
+        table_name="r2d2-dev-echofish-EchoFish-File-Info",
+    )
 
-    # april 9th, 2024, last run of all henry bigelow cruises for carrie's presentation
-    cruises = [
-        "HB0802",
+    assert os.path.exists(f"{temporary_directory}/{cruise_name}.zarr")
+
+
+#######################################################
+#######################################################
+# april 9th, 2024, last run of all henry bigelow cruises for carrie's presentation
+#    cruises = [
+#       "HB0802",
         # "HB0803",
         # "HB0805",
         # "HB0807",
@@ -92,20 +87,5 @@ def test_create_empty_zarr_store(tmp_path):
         # "HB1906",
         # "HB1907",
         # "HB2001",
-    ]
-
-    for cruise in cruises:
-        create_empty_zarr_store = CreateEmptyZarrStore()
-        create_empty_zarr_store.create_cruise_level_zarr_store(
-            ship_name="Henry_B._Bigelow",
-            cruise_name=cruise,
-            sensor_name="EK60",
-            table_name="r2d2-dev-echofish-EchoFish-File-Info",
-        )
-
-    assert os.path.exists(f"{temporary_directory}/{cruise[0]}.zarr")
-
-
-#######################################################
-#######################################################
+#    ]
 #######################################################

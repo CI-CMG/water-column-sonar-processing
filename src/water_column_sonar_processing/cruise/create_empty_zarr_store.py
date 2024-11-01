@@ -3,16 +3,16 @@ import numcodecs
 import numpy as np
 
 from utility.cleaner import Cleaner
-from aws_manager.dynamodb_manager import DynamoDBManager
-from aws_manager.s3_manager import S3Manager
-from zarr_manager.zarr_manager import ZarrManager
+from aws.dynamodb_manager import DynamoDBManager
+from aws.s3_manager import S3Manager
+from model.zarr_manager import ZarrManager
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)
 
 TEMPDIR = "/tmp"
 
-# TODO: when ready switch to version 3 of zarr_manager spec
+# TODO: when ready switch to version 3 of model spec
 # ZARR_V3_EXPERIMENTAL_API = 1
 # creates the latlon data: foo = ep.consolidate.add_location(ds_Sv, echodata)
 
@@ -34,7 +34,7 @@ class CreateEmptyZarrStore:
             object_prefix: str,
             cruise_name: str,
     ) -> None:
-        print('uploading zarr_manager store to s3')
+        print('uploading model store to s3')
         s3_manager = S3Manager()
         #
         print('Starting upload with thread pool executor.')
@@ -43,8 +43,8 @@ class CreateEmptyZarrStore:
         for subdir, dirs, files in os.walk(f"{local_directory}/{cruise_name}.zarr_manager"):
             for file in files:
                 local_path = os.path.join(subdir, file)
-                # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.zarr_manager/.zattrs'
-                s3_key = f'{object_prefix}/{cruise_name}.zarr_manager{local_path.split(f"{cruise_name}.zarr_manager")[-1]}'
+                # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.model/.zattrs'
+                s3_key = f'{object_prefix}/{cruise_name}.model{local_path.split(f"{cruise_name}.model")[-1]}'
                 all_files.append([local_path, s3_key])
         #
         # print(all_files)
@@ -98,10 +98,10 @@ class CreateEmptyZarrStore:
             new_width = int(consolidated_zarr_width)
             print(f"new_width: {new_width}")
             #################################################################
-            store_name = f"{cruise_name}.zarr_manager"
+            store_name = f"{cruise_name}.model"
             print(store_name)
             ################################################################
-            # Delete existing zarr_manager store if it exists
+            # Delete existing model store if it exists
             s3_manager = S3Manager()
             zarr_prefix = os.path.join("level_2", ship_name, cruise_name, sensor_name)
             child_objects = s3_manager.get_child_objects(
@@ -113,7 +113,7 @@ class CreateEmptyZarrStore:
                     objects=child_objects,
                 )
             ################################################################
-            # Create new zarr_manager store
+            # Create new model store
             zarr_manager = ZarrManager()
             new_height = len(zarr_manager.get_depth_values(
                 min_echo_range=cruise_min_echo_range,
@@ -157,11 +157,11 @@ class CreateEmptyZarrStore:
             # TODO: update enum in dynamodb
             #################################################################
         except Exception as err:
-            print(f"Problem trying to create new cruise zarr_manager store: {err}")
+            print(f"Problem trying to create new cruise model store: {err}")
         finally:
             cleaner = Cleaner()
             cleaner.delete_local_files()
-        print("Done creating cruise level zarr_manager store")
+        print("Done creating cruise level model store")
 
 
 ###########################################################

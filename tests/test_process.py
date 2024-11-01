@@ -1,21 +1,14 @@
 import os
 import json
-# import pytest
-# import unittest
 import numpy as np
 from dotenv import load_dotenv, find_dotenv
 from moto import mock_aws
-# from aws_manager.dynamodb_manager import DynamoDBManager
-# from aws_manager.s3_manager import S3Manager
-# from aws_manager.sns_manager import SNSManager
-# from aws_manager.sqs_manager import SQSManager
-# from model import Model
+from water_column_sonar_processing.aws.s3_manager import S3Manager
+from water_column_sonar_processing.aws.sns_manager import SNSManager
+from water_column_sonar_processing.aws.sqs_manager import SQSManager
+from water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
+from water_column_sonar_processing.process import Process
 
-from aws_manager.s3_manager import S3Manager
-from aws_manager.sns_manager import SNSManager
-from aws_manager.sqs_manager import SQSManager
-from aws_manager.dynamodb_manager import DynamoDBManager
-from model import Model
 
 #######################################################
 def setup_module():
@@ -26,7 +19,6 @@ def setup_module():
 
 def teardown_module():
     print('teardown')
-
 
 #######################################################
 @mock_aws
@@ -116,7 +108,7 @@ def test_model_happy_path():
             ':sh': {'S': 'David_Starr_Jordan'},
             ':st': {'S': '2006-04-06T03:59:14.115Z'},
             ':zb': {'S': 'r2d2-dev-echofish2-118234403147-echofish-dev-output'},
-            ':zp': {'S': 'level_1/David_Starr_Jordan/DS0604/EK60/DSJ0604-D20060406-T035914.zarr_manager'},
+            ':zp': {'S': 'level_1/David_Starr_Jordan/DS0604/EK60/DSJ0604-D20060406-T035914.model'},
         },
         update_expression=(
             'SET '
@@ -172,7 +164,7 @@ def test_model_happy_path():
             ':sh': {'S': 'David_Starr_Jordan'},
             ':st': {'S': '2006-04-06T13:35:30.701Z'},
             ':zb': {'S': 'r2d2-dev-echofish2-118234403147-echofish-dev-output'},
-            ':zp': {'S': 'level_1/David_Starr_Jordan/DS0604/EK60/DSJ0604-D20060406-T133530.zarr_manager'},
+            ':zp': {'S': 'level_1/David_Starr_Jordan/DS0604/EK60/DSJ0604-D20060406-T133530.model'},
         },
         update_expression=(
             'SET '
@@ -232,7 +224,7 @@ def test_model_happy_path():
             ':sh': {'S': 'Okeanos_Explorer'},
             ':st': {'S': '2014-09-08T17:39:07.660Z'},
             ':zb': {'S': 'r2d2-dev-echofish2-118234403147-echofish-dev-output'},
-            ':zp': {'S': 'level_1/Okeanos_Explorer/EX1404L2/EK60/EX1404L2_EK60_-D20140908-T173907.zarr_manager'},
+            ':zp': {'S': 'level_1/Okeanos_Explorer/EX1404L2/EK60/EX1404L2_EK60_-D20140908-T173907.model'},
         },
         update_expression=(
             'SET '
@@ -297,7 +289,7 @@ def test_model_happy_path():
             ':sh': {'S': 'Henry_B._Bigelow'},
             ':st': {'S': '2007-07-12T06:17:45.579Z'},
             ':zb': {'S': 'r2d2-dev-echofish2-118234403147-echofish-dev-output'},
-            ':zp': {'S': 'level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T061745.zarr_manager'},
+            ':zp': {'S': 'level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T061745.model'},
         },
         update_expression=(
             'SET '
@@ -362,7 +354,7 @@ def test_model_happy_path():
             ':sh': {'S': 'Miller_Freeman'},
             ':st': {'S': '2007-07-08T20:04:49.552Z'},
             ':zb': {'S': 'r2d2-dev-echofish2-118234403147-echofish-dev-output'},
-            ':zp': {'S': 'level_1/Miller_Freeman/MF0710/EK60/HAKE2007-D20070708-T200449.zarr_manager'},
+            ':zp': {'S': 'level_1/Miller_Freeman/MF0710/EK60/HAKE2007-D20070708-T200449.model'},
         },
         update_expression=(
             'SET '
@@ -424,7 +416,7 @@ def test_model_happy_path():
     ###### end setup ######
 
     #############################################################
-    model_instance = Model()
+    model_instance = Process()
     # run the src
     model_instance.execute()
     #############################################################

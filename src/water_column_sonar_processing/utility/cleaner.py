@@ -7,9 +7,9 @@ import shutil
 class Cleaner:
     @staticmethod
     def delete_local_files(
-            file_types=['*.raw*', '*.zarr_manager']  # '*.json'
+            file_types=['*.raw*', '*.model']  # '*.json'
     ):
-        print('Deleting all local raw and zarr_manager files')
+        print('Deleting all local raw and model files')
         for i in file_types:
             for j in glob.glob(i):
                 if os.path.isdir(j):

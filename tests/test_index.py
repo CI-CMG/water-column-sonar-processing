@@ -1,16 +1,12 @@
 from dotenv import load_dotenv, find_dotenv
+from water_column_sonar_processing.index.index_manager import IndexManager
 
-from index_manager.index_manager import IndexManager
-
-
-# from src.model.index_manager.index_manager import IndexManager
 
 #######################################################
 def setup_module(module):
     print('setup')
     env_file = find_dotenv('.env-prod')
     load_dotenv(dotenv_path=env_file, override=True)
-
 
 def teardown_module(module):
     print('teardown')
@@ -19,7 +15,7 @@ def teardown_module(module):
 
 def test_get_calibration_information():
     input_bucket_name = 'noaa-wcsd-pds'
-    calibration_bucket = 'noaa-wcsd-pds-index_manager'
+    calibration_bucket = 'noaa-wcsd-pds-index'
     calibration_key = 'calibrated_cruises.csv'
 
     index_manager = IndexManager(
@@ -35,21 +31,21 @@ def test_get_calibration_information():
 # @mock_s3
 # def test_index_manager(tmp_path):
 #     input_bucket_name = 'noaa-wcsd-pds'
-#     calibration_bucket = 'noaa-wcsd-pds-index_manager'
+#     calibration_bucket = 'noaa-wcsd-pds-index'
 #     calibration_key = 'calibrated_crusies.csv'
 #
-#     index_manager = IndexManager(
+#     index = IndexManager(
 #         input_bucket_name,
 #         calibration_bucket,
 #         calibration_key
 #     )
 #
-#     all_ek60_data = index_manager.index_manager()
+#     all_ek60_data = index.index()
 #     print(all_ek60_data)
 
 def test_get_all_cruise_raw_files(tmp_path):
     input_bucket_name = 'noaa-wcsd-pds'
-    calibration_bucket = 'noaa-wcsd-pds-index_manager'
+    calibration_bucket = 'noaa-wcsd-pds-index'
     calibration_key = 'calibrated_crusies.csv'
 
     index_manager = IndexManager(
@@ -132,7 +128,7 @@ def test_get_all_cruise_raw_files(tmp_path):
     ]
 
     # TODO: for each verify ek60 datagram
-    # index_manager.get_raw_files_csv(
+    # index.get_raw_files_csv(
     #     ship_name='Henry_B._Bigelow',
     #     cruise_name='HB2206',
     #     sensor_name='EK60'
@@ -156,12 +152,12 @@ def test_get_all_cruise_raw_files(tmp_path):
             )
         else:
             print(f"{c_n} is not ek60")
-    # all_raw_files = index_manager.get_raw_files(ship_name='Bell_M._Shimada', cruise_name='SH1906', sensor_name='EK60')
+    # all_raw_files = index.get_raw_files(ship_name='Bell_M._Shimada', cruise_name='SH1906', sensor_name='EK60')
     # 'data/raw/Bell_M._Shimada/SH1204/EK60/'
-    # all_ek60_data = index_manager.index_manager()
+    # all_ek60_data = index.index()
     # print(all_ek60_data)
 
 #######################################################
 
 # TODO: for post analysis of coverage
-#  need to check each cruise has same number of files in noaa-wcsd-pds and noaa-wcsd-zarr_manager-pds buckets
+#  need to check each cruise has same number of files in noaa-wcsd-pds and noaa-wcsd-model-pds buckets

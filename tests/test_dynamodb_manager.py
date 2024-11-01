@@ -1,9 +1,9 @@
 import numpy as np
 from moto import mock_aws
 from dotenv import load_dotenv, find_dotenv
+from water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
+from water_column_sonar_processing.utility.pipeline_status import PipelineStatus
 
-from aws_manager.dynamodb_manager import DynamoDBManager
-from utility.pipeline_status import PipelineStatus
 
 #######################################################
 def setup_module():
@@ -11,13 +11,10 @@ def setup_module():
     env_file = find_dotenv('.env-test')
     load_dotenv(dotenv_path=env_file, override=True)
 
-
 def teardown_module():
     print('teardown')
 
-
 #######################################################
-
 def test_serializer_deserializer():
     # ---Initialize--- #
     low_level_data = {
@@ -35,7 +32,7 @@ def test_serializer_deserializer():
                 "customer": {
                     "S": "TEST"
                 },
-                "index_manager": {
+                "index": {
                     "N": "1"
                 }
             }
@@ -58,7 +55,7 @@ def test_serializer_deserializer():
     assert python_data['ACTIVE']
     assert python_data['CRC'] == -1600155180
     assert python_data['ID']
-    assert python_data['params'] == {'customer': 'TEST', 'index_manager': 1}
+    assert python_data['params'] == {'customer': 'TEST', 'index': 1}
     assert python_data['THIS_STATUS'] == 10
     assert python_data['TYPE'] == 22
 
@@ -67,7 +64,6 @@ def test_serializer_deserializer():
     low_level_copy = {k: serializer.serialize(v) for k, v in python_data.items()}
 
     assert low_level_data == low_level_copy
-
 
 #######################################################
 @mock_aws

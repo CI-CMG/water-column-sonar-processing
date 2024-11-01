@@ -3,12 +3,9 @@ import zarr
 import numpy as np
 import xarray as xr
 from dotenv import load_dotenv, find_dotenv
-# import moto
-
 from typing import Any  # Callable
 from moto import mock_aws
 from unittest.mock import MagicMock
-
 import aiobotocore.awsrequest
 import aiobotocore.endpoint
 import aiohttp
@@ -16,25 +13,8 @@ import aiohttp.client_reqrep
 import aiohttp.typedefs
 import botocore.awsrequest
 import botocore.model
-
-from aws_manager.s3_manager import S3Manager
-from aws_manager.s3fs_manager import S3FSManager
-
-
-# import pytest
-
-# # ### ATTEMPT TWO #@###
-# from collections.abc import Awaitable, Callable, Iterator
-# from dataclasses import dataclass
-# from typing import TypeVar
-# import aiobotocore
-# import aiobotocore.endpoint
-# import botocore
-# import botocore.retries.standard
-# from aws_manager.s3_manager import S3Manager
-# from aws_manager.s3fs_manager import S3FSManager
-# from aws_manager.s3_manager import S3Manager
-# from aws_manager.s3fs_manager import S3FSManager
+from water_column_sonar_processing.aws.s3_manager import S3Manager
+from water_column_sonar_processing.aws.s3fs_manager import S3FSManager
 
 
 #######################################################
@@ -45,10 +25,8 @@ def setup_module():
     # https://docs.getmoto.org/en/latest/docs/server_mode.html
     # free_port = 5000
 
-
 def teardown_module():
     print('teardown')
-
 
 #####################################################################
 # ### ATTEMPT ONE #@###
@@ -254,7 +232,7 @@ def test_add_file(tmp_path):
 
     # --- Create Local Zarr Store --- #
     temporary_directory = str(tmp_path)
-    zarr_path = f'{temporary_directory}/example.zarr_manager'
+    zarr_path = f'{temporary_directory}/example.model'
     ds = xr.Dataset(
         {
             "a": (("y", "x"), np.random.rand(6).reshape(2, 3)),
@@ -267,23 +245,23 @@ def test_add_file(tmp_path):
     # --- Upload to S3 --- #
     s3fs_manager = S3FSManager()
     # TODO: just copy from a to b
-    # foo = s3_manager.upload_files_to_bucket(local_directory=zarr_path, object_prefix='ship/cruise/sensor/example.zarr_manager', bucket_name=test_bucket_name)
-    # s3_manager.upload_file(zarr_path + '/.zmetadata', test_bucket_name, 'ship/cruise/sensor/example.zarr_manager/.zmetadata')
+    # foo = s3_manager.upload_files_to_bucket(local_directory=zarr_path, object_prefix='ship/cruise/sensor/example.model', bucket_name=test_bucket_name)
+    # s3_manager.upload_file(zarr_path + '/.zmetadata', test_bucket_name, 'ship/cruise/sensor/example.model/.zmetadata')
 
     # s3fs_manager.upload_data(
     #     bucket_name=test_bucket_name,
     #     file_path=zarr_path,
-    #     file_name='ship/cruise/sensor/example.zarr_manager'
+    #     file_name='ship/cruise/sensor/example.model'
     # )
 
-    # s3_object = s3_manager.get(bucket_name=test_bucket_name, key="ship/cruise/sensor/example.zarr_manager/.zmetadata")
+    # s3_object = s3_manager.get(bucket_name=test_bucket_name, key="ship/cruise/sensor/example.model/.zmetadata")
     # body = s3_object.get()["Body"].read().decode("utf-8")
     # print(body)
 
     ### The file is there, trying to copy with boto3, then mount with s3fs.... incompatible version of s3fs
 
-    # assert s3_manager.folder_exists_and_not_empty(test_bucket_name, "/example.zarr_manager")
-    # assert s3fs_manager.exists(f"{test_bucket_name}/ship/cruise/sensor/example.zarr_manager")
+    # assert s3_manager.folder_exists_and_not_empty(test_bucket_name, "/example.model")
+    # assert s3fs_manager.exists(f"{test_bucket_name}/ship/cruise/sensor/example.model")
     #
     #
     # TODO: need to upload the file!!
@@ -296,13 +274,13 @@ def test_add_file(tmp_path):
     # TODO: get this working with s3 client
     s3fs_manager.upload_data(bucket_name=test_bucket_name, file_path=zarr_path, prefix="ship/cruise/sensor")
 
-    found = s3_manager.list_objects(test_bucket_name, 'ship/cruise/sensor/example.zarr_manager')
+    found = s3_manager.list_objects(test_bucket_name, 'ship/cruise/sensor/example.model')
     print(found)
-    s3_object = s3_manager.get(bucket_name=test_bucket_name, key="ship/cruise/sensor/example.zarr_manager/.zgroup")
+    s3_object = s3_manager.get(bucket_name=test_bucket_name, key="ship/cruise/sensor/example.model/.zgroup")
     body = s3_object.get()["Body"].read().decode("utf-8")
     print(body)
 
-    s3_store = s3fs_manager.s3_map(s3_zarr_store_path=f"s3://{test_bucket_name}/ship/cruise/sensor/example.zarr_manager")
+    s3_store = s3fs_manager.s3_map(s3_zarr_store_path=f"s3://{test_bucket_name}/ship/cruise/sensor/example.model")
 
     # --- Test S3Map Opening Zarr store with Zarr for Writing --- #
     cruise_zarr = zarr.open(store=s3_store, mode="r+")  # , synchronizer=synchronizer) # TODO: test synchronizer

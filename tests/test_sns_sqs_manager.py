@@ -2,15 +2,8 @@ import os
 import json
 from dotenv import load_dotenv, find_dotenv
 from moto import mock_aws
-from aws_manager.sns_manager import SNSManager
-from aws_manager.sqs_manager import SQSManager
-
-
-# from aws_manager.sns_manager import SNSManager
-
-
-# from aws_manager.sns_manager import SNSManager
-# from aws_manager.sqs_manager import SQSManager
+from water_column_sonar_processing.aws.sns_manager import SNSManager
+from water_column_sonar_processing.aws.sqs_manager import SQSManager
 
 
 #######################################################

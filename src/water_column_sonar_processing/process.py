@@ -1,13 +1,13 @@
 import os
 import json
 import numpy as np
-from aws_manager.s3_manager import S3Manager
-from aws_manager.s3fs_manager import S3FSManager
-from aws_manager.sns_manager import SNSManager
-from aws_manager.dynamodb_manager import DynamoDBManager
+from aws.s3_manager import S3Manager
+from aws.s3fs_manager import S3FSManager
+from aws.sns_manager import SNSManager
+from aws.dynamodb_manager import DynamoDBManager
 
 ###########################################################
-class Model:
+class Process:
     #######################################################
     def __init__(
             self,
@@ -87,7 +87,7 @@ class Model:
                 ':sh': {'S': ship_name},
                 ':st': {'S': '2006-04-06T11:34:07.288Z'},
                 ':zb': {'S': 'r2d2-dev-echofish2-118234403147-echofish-dev-output'},
-                ':zp': {'S': 'level_1/David_Starr_Jordan/DS0604/EK60/DSJ0604-D20060406-T113407.zarr_manager'},
+                ':zp': {'S': 'level_1/David_Starr_Jordan/DS0604/EK60/DSJ0604-D20060406-T113407.model'},
             },
             update_expression=(
                 'SET '

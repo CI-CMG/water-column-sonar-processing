@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
-from aws_manager.s3_manager import S3Manager
+from aws.s3_manager import S3Manager
 
 class IndexManager:
 
@@ -193,7 +193,7 @@ class IndexManager:
         return calibration_statuses
 
     #################################################################
-    # def index_manager(  # TODO: get rid of this?
+    # def index(  # TODO: get rid of this?
     #         self
     # ):
     #     start_time = datetime.now()  # used for benchmarking
