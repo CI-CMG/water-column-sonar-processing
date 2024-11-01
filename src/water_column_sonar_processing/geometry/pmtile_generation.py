@@ -19,7 +19,7 @@ class PMTileGeneration(object):
     def __init__(
             self,
     ):
-        pass
+        print('123')
 
     #######################################################
     def generate_geojson_feature_collection(self):

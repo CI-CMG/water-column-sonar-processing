@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "water_column_sonar_processing"
-version = "0.0.4"
+version = "0.0.5"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
@@ -27,7 +27,7 @@ Issues = "https://github.com/CI-CMG/water-column-sonar-processing/issues"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q"
+#addopts = "-ra -q"
 testpaths = [
     "tests",
 ]

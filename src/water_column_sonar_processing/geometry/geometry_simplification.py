@@ -31,7 +31,7 @@
 
     
 """
-class GeometrySimplification(object):
+class GeometrySimplification:
     # TODO: in the future move to standalone library
     #######################################################
     def __init__(
