@@ -3,5 +3,5 @@
 build
 mock~=5.1.0
 pyinstaller==6.3.0
-setuptools==65.6.3
+setuptools==70.0.0
 twine
