@@ -75,6 +75,11 @@ python -m build
 python -m twine upload --repository pypi dist/*
 ```
 
+# Pre Commit Hook
+https://dev.to/rafaelherik/using-trufflehog-and-pre-commit-hook-to-prevent-secret-exposure-edo
+```
+pre-commit install --allow-missing-config
+```
 
 # Linting
 Ruff
