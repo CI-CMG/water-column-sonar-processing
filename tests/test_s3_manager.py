@@ -1,20 +1,24 @@
 import os
+
+from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
-from dotenv import load_dotenv, find_dotenv
+
 from water_column_sonar_processing.aws.s3_manager import S3Manager, chunked
 
-input_bucket_name = 'example_input_bucket'
-output_bucket_name = 'example_output_bucket'
+input_bucket_name = "example_input_bucket"
+output_bucket_name = "example_output_bucket"
+
 
 #######################################################
 def setup_module():
-    print('setup')
-    env_file = find_dotenv('.env-test')
+    print("setup")
+    env_file = find_dotenv(".env-test")
     load_dotenv(dotenv_path=env_file, override=True)
 
 
 def teardown_module():
-    print('teardown')
+    print("teardown")
+
 
 #######################################################
 @mock_aws
@@ -29,11 +33,7 @@ def test_s3_manager():
     # s3.create_bucket(bucket_name=test_bucket_name)
 
     # --- tests the src --- #
-    s3_manager.put(
-        bucket_name=test_bucket_name,
-        key="the_key",
-        body="the_body"
-    )
+    s3_manager.put(bucket_name=test_bucket_name, key="the_key", body="the_body")
 
     s3_object = s3_manager.get(bucket_name=test_bucket_name, key="the_key")
 
@@ -44,6 +44,7 @@ def test_s3_manager():
     all_buckets = s3_manager.list_buckets()
     print(all_buckets)
 
+
 #######################################################
 # TODO: Tests
 #######################################################
@@ -52,6 +53,7 @@ def test_chunked():
     objects_to_process = [1, 2, 3, 4]
     for batch in chunked(ll=objects_to_process, n=2):
         assert len(batch) == 2
+
 
 #######################################################
 @mock_aws
@@ -63,40 +65,51 @@ def test_create_bucket():
     s3_manager.create_bucket(bucket_name=test_bucket_name)
     s3_manager.create_bucket(bucket_name="test456")
 
-    assert len(s3_manager.list_buckets()['Buckets']) == 3
-    assert "test-input-bucket" in [i["Name"] for i in s3_manager.list_buckets()['Buckets']]
+    assert len(s3_manager.list_buckets()["Buckets"]) == 3
+    assert "test-input-bucket" in [
+        i["Name"] for i in s3_manager.list_buckets()["Buckets"]
+    ]
+
 
 @mock_aws
 def test_list_buckets():
     pass
 
+
 @mock_aws
 def test_upload_files_with_thread_pool_executor():
     pass
+
 
 @mock_aws
 def test_list_objects():
     pass
 
+
 @mock_aws
 def test_get_child_objects():
     pass
+
 
 @mock_aws
 def test_download_file():
     pass
 
+
 @mock_aws
 def test_delete_object():
     pass
+
 
 @mock_aws
 def test_delete_objects():
     pass
 
+
 @mock_aws
 def test_put():
     pass
+
 
 @mock_aws
 def test_get():

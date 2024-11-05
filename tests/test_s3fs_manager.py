@@ -1,11 +1,7 @@
 import os
-import zarr
-import numpy as np
-import xarray as xr
-from dotenv import load_dotenv, find_dotenv
 from typing import Any  # Callable
-from moto import mock_aws
 from unittest.mock import MagicMock
+
 import aiobotocore.awsrequest
 import aiobotocore.endpoint
 import aiohttp
@@ -13,20 +9,28 @@ import aiohttp.client_reqrep
 import aiohttp.typedefs
 import botocore.awsrequest
 import botocore.model
+import numpy as np
+import xarray as xr
+import zarr
+from dotenv import find_dotenv, load_dotenv
+from moto import mock_aws
+
 from water_column_sonar_processing.aws.s3_manager import S3Manager
 from water_column_sonar_processing.aws.s3fs_manager import S3FSManager
 
 
 #######################################################
 def setup_module():
-    print('setup')
-    env_file = find_dotenv('.env-test')
+    print("setup")
+    env_file = find_dotenv(".env-test")
     load_dotenv(dotenv_path=env_file, override=True)
     # https://docs.getmoto.org/en/latest/docs/server_mode.html
     # free_port = 5000
 
+
 def teardown_module():
-    print('teardown')
+    print("teardown")
+
 
 #####################################################################
 # ### ATTEMPT ONE #@###
@@ -36,13 +40,16 @@ class MockAWSResponse(aiobotocore.awsrequest.AioAWSResponse):
     https://github.com/aio-libs/aiobotocore/issues/755
     https://gist.github.com/giles-betteromics/12e68b88e261402fbe31c2e918ea4168
     """
+
     def __init__(self, response: botocore.awsrequest.AWSResponse):
         self._moto_response = response
         self.status_code = response.status_code
         self.raw = MockHttpClientResponse(response)
+
     # adapt async methods to use moto's response
     async def _content_prop(self) -> bytes:
         return self._moto_response.content
+
     async def _text_prop(self) -> str:
         return self._moto_response.text
 
@@ -52,6 +59,7 @@ class MockHttpClientResponse(aiohttp.client_reqrep.ClientResponse):
     Mocked HTP Response.
     See <MockAWSResponse> Notes
     """
+
     def __init__(self, response: botocore.awsrequest.AWSResponse):
         """
         Mocked Response Init.
@@ -69,7 +77,7 @@ class MockHttpClientResponse(aiohttp.client_reqrep.ClientResponse):
 
     @property
     def raw_headers(self) -> Any:
-    # def raw_headers(self) -> aiohttp.typedefs.RawHeaders:
+        # def raw_headers(self) -> aiohttp.typedefs.RawHeaders:
         """
         Return the headers encoded the way that aiobotocore expects them.
         """
@@ -77,7 +85,6 @@ class MockHttpClientResponse(aiohttp.client_reqrep.ClientResponse):
             k.encode("utf-8"): str(v).encode("utf-8")
             for k, v in self.response.headers.items()
         }.items()
-
 
 
 # @pytest.fixture(scope="session", autouse=True)
@@ -232,7 +239,7 @@ def test_add_file(tmp_path):
 
     # --- Create Local Zarr Store --- #
     temporary_directory = str(tmp_path)
-    zarr_path = f'{temporary_directory}/example.model'
+    zarr_path = f"{temporary_directory}/example.model"
     ds = xr.Dataset(
         {
             "a": (("y", "x"), np.random.rand(6).reshape(2, 3)),
@@ -272,23 +279,35 @@ def test_add_file(tmp_path):
     #     remote_directory="ship/cruise/sensor",
     # )
     # TODO: get this working with s3 client
-    s3fs_manager.upload_data(bucket_name=test_bucket_name, file_path=zarr_path, prefix="ship/cruise/sensor")
+    s3fs_manager.upload_data(
+        bucket_name=test_bucket_name, file_path=zarr_path, prefix="ship/cruise/sensor"
+    )
 
-    found = s3_manager.list_objects(test_bucket_name, 'ship/cruise/sensor/example.model')
+    found = s3_manager.list_objects(
+        test_bucket_name, "ship/cruise/sensor/example.model"
+    )
     print(found)
-    s3_object = s3_manager.get(bucket_name=test_bucket_name, key="ship/cruise/sensor/example.model/.zgroup")
+    s3_object = s3_manager.get(
+        bucket_name=test_bucket_name, key="ship/cruise/sensor/example.model/.zgroup"
+    )
     body = s3_object.get()["Body"].read().decode("utf-8")
     print(body)
 
-    s3_store = s3fs_manager.s3_map(s3_zarr_store_path=f"s3://{test_bucket_name}/ship/cruise/sensor/example.model")
+    s3_store = s3fs_manager.s3_map(
+        s3_zarr_store_path=f"s3://{test_bucket_name}/ship/cruise/sensor/example.model"
+    )
 
     # --- Test S3Map Opening Zarr store with Zarr for Writing --- #
-    cruise_zarr = zarr.open(store=s3_store, mode="r+")  # , synchronizer=synchronizer) # TODO: test synchronizer
+    cruise_zarr = zarr.open(
+        store=s3_store, mode="r+"
+    )  # , synchronizer=synchronizer) # TODO: test synchronizer
     print(cruise_zarr.info)
 
     # --- Test S3Map Opening Zarr store with Xarray for Reading --- #
     # TODO: test SYNCHRONIZER as shared file in output bucket mounted via s3fs
-    s3_zarr_xr = xr.open_zarr(store=s3_store, consolidated=None)  # synchronizer=SYNCHRONIZER
+    s3_zarr_xr = xr.open_zarr(
+        store=s3_store, consolidated=None
+    )  # synchronizer=SYNCHRONIZER
     print(s3_zarr_xr.info)
 
     assert s3_zarr_xr.a.shape == (2, 3)
@@ -299,6 +318,7 @@ def test_add_file(tmp_path):
     assert s3_zarr_xr.a[0, 1].values == 42
 
     # server.stop()
+
 
 #####################################################################
 #####################################################################

@@ -1,5 +1,5 @@
 import os
-# import json
+
 import boto3
 
 
@@ -7,21 +7,19 @@ import boto3
 class SNSManager:
     #######################################################
     def __init__(
-            self,
+        self,
     ):
         self.__sns_region = os.environ.get("AWS_REGION", default="us-east-1")
         self.__sns_session = boto3.Session(
-            aws_access_key_id=os.environ.get('ACCESS_KEY_ID'),
-            aws_secret_access_key=os.environ.get('SECRET_ACCESS_KEY'),
-            region_name=self.__sns_region
+            aws_access_key_id=os.environ.get("ACCESS_KEY_ID"),
+            aws_secret_access_key=os.environ.get("SECRET_ACCESS_KEY"),
+            region_name=self.__sns_region,
         )
         self.__sns_resource = self.__sns_session.resource(
-            service_name="sns",
-            region_name=self.__sns_region
+            service_name="sns", region_name=self.__sns_region
         )
         self.__sns_client = self.__sns_session.client(
-            service_name="sns",
-            region_name=self.__sns_region
+            service_name="sns", region_name=self.__sns_region
         )
 
     #######################################################
@@ -47,13 +45,12 @@ class SNSManager:
     #######################################################
     def subscribe(self, topic_arn, endpoint):
         self.__sns_client.subscribe(
-            TopicArn=topic_arn,
-            Protocol='sqs',
-            Endpoint=endpoint
+            TopicArn=topic_arn, Protocol="sqs", Endpoint=endpoint
         )
 
     #######################################################
     def list_topics(self):
         print(self.__sns_client.list_topics())
+
 
 ###########################################################

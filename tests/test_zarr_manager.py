@@ -1,23 +1,28 @@
-import zarr
-import numcodecs
-from moto import mock_aws
-from dotenv import load_dotenv, find_dotenv
 import os
+
+import numcodecs
 import numpy as np
 import xarray as xr
+import zarr
+from dotenv import find_dotenv, load_dotenv
+from moto import mock_aws
+
 from water_column_sonar_processing.aws.s3_manager import S3Manager
 from water_column_sonar_processing.model.zarr_manager import ZarrManager
 
-
 TEMPDIR = "/tmp"
+
+
 #######################################################
 def setup_module():
-    print('setup')
-    env_file = find_dotenv('.env-test')
+    print("setup")
+    env_file = find_dotenv(".env-test")
     load_dotenv(dotenv_path=env_file, override=True)
 
+
 def teardown_module():
-    print('teardown')
+    print("teardown")
+
 
 #######################################################
 @mock_aws
@@ -42,7 +47,7 @@ def test_zarr_manager(tmp_path=TEMPDIR):
         width=1201,  # number of ping samples recorded
         min_echo_range=0.50,
         max_echo_range=250.00,  # maximum depth found in cruise
-        calibration_status=True
+        calibration_status=True,
     )
 
     assert os.path.exists(f"{temporary_directory}/{cruise_name}.zarr")
@@ -53,41 +58,50 @@ def test_zarr_manager(tmp_path=TEMPDIR):
 
     # synchronizer = model.ProcessSynchronizer(f"/mnt/model/{ship_name}_{cruise_name}.sync")
 
-    cruise_zarr = zarr.open(store=f"{temporary_directory}/{cruise_name}.zarr", mode="r")  # synchronizer=synchronizer)
+    cruise_zarr = zarr.open(
+        store=f"{temporary_directory}/{cruise_name}.zarr", mode="r"
+    )  # synchronizer=synchronizer)
     print(cruise_zarr.info)
 
-    assert cruise_zarr.Sv.shape == (501, 1201, len(frequencies))  # (depth, time, frequency)
+    assert cruise_zarr.Sv.shape == (
+        501,
+        1201,
+        len(frequencies),
+    )  # (depth, time, frequency)
     assert cruise_zarr.Sv.chunks == (512, 512, 1)  # TODO: use enum?
 
     # Open Zarr store with Xarray
     # TODO: move to separate test
-    file_xr = xr.open_zarr(store=f"{temporary_directory}/{cruise_name}.zarr", consolidated=None)  # synchronizer=SYNCHRONIZER)
+    file_xr = xr.open_zarr(
+        store=f"{temporary_directory}/{cruise_name}.zarr", consolidated=None
+    )  # synchronizer=SYNCHRONIZER)
     print(file_xr)
 
     # for newly initialized model store all the timestamps will be 0 epoch time
-    assert file_xr.time.values[0] == np.datetime64('1970-01-01T00:00:00.000000000')
-    assert str(file_xr.time.values[0].dtype) == 'datetime64[ns]'
+    assert file_xr.time.values[0] == np.datetime64("1970-01-01T00:00:00.000000000")
+    assert str(file_xr.time.values[0].dtype) == "datetime64[ns]"
 
     # TODO: test to ensure the dimensions are in proper order
-    assert file_xr.Sv.dims == ('depth', 'time', 'frequency')
+    assert file_xr.Sv.dims == ("depth", "time", "frequency")
     assert file_xr.Sv.shape == (501, 1201, 4)
 
-    assert file_xr.attrs['processing_software_name'] == 'echofish'
-    assert file_xr.attrs['calibration_status']  # Note: calibration status default is False
-    assert file_xr.attrs['ship_name'] == 'test_ship'
-    assert file_xr.attrs['cruise_name'] == 'test_cruise'
-    assert file_xr.attrs['sensor_name'] == 'EK60'
+    assert file_xr.attrs["processing_software_name"] == "echofish"
+    assert file_xr.attrs[
+        "calibration_status"
+    ]  # Note: calibration status default is False
+    assert file_xr.attrs["ship_name"] == "test_ship"
+    assert file_xr.attrs["cruise_name"] == "test_cruise"
+    assert file_xr.attrs["sensor_name"] == "EK60"
 
-    assert file_xr.Sv.dtype == 'float32'
-    assert file_xr.latitude.dtype == 'float32'
-    assert file_xr.longitude.dtype == 'float32'
-    assert file_xr.depth.dtype == 'float32'
+    assert file_xr.Sv.dtype == "float32"
+    assert file_xr.latitude.dtype == "float32"
+    assert file_xr.longitude.dtype == "float32"
+    assert file_xr.depth.dtype == "float32"
     assert file_xr.time.dtype == "<M8[ns]"
     assert file_xr.frequency.dtype == "float64"
 
     # TODO: test depths
     # TODO: test compression
-
 
 
 #######################################################
@@ -118,7 +132,7 @@ def test_open_zarr_with_zarr_read_write(tmp_path):
         # height=123,
         min_echo_range=0.5,
         max_echo_range=250.0,  # maximum depth found in cruise
-        calibration_status=True
+        calibration_status=True,
     )
 
     # TODO: copy store to bucket
@@ -155,10 +169,11 @@ def test_open_zarr_with_xarray(tmp_path):
 
     zarr_manager = ZarrManager()
 
-    height = len(zarr_manager.get_depth_values(
-        min_echo_range=min_echo_range,
-        max_echo_range=max_echo_range
-    ))
+    height = len(
+        zarr_manager.get_depth_values(
+            min_echo_range=min_echo_range, max_echo_range=max_echo_range
+        )
+    )
 
     zarr_manager.create_zarr_store(
         path=temporary_directory,
@@ -170,7 +185,7 @@ def test_open_zarr_with_xarray(tmp_path):
         # height=height,  # TODO: is this redundant with the min & max echo range?
         min_echo_range=min_echo_range,
         max_echo_range=max_echo_range,
-        calibration_status=True
+        calibration_status=True,
     )
 
     # copy store to bucket
@@ -182,7 +197,7 @@ def test_open_zarr_with_xarray(tmp_path):
 
     # open model store with model
 
-    #assert root.Sv.shape == (501, 1201, 4)
+    # assert root.Sv.shape == (501, 1201, 4)
 
 
 #######################################################
@@ -203,6 +218,7 @@ def test__get_depth_values_shallow_and_small_epsilon():
     assert depths[0] == 0.17
     assert depths[-1] == 101
 
+
 ### Test 2 of 5 for depth values ###
 def test__get_depth_values_shallow_and_large_epsilon():
     zarr_manager = ZarrManager()
@@ -214,6 +230,7 @@ def test__get_depth_values_shallow_and_large_epsilon():
     assert depths[0] == 1.31
     assert depths[-1] == 24
 
+
 ### Test 3 of 5 for depth values ###
 def test__get_depth_values_deep_and_small_epsilon():
     zarr_manager = ZarrManager()
@@ -224,6 +241,7 @@ def test__get_depth_values_deep_and_small_epsilon():
     assert len(depths) == 2011
     assert depths[0] == 0.11
     assert depths[-1] == 221.1  # TODO: do we want this to be np.ceil(x)
+
 
 ### Test 4 of 5 for depth values ###
 def test__get_depth_values_deep_and_large_epsilon():
@@ -237,16 +255,18 @@ def test__get_depth_values_deep_and_large_epsilon():
     # TODO: would it be better to have whole numbers?
     assert depths[-1] == 222.2
 
+
 ### Test 5 of 5 for depth values ###
 def test__get_depth_values_half_meter():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
         min_echo_range=0.50,
-        max_echo_range=250.,
+        max_echo_range=250.0,
     )
     assert len(depths) == 501
     assert depths[0] == 0.50
     assert depths[-1] == 250
+
 
 #######################################################
 #######################################################

@@ -1,10 +1,11 @@
 from pathlib import Path
-import numpy as np
+
 import geopandas
+import numpy as np
 import pandas as pd
 
-from water_column_sonar_processing.utility.cleaner import Cleaner
 from water_column_sonar_processing.aws.s3_manager import S3Manager
+from water_column_sonar_processing.utility.cleaner import Cleaner
 
 """
 //  [Decimal / Places / Degrees	/ Object that can be recognized at scale / N/S or E/W at equator, E/W at 23N/S, E/W at 45N/S, E/W at 67N/S]
@@ -22,28 +23,32 @@ from water_column_sonar_processing.aws.s3_manager import S3Manager
 class GeometryManager:
     #######################################################
     def __init__(
-            self,
+        self,
     ):
         self.DECIMAL_PRECISION = 5  # precision for GPS coordinates
         self.SIMPLIFICATION_TOLERANCE = 0.0001  # RDP simplification to street level
 
     #######################################################
     def read_echodata_gps_data(
-            self,
-            echodata,
-            ship_name,
-            cruise_name,
-            sensor_name,
-            file_name,
-            write_geojson=True,
+        self,
+        echodata,
+        ship_name,
+        cruise_name,
+        sensor_name,
+        file_name,
+        write_geojson=True,
     ) -> tuple:
         file_name_stem = Path(file_name).stem
         geo_json_name = f"{file_name_stem}.json"
 
-        print('Getting GPS data from echopype object.')
+        print("Getting GPS data from echopype object.")
         try:
-            latitude = np.round(echodata.platform.latitude.values, self.DECIMAL_PRECISION)
-            longitude = np.round(echodata.platform.longitude.values, self.DECIMAL_PRECISION)
+            latitude = np.round(
+                echodata.platform.latitude.values, self.DECIMAL_PRECISION
+            )
+            longitude = np.round(
+                echodata.platform.longitude.values, self.DECIMAL_PRECISION
+            )
 
             # RE: time coordinates: https://github.com/OSOceanAcoustics/echopype/issues/656#issue-1219104771
             # 'nmea_times' are times from the nmea datalogger associated with GPS
@@ -54,10 +59,15 @@ class GeometryManager:
             time1 = echodata.environment.time1.values
 
             if len(nmea_times) < len(time1):
-                raise Exception("Problem: Not enough NMEA times available to extrapolate time1.")
+                raise Exception(
+                    "Problem: Not enough NMEA times available to extrapolate time1."
+                )
 
             # Align 'sv_times' to 'nmea_times'
-            if not (np.all(time1[:-1] <= time1[1:]) and np.all(nmea_times[:-1] <= nmea_times[1:])):
+            if not (
+                np.all(time1[:-1] <= time1[1:])
+                and np.all(nmea_times[:-1] <= nmea_times[1:])
+            ):
                 raise Exception("Problem: NMEA times are not sorted.")
 
             # Finds the indices where 'v' can be inserted just to the right of 'a'
@@ -67,65 +77,83 @@ class GeometryManager:
             lon = longitude[indices]
             lon[indices < 0] = np.nan
 
-            if not (np.all(lat[~np.isnan(lat)] >= -90.) and np.all(lat[~np.isnan(lat)] <= 90.) and np.all(lon[~np.isnan(lon)] >= -180.) and np.all(lon[~np.isnan(lon)] <= 180.)):
+            if not (
+                np.all(lat[~np.isnan(lat)] >= -90.0)
+                and np.all(lat[~np.isnan(lat)] <= 90.0)
+                and np.all(lon[~np.isnan(lon)] >= -180.0)
+                and np.all(lon[~np.isnan(lon)] <= 180.0)
+            ):
                 raise Exception("Problem: GPS Data falls outside allowed bounds.")
 
             # check for visits to null island
             null_island_indices = list(
-                set.intersection(set(np.where(np.abs(lat) < 1e-3)[0]), set(np.where(np.abs(lon) < 1e-3)[0]))
+                set.intersection(
+                    set(np.where(np.abs(lat) < 1e-3)[0]),
+                    set(np.where(np.abs(lon) < 1e-3)[0]),
+                )
             )
             lat[null_island_indices] = np.nan
             lon[null_island_indices] = np.nan
 
             # create requirement for minimum linestring size
-            MIN_ALLOWED_SIZE = 4  # don't want to process files with less than 4 data points
-            if len(lat[~np.isnan(lat)]) < MIN_ALLOWED_SIZE or len(lon[~np.isnan(lon)]) < MIN_ALLOWED_SIZE:
+            MIN_ALLOWED_SIZE = (
+                4  # don't want to process files with less than 4 data points
+            )
+            if (
+                len(lat[~np.isnan(lat)]) < MIN_ALLOWED_SIZE
+                or len(lon[~np.isnan(lon)]) < MIN_ALLOWED_SIZE
+            ):
                 raise Exception(
                     f"There was not enough data in lat or lon to create geojson, {len(lat[~np.isnan(lat)])} found, less than {MIN_ALLOWED_SIZE}."
                 )
 
             # https://osoceanacoustics.github.io/echopype-examples/echopype_tour.html
-            gps_df = pd.DataFrame({
-                'latitude': lat,
-                'longitude': lon,
-                'time': time1
-            }).set_index(['time']).fillna(0)
+            gps_df = (
+                pd.DataFrame({"latitude": lat, "longitude": lon, "time": time1})
+                .set_index(["time"])
+                .fillna(0)
+            )
 
             # Note: We set np.nan to 0,0 so downstream missing values can be omitted
             gps_gdf = geopandas.GeoDataFrame(
                 gps_df,
                 geometry=geopandas.points_from_xy(
-                    gps_df['longitude'],
-                    gps_df['latitude']
+                    gps_df["longitude"], gps_df["latitude"]
                 ),
-                crs="epsg:4326"
+                crs="epsg:4326",
             )
             # Note: We set np.nan to 0,0 so downstream missing values can be omitted
 
             geo_json_line = gps_gdf.to_json()
             if write_geojson:
-                print('Creating local copy of geojson file.')
+                print("Creating local copy of geojson file.")
                 with open(geo_json_name, "w") as write_file:
                     write_file.write(geo_json_line)
 
-                geo_json_prefix = f"spatial/geojson/{ship_name}/{cruise_name}/{sensor_name}"
+                geo_json_prefix = (
+                    f"spatial/geojson/{ship_name}/{cruise_name}/{sensor_name}"
+                )
 
-                print('Checking s3 and deleting any existing GeoJSON file.')
+                print("Checking s3 and deleting any existing GeoJSON file.")
                 s3_manager = S3Manager()
-                s3_objects = s3_manager.list_nodd_objects(prefix=f"{geo_json_prefix}/{geo_json_name}")
+                s3_objects = s3_manager.list_nodd_objects(
+                    prefix=f"{geo_json_prefix}/{geo_json_name}"
+                )
                 if len(s3_objects) > 0:
-                    print('GeoJSON already exists in s3, deleting existing and continuing.')
+                    print(
+                        "GeoJSON already exists in s3, deleting existing and continuing."
+                    )
                     s3_manager.delete_nodd_objects(objects=s3_objects)
 
-                print('Upload GeoJSON to s3.')
+                print("Upload GeoJSON to s3.")
                 s3_manager.upload_nodd_file(
                     file_name=geo_json_name,  # file_name
-                    key=f"{geo_json_prefix}/{geo_json_name}"  # key
+                    key=f"{geo_json_prefix}/{geo_json_name}",  # key
                 )
 
                 # TODO: delete geo_json file
                 cleaner = Cleaner()
-                cleaner.delete_local_files(file_types=['*.json'])
+                cleaner.delete_local_files(file_types=["*.json"])
 
             #################################################################
             # TODO: simplify with shapely
@@ -144,7 +172,9 @@ class GeometryManager:
             #################################################################
             # GeoJSON FeatureCollection with IDs as "time"
         except Exception as err:
-            print(f'Exception encountered extracting gps coordinates creating geojson: {err}')
+            print(
+                f"Exception encountered extracting gps coordinates creating geojson: {err}"
+            )
             raise
         # Note: returned lat/lon values can include np.nan because they need to be aligned with
         # the Sv data! GeoJSON needs simplification but has been filtered.
@@ -154,12 +184,12 @@ class GeometryManager:
 
     #######################################################
     def read_s3_geo_json(
-            self,
-            ship_name,
-            cruise_name,
-            sensor_name,
-            file_name_stem,
-            input_xr_zarr_store,
+        self,
+        ship_name,
+        cruise_name,
+        sensor_name,
+        file_name_stem,
+        input_xr_zarr_store,
     ):
         try:
             s3_manager = S3Manager()
@@ -170,25 +200,26 @@ class GeometryManager:
                 file_name_stem=file_name_stem,
             )
             ###
-            geospatial = geopandas.GeoDataFrame.from_features(geo_json['features']).set_index(
-                pd.json_normalize(geo_json["features"])["id"].values
-            )
+            geospatial = geopandas.GeoDataFrame.from_features(
+                geo_json["features"]
+            ).set_index(pd.json_normalize(geo_json["features"])["id"].values)
             null_island_indices = list(
                 set.intersection(
                     set(np.where(np.abs(geospatial.latitude.values) < 1e-3)[0]),
-                    set(np.where(np.abs(geospatial.longitude.values) < 1e-3)[0])
+                    set(np.where(np.abs(geospatial.longitude.values) < 1e-3)[0]),
                 )
             )
             geospatial.iloc[null_island_indices] = np.nan
             ###
-            geospatial_index = geospatial.dropna().index.values.astype('datetime64[ns]')
+            geospatial_index = geospatial.dropna().index.values.astype("datetime64[ns]")
             aa = input_xr_zarr_store.ping_time.values.tolist()
             vv = geospatial_index.tolist()
             indices = np.searchsorted(a=aa, v=vv)
 
             return indices, geospatial
         except Exception as err:  # Failure
-            print(f'Exception encountered reading s3 GeoJSON: {err}')
+            print(f"Exception encountered reading s3 GeoJSON: {err}")
             raise
+
 
 ###########################################################

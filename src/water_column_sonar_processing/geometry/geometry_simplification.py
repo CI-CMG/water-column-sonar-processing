@@ -31,51 +31,52 @@
 
     
 """
+
+
 class GeometrySimplification:
     # TODO: in the future move to standalone library
     #######################################################
     def __init__(
-            self,
+        self,
     ):
         pass
 
     #######################################################
     def speed_check(
-            self,
-            speed_knots=50,
+        self,
+        speed_knots=50,
     ) -> None:
         print(speed_knots)
         pass
 
     def remove_null_island_values(
-            self,
-            epsilon=1e-5,
+        self,
+        epsilon=1e-5,
     ) -> None:
         print(epsilon)
         pass
 
     def stream_geometry(
-            self,
+        self,
     ) -> None:
         pass
 
     def break_linestring_into_multi_linestring(
-            self,
+        self,
     ) -> None:
         # For any line-strings across the antimeridian, break into multilinestring
         pass
 
     def simplify(
-            self,
+        self,
     ) -> None:
         pass
 
-    def kalman_filter(
-            self
-    ):
+    def kalman_filter(self):
         # for cruises with bad signal, filter so that
         pass
 
     #######################################################
+
 
 ###########################################################

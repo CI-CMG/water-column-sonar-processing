@@ -1,6 +1,6 @@
 import os
-import s3fs
 
+import s3fs
 
 # TODO: S3FS_LOGGING_LEVEL=DEBUG
 
@@ -8,12 +8,12 @@ import s3fs
 class S3FSManager:
     #####################################################################
     def __init__(
-            self,
+        self,
     ):
         self.__s3_region = os.environ.get("AWS_REGION", default="us-east-1")
         self.s3fs = s3fs.S3FileSystem(
-            key=os.environ.get('OUTPUT_BUCKET_ACCESS_KEY'),
-            secret=os.environ.get('OUTPUT_BUCKET_SECRET_ACCESS_KEY'),
+            key=os.environ.get("OUTPUT_BUCKET_ACCESS_KEY"),
+            secret=os.environ.get("OUTPUT_BUCKET_SECRET_ACCESS_KEY"),
             # asynchronous=True
             # use_ssl=False,
             # skip_instance_cache=True,
@@ -24,10 +24,7 @@ class S3FSManager:
         )
 
     #####################################################################
-    def add_file(
-            self,
-            filename
-    ):
+    def add_file(self, filename):
         full_path = f"{os.getenv('OUTPUT_BUCKET_NAME')}/testing/{filename}"
         print(full_path)
 
@@ -37,12 +34,7 @@ class S3FSManager:
         print(ff)
 
     #####################################################################
-    def upload_data(
-            self,
-            bucket_name,
-            file_path,
-            prefix
-    ):
+    def upload_data(self, bucket_name, file_path, prefix):
         # TODO: this works in theory but use boto3 to upload files
         s3_path = f"s3://{bucket_name}/{prefix}/"
         s3_file_system = self.s3fs
@@ -50,18 +42,20 @@ class S3FSManager:
 
     #####################################################################
     def s3_map(
-            self,
-            s3_zarr_store_path,  # f's3://{bucket}/{input_zarr_path}'
+        self,
+        s3_zarr_store_path,  # f's3://{bucket}/{input_zarr_path}'
     ):
         # The "s3_zarr_store_path" is defined as f's3://{bucket}/{input_zarr_path}'
         # create=False, not false because will be writing
         # return s3fs.S3Map(root=s3_zarr_store_path, s3=self.s3fs, check=True)
-        return s3fs.S3Map(root=s3_zarr_store_path, s3=self.s3fs)  # create=False, not false because will be writing
+        return s3fs.S3Map(
+            root=s3_zarr_store_path, s3=self.s3fs
+        )  # create=False, not false because will be writing
 
     #####################################################################
     def exists(
-            self,
-            geo_json_s3_path,
+        self,
+        geo_json_s3_path,
     ):
         s3_file_system = self.s3fs
         return s3_file_system.exists(path=geo_json_s3_path)

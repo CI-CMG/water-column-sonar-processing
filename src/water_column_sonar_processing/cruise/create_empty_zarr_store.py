@@ -1,11 +1,12 @@
 import os
+
 import numcodecs
 import numpy as np
 
-from water_column_sonar_processing.utility.cleaner import Cleaner
 from water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
 from water_column_sonar_processing.aws.s3_manager import S3Manager
 from water_column_sonar_processing.model.zarr_manager import ZarrManager
+from water_column_sonar_processing.utility.cleaner import Cleaner
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)
@@ -15,10 +16,11 @@ numcodecs.blosc.set_nthreads(1)
 # ZARR_V3_EXPERIMENTAL_API = 1
 # creates the latlon data: foo = ep.consolidate.add_location(ds_Sv, echodata)
 
+
 class CreateEmptyZarrStore:
     #######################################################
     def __init__(
-            self,
+        self,
     ):
         self.__overwrite = True
         self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
@@ -27,18 +29,20 @@ class CreateEmptyZarrStore:
     #######################################################
 
     def upload_zarr_store_to_s3(
-            self,
-            local_directory: str,
-            object_prefix: str,
-            cruise_name: str,
+        self,
+        local_directory: str,
+        object_prefix: str,
+        cruise_name: str,
     ) -> None:
-        print('uploading model store to s3')
+        print("uploading model store to s3")
         s3_manager = S3Manager()
         #
-        print('Starting upload with thread pool executor.')
+        print("Starting upload with thread pool executor.")
         # # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
         all_files = []
-        for subdir, dirs, files in os.walk(f"{local_directory}/{cruise_name}.zarr_manager"):
+        for subdir, dirs, files in os.walk(
+            f"{local_directory}/{cruise_name}.zarr_manager"
+        ):
             for file in files:
                 local_path = os.path.join(subdir, file)
                 # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.model/.zattrs'
@@ -49,17 +53,17 @@ class CreateEmptyZarrStore:
         s3_manager.upload_files_with_thread_pool_executor(
             all_files=all_files,
         )
-        print('Done uploading with thread pool executor.')
+        print("Done uploading with thread pool executor.")
         # TODO: move to common place
 
     #######################################################
     def create_cruise_level_zarr_store(
-            self,
-            ship_name: str,
-            cruise_name: str,
-            sensor_name: str,
-            table_name: str,
-            tempdir: str,
+        self,
+        ship_name: str,
+        cruise_name: str,
+        sensor_name: str,
+        table_name: str,
+        tempdir: str,
     ) -> None:
         try:
             # HB0806 - 123, HB0903 - 220
@@ -70,7 +74,7 @@ class CreateEmptyZarrStore:
                 table_name=table_name,
                 ship_name=ship_name,
                 cruise_name=cruise_name,
-                sensor_name=sensor_name
+                sensor_name=sensor_name,
             )
 
             # TODO: filter the dataframe just for enums >= LEVEL_1_PROCESSING
@@ -79,20 +83,32 @@ class CreateEmptyZarrStore:
             # TODO: VERIFY GEOJSON EXISTS as prerequisite!!!
 
             print(f"DataFrame shape: {df.shape}")
-            cruise_channels = list(set([i for sublist in df['CHANNELS'].dropna() for i in sublist]))
+            cruise_channels = list(
+                set([i for sublist in df["CHANNELS"].dropna() for i in sublist])
+            )
             cruise_channels.sort()
 
-            consolidated_zarr_width = np.sum(df['NUM_PING_TIME_DROPNA'].dropna().astype(int))
+            consolidated_zarr_width = np.sum(
+                df["NUM_PING_TIME_DROPNA"].dropna().astype(int)
+            )
 
             # [3] calculate the max/min measurement resolutions for the whole cruise
-            cruise_min_echo_range = float(np.min(df['MIN_ECHO_RANGE'].dropna().astype(float)))
+            cruise_min_echo_range = float(
+                np.min(df["MIN_ECHO_RANGE"].dropna().astype(float))
+            )
 
             # [4] calculate the maximum of the max depth values
-            cruise_max_echo_range = float(np.max(df['MAX_ECHO_RANGE'].dropna().astype(float)))
-            print(f"cruise_min_echo_range: {cruise_min_echo_range}, cruise_max_echo_range: {cruise_max_echo_range}")
+            cruise_max_echo_range = float(
+                np.max(df["MAX_ECHO_RANGE"].dropna().astype(float))
+            )
+            print(
+                f"cruise_min_echo_range: {cruise_min_echo_range}, cruise_max_echo_range: {cruise_max_echo_range}"
+            )
 
             # [5] get number of channels
-            cruise_frequencies = [float(i) for i in df['FREQUENCIES'].dropna().values.flatten()[0]]
+            cruise_frequencies = [
+                float(i) for i in df["FREQUENCIES"].dropna().values.flatten()[0]
+            ]
             print(cruise_frequencies)
 
             new_width = int(consolidated_zarr_width)
@@ -114,10 +130,12 @@ class CreateEmptyZarrStore:
             ################################################################
             # Create new model store
             zarr_manager = ZarrManager()
-            new_height = len(zarr_manager.get_depth_values(
-                min_echo_range=cruise_min_echo_range,
-                max_echo_range=cruise_max_echo_range
-            ))
+            new_height = len(
+                zarr_manager.get_depth_values(
+                    min_echo_range=cruise_min_echo_range,
+                    max_echo_range=cruise_max_echo_range,
+                )
+            )
             print(f"new_height: {new_height}")
 
             zarr_manager.create_zarr_store(

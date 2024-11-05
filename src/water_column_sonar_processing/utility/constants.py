@@ -14,43 +14,44 @@ class Coordinates(Enum):
         long_name — most readable description of variable
         standard_name — name in lowercase and snake_case
     """
-    PROJECT_NAME = 'echofish'
 
-    DEPTH = 'depth'
-    DEPTH_DTYPE = 'float32'
-    DEPTH_UNITS = 'm'  # TODO: Pint? <https://pint.readthedocs.io/en/stable/>
-    DEPTH_LONG_NAME = 'Depth below surface'
-    DEPTH_STANDARD_NAME = 'depth'
+    PROJECT_NAME = "echofish"
 
-    TIME = 'time'
-    TIME_DTYPE = 'float64'
+    DEPTH = "depth"
+    DEPTH_DTYPE = "float32"
+    DEPTH_UNITS = "m"  # TODO: Pint? <https://pint.readthedocs.io/en/stable/>
+    DEPTH_LONG_NAME = "Depth below surface"
+    DEPTH_STANDARD_NAME = "depth"
+
+    TIME = "time"
+    TIME_DTYPE = "float64"
     # Note: units and calendar are used downstream by Xarray
-    TIME_UNITS = 'seconds since 1970-01-01 00:00:00'
-    TIME_LONG_NAME = 'Timestamp of each ping'
-    TIME_STANDARD_NAME = 'time'
-    TIME_CALENDAR = 'proleptic_gregorian'
+    TIME_UNITS = "seconds since 1970-01-01 00:00:00"
+    TIME_LONG_NAME = "Timestamp of each ping"
+    TIME_STANDARD_NAME = "time"
+    TIME_CALENDAR = "proleptic_gregorian"
     # TODO: create test for reading out timestamps in Xarray
 
-    FREQUENCY = 'frequency'
-    FREQUENCY_DTYPE = 'int'
-    FREQUENCY_UNITS = 'Hz'
-    FREQUENCY_LONG_NAME = 'Transducer frequency'
-    FREQUENCY_STANDARD_NAME = 'sound_frequency'
+    FREQUENCY = "frequency"
+    FREQUENCY_DTYPE = "int"
+    FREQUENCY_UNITS = "Hz"
+    FREQUENCY_LONG_NAME = "Transducer frequency"
+    FREQUENCY_STANDARD_NAME = "sound_frequency"
 
-    LATITUDE = 'latitude'
-    LATITUDE_DTYPE = 'float32'
-    LATITUDE_UNITS = 'degrees_north'
-    LATITUDE_LONG_NAME = 'Latitude'
-    LATITUDE_STANDARD_NAME = 'latitude'
+    LATITUDE = "latitude"
+    LATITUDE_DTYPE = "float32"
+    LATITUDE_UNITS = "degrees_north"
+    LATITUDE_LONG_NAME = "Latitude"
+    LATITUDE_STANDARD_NAME = "latitude"
 
-    LONGITUDE = 'longitude'
-    LONGITUDE_DTYPE = 'float32'
-    LONGITUDE_UNITS = 'degrees_east'
-    LONGITUDE_LONG_NAME = 'Longitude'
-    LONGITUDE_STANDARD_NAME = 'longitude'
+    LONGITUDE = "longitude"
+    LONGITUDE_DTYPE = "float32"
+    LONGITUDE_UNITS = "degrees_east"
+    LONGITUDE_LONG_NAME = "Longitude"
+    LONGITUDE_STANDARD_NAME = "longitude"
 
-    SV = 'Sv'
-    SV_DTYPE = 'float32'  # TODO: experiment with dtype of int
-    SV_UNITS = 'dB'
-    SV_LONG_NAME = 'Volume backscattering strength (Sv re 1 m-1)'
-    SV_STANDARD_NAME = 'volume_backscattering_strength'
+    SV = "Sv"
+    SV_DTYPE = "float32"  # TODO: experiment with dtype of int
+    SV_UNITS = "dB"
+    SV_LONG_NAME = "Volume backscattering strength (Sv re 1 m-1)"
+    SV_STANDARD_NAME = "volume_backscattering_strength"
