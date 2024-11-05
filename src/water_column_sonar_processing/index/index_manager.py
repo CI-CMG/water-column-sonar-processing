@@ -16,6 +16,7 @@ class IndexManager:
         self.s3_manager = S3Manager()
 
     #################################################################
+
     def list_ships(
         self,
         prefix="data/raw/",
