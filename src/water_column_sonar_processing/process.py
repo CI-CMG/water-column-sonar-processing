@@ -32,9 +32,10 @@ class Process:
         #self.dynamodb.update_ status ()
 
         # [2 of 5] Download Object From Input Bucket
-        return_value = input_s3_manager.get(
+        return_value = input_s3_manager.download_file(
             bucket_name=self.input_bucket_name,
-            key='the_input_key'
+            key='the_input_key',
+            file_name = 'the_input_key',
         )
         print(return_value)
 

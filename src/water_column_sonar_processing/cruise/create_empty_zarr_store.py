@@ -10,8 +10,7 @@ from water_column_sonar_processing.model.zarr_manager import ZarrManager
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)
 
-TEMPDIR = "/tmp"
-
+# TEMPDIR = "/tmp"
 # TODO: when ready switch to version 3 of model spec
 # ZARR_V3_EXPERIMENTAL_API = 1
 # creates the latlon data: foo = ep.consolidate.add_location(ds_Sv, echodata)
@@ -22,7 +21,6 @@ class CreateEmptyZarrStore:
             self,
     ):
         self.__overwrite = True
-        # TODO: create output_bucket and input_bucket variables here?
         self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
         self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 
@@ -60,11 +58,13 @@ class CreateEmptyZarrStore:
             ship_name: str,
             cruise_name: str,
             sensor_name: str,
-            table_name: str
+            table_name: str,
+            tempdir: str,
     ) -> None:
         try:
             # HB0806 - 123, HB0903 - 220
             dynamo_db_manager = DynamoDBManager()
+            s3_manager = S3Manager()
 
             df = dynamo_db_manager.get_table_as_df(
                 table_name=table_name,
@@ -73,7 +73,7 @@ class CreateEmptyZarrStore:
                 sensor_name=sensor_name
             )
 
-            # filter the dataframe just for enums >= LEVEL_1_PROCESSING
+            # TODO: filter the dataframe just for enums >= LEVEL_1_PROCESSING
             # df[df['PIPELINE_STATUS'] < PipelineStatus.LEVEL_1_PROCESSING] = np.nan
 
             # TODO: VERIFY GEOJSON EXISTS as prerequisite!!!
@@ -102,7 +102,6 @@ class CreateEmptyZarrStore:
             print(store_name)
             ################################################################
             # Delete existing model store if it exists
-            s3_manager = S3Manager()
             zarr_prefix = os.path.join("level_2", ship_name, cruise_name, sensor_name)
             child_objects = s3_manager.get_child_objects(
                 bucket_name=self.output_bucket_name,
@@ -122,7 +121,7 @@ class CreateEmptyZarrStore:
             print(f"new_height: {new_height}")
 
             zarr_manager.create_zarr_store(
-                path=TEMPDIR,
+                path=tempdir,
                 ship_name=ship_name,
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
@@ -134,7 +133,7 @@ class CreateEmptyZarrStore:
             )
             #################################################################
             self.upload_zarr_store_to_s3(
-                local_directory=TEMPDIR,
+                local_directory=tempdir,
                 object_prefix=zarr_prefix,
                 cruise_name=cruise_name,
             )

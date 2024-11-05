@@ -79,3 +79,6 @@ python -m twine upload --repository pypi dist/*
 # Linting
 Ruff
 https://plugins.jetbrains.com/plugin/20574-ruff
+
+# Colab Test
+https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scrollTo=AayVyvpBdfIZ

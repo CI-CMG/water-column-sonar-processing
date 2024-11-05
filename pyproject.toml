@@ -20,9 +20,6 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dynamic = ["dependencies"]
-#dependencies = [
-#  'boto3',
-#]
 
 [project.urls]
 Homepage = "https://github.com/CI-CMG/water-column-sonar-processing"
@@ -42,3 +39,5 @@ testpaths = [
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 optional-dependencies = {dev = { file = ["requirements-dev.txt"] }}
+
+# https://packaging.python.org/en/latest/guides/writing-pyproject-toml/

@@ -26,14 +26,6 @@ class SNSManager:
 
     #######################################################
     # TODO: pick one
-    # def publish_message(self, topic_arn, message):
-    #     response = self.__sns_client.publish(
-    #         TopicArn=topic_arn,
-    #         Message=message
-    #     )
-    #     print(f"Topic Response: {topic_arn} : '{message}' => {response}")
-
-    # TODO: pick one
     def publish(self, topic_arn, message):
         response = self.__sns_client.publish(
             TopicArn=topic_arn,
