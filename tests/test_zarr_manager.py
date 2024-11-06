@@ -10,7 +10,7 @@ from moto import mock_aws
 from water_column_sonar_processing.aws.s3_manager import S3Manager
 from water_column_sonar_processing.model.zarr_manager import ZarrManager
 
-TEMPDIR = "/tmp"
+# TEMPDIR = "/tmp"
 
 
 #######################################################
@@ -26,11 +26,12 @@ def teardown_module():
 
 #######################################################
 @mock_aws
-def test_zarr_manager(tmp_path=TEMPDIR):
+# def test_zarr_manager(tmp_path=TEMPDIR):
+def test_zarr_manager():
     # Tests creating model store and opening with both xarray and
     # model libraries
 
-    temporary_directory = str(tmp_path)
+    temporary_directory = "/tmp"  # str(tmp_path)
 
     ship_name = "test_ship"
     cruise_name = "test_cruise"
@@ -106,8 +107,9 @@ def test_zarr_manager(tmp_path=TEMPDIR):
 
 #######################################################
 @mock_aws
-def test_open_zarr_with_zarr_read_write(tmp_path):
-    temporary_directory = str(tmp_path)
+# def test_open_zarr_with_zarr_read_write(tmp_path):
+def test_open_zarr_with_zarr_read_write():
+    temporary_directory = "/tmp"  # str(tmp_path)
 
     # TODO: open with model python library and check format
     test_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
@@ -143,7 +145,8 @@ def test_open_zarr_with_zarr_read_write(tmp_path):
 
 #######################################################
 @mock_aws
-def test_open_zarr_with_xarray(tmp_path):
+# def test_open_zarr_with_xarray(tmp_path):
+def test_open_zarr_with_xarray():
     # TODO: open with xarray
     #  [1] check timestamps are in proper format
     #  [2] check that lat/lons are formatted (need data)
@@ -154,7 +157,7 @@ def test_open_zarr_with_xarray(tmp_path):
     sensor_name = "EK60"
     # file_name = "EX1404L2_EK60_-D20140908-T020733.raw"
 
-    temporary_directory = str(tmp_path)
+    temporary_directory = "/tmp"  # str(tmp_path)
 
     bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 

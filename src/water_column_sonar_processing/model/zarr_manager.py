@@ -166,6 +166,25 @@ class ZarrManager:
         root.longitude.attrs["units"] = Coordinates.LONGITUDE_UNITS.value
 
         #####################################################################
+        # TODO: verify adding this variable for where the bottom was detected
+        # --- Coordinate: Bottom --- #
+        root.create_dataset(
+            name=Coordinates.BOTTOM.value,
+            # data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
+            shape=width,
+            chunks=Constants.TILE_SIZE.value,
+            dtype=np.dtype(Coordinates.BOTTOM_DTYPE.value),
+            compressor=self.__compressor,
+            fill_value=np.nan,
+            overwrite=self.__overwrite,
+        )
+
+        root.longitude.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
+
+        root.longitude.attrs["long_name"] = Coordinates.LONGITUDE_LONG_NAME.value
+        root.longitude.attrs["units"] = Coordinates.LONGITUDE_UNITS.value
+
+        #####################################################################
         # --- Coordinate: Frequency --- #
         root.create_dataset(
             name=Coordinates.FREQUENCY.value,
@@ -221,7 +240,7 @@ class ZarrManager:
         #
         root.attrs["processing_software_name"] = Coordinates.PROJECT_NAME.value
         root.attrs["processing_software_version"] = (
-            "0.0.2"  # TODO: get programmatically
+            "0.0.6"  # TODO: get programmatically
         )
         root.attrs["processing_software_time"] = Timestamp.get_timestamp()
         #

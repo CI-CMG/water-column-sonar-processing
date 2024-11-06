@@ -37,12 +37,12 @@ class Process:
         # self.dynamodb.update_ status ()
 
         # [2 of 5] Download Object From Input Bucket
-        return_value = input_s3_manager.download_file(
-            bucket_name=self.input_bucket_name,
-            key="the_input_key",
-            file_name="the_input_key",
-        )
-        print(return_value)
+        # return_value = input_s3_manager.download_file(
+        #    bucket_name=self.input_bucket_name,
+        #    key="the_input_key",
+        #    file_name="the_input_key",
+        # )
+        # print(return_value)
 
         # [3 of 5] Update Entry in DynamoDB
         ship_name = "David_Starr_Jordan"  # TODO: get this from input sns message

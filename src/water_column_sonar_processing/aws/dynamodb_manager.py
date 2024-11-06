@@ -53,6 +53,29 @@ class DynamoDBManager:
         )
 
     #####################################################################
+    def create_water_column_sonar_table(
+        self,
+        table_name,
+    ):
+        self.create_table(
+            table_name=table_name,
+            key_schema=[
+                {
+                    "AttributeName": "FILE_NAME",
+                    "KeyType": "HASH",
+                },
+                {
+                    "AttributeName": "CRUISE_NAME",
+                    "KeyType": "RANGE",
+                },
+            ],
+            attribute_definitions=[
+                {"AttributeName": "FILE_NAME", "AttributeType": "S"},
+                {"AttributeName": "CRUISE_NAME", "AttributeType": "S"},
+            ],
+        )
+
+    #####################################################################
     def get_item(self, table_name, key):
         response = self.__dynamodb_client.get_item(TableName=table_name, Key=key)
         item = None

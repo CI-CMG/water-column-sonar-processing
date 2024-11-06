@@ -10,10 +10,16 @@ import aiohttp.typedefs
 import botocore.awsrequest
 import botocore.model
 import numpy as np
+
+# import pytest
 import xarray as xr
 import zarr
 from dotenv import find_dotenv, load_dotenv
-from moto import mock_aws
+
+# from moto import mock_aws
+import moto
+from moto.moto_server.threaded_moto_server import ThreadedMotoServer
+
 
 from water_column_sonar_processing.aws.s3_manager import S3Manager
 from water_column_sonar_processing.aws.s3fs_manager import S3FSManager
@@ -32,59 +38,60 @@ def teardown_module():
     print("teardown")
 
 
+'''
 #####################################################################
 # ### ATTEMPT ONE #@###
-class MockAWSResponse(aiobotocore.awsrequest.AioAWSResponse):
-    """
-    Mocked AWS Response.
-    https://github.com/aio-libs/aiobotocore/issues/755
-    https://gist.github.com/giles-betteromics/12e68b88e261402fbe31c2e918ea4168
-    """
+# class MockAWSResponse(aiobotocore.awsrequest.AioAWSResponse):
+#     """
+#     Mocked AWS Response.
+#     https://github.com/aio-libs/aiobotocore/issues/755
+#     https://gist.github.com/giles-betteromics/12e68b88e261402fbe31c2e918ea4168
+#     """
+#
+#     def __init__(self, response: botocore.awsrequest.AWSResponse):
+#         self._moto_response = response
+#         self.status_code = response.status_code
+#         self.raw = MockHttpClientResponse(response)
+#
+#     # adapt async methods to use moto's response
+#     async def _content_prop(self) -> bytes:
+#         return self._moto_response.content
+#
+#     async def _text_prop(self) -> str:
+#         return self._moto_response.text
 
-    def __init__(self, response: botocore.awsrequest.AWSResponse):
-        self._moto_response = response
-        self.status_code = response.status_code
-        self.raw = MockHttpClientResponse(response)
 
-    # adapt async methods to use moto's response
-    async def _content_prop(self) -> bytes:
-        return self._moto_response.content
-
-    async def _text_prop(self) -> str:
-        return self._moto_response.text
-
-
-class MockHttpClientResponse(aiohttp.client_reqrep.ClientResponse):
-    """
-    Mocked HTP Response.
-    See <MockAWSResponse> Notes
-    """
-
-    def __init__(self, response: botocore.awsrequest.AWSResponse):
-        """
-        Mocked Response Init.
-        """
-        # super().__init__(response: botocore.awsrequest.AWSResponse)
-        # super().__init__()
-
-        # async def read(self: MockHttpClientResponse, n: int = -1) -> bytes:
-        async def read(self, n, int=-1) -> bytes:
-            return response.content
-
-        self.content = MagicMock(aiohttp.StreamReader)
-        self.content.read = read
-        self.response = response
-
-    @property
-    def raw_headers(self) -> Any:
-        # def raw_headers(self) -> aiohttp.typedefs.RawHeaders:
-        """
-        Return the headers encoded the way that aiobotocore expects them.
-        """
-        return {
-            k.encode("utf-8"): str(v).encode("utf-8")
-            for k, v in self.response.headers.items()
-        }.items()
+# class MockHttpClientResponse(aiohttp.client_reqrep.ClientResponse):
+#     """
+#     Mocked HTP Response.
+#     See <MockAWSResponse> Notes
+#     """
+#
+#     def __init__(self, response: botocore.awsrequest.AWSResponse):
+#         """
+#         Mocked Response Init.
+#         """
+#         # super().__init__(response: botocore.awsrequest.AWSResponse)
+#         # super().__init__()
+#
+#         # async def read(self: MockHttpClientResponse, n: int = -1) -> bytes:
+#         async def read(self, n, int=-1) -> bytes:
+#             return response.content
+#
+#         self.content = MagicMock(aiohttp.StreamReader)
+#         self.content.read = read
+#         self.response = response
+#
+#     @property
+#     def raw_headers(self) -> Any:
+#         # def raw_headers(self) -> aiohttp.typedefs.RawHeaders:
+#         """
+#         Return the headers encoded the way that aiobotocore expects them.
+#         """
+#         return {
+#             k.encode("utf-8"): str(v).encode("utf-8")
+#             for k, v in self.response.headers.items()
+#         }.items()
 
 
 # @pytest.fixture(scope="session", autouse=True)
@@ -218,19 +225,25 @@ class MockHttpClientResponse(aiohttp.client_reqrep.ClientResponse):
 #
 # aiobotocore.endpoint.convert_to_response_dict = _factory(aiobotocore.endpoint.convert_to_response_dict)  # type: ignore[assignment]
 # botocore.retries.standard.RetryContext = PatchedRetryContext
+'''
 
 
 #####################################################################
 #####################################################################
-@mock_aws
-def test_add_file(tmp_path):
-    # with socketserver.TCPServer(("localhost", 0), None) as s:
-    #     free_port = s.server_address[1]
-    #
-    # server = ThreadedMotoServer(port=free_port)
-    # print(free_port)
-    # server.start()
-    # S3Map is supposed to mirror Zarr store fs access in S3 bucket
+# @mock_aws
+# @pytest
+# def test_add_file(tmp_path):
+def test_add_file():
+    # https://github.com/fsspec/s3fs/blob/2c074502c2d6a9be0d3f05eb678f4cc5add2e7e5/s3fs/tests/test_s3fs.py#L76
+    # https://github.com/search?q=mock_aws+s3fs&type=code
+    server = ThreadedMotoServer(ip_address="127.0.0.1", port=5555)
+    server.start()
+    if "AWS_SECRET_ACCESS_KEY" not in os.environ:
+        os.environ["AWS_SECRET_ACCESS_KEY"] = "foo"
+    if "AWS_ACCESS_KEY_ID" not in os.environ:
+        os.environ["AWS_ACCESS_KEY_ID"] = "foo"
+
+    s3fs_manager = S3FSManager()
     test_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 
     s3_manager = S3Manager()
@@ -238,7 +251,7 @@ def test_add_file(tmp_path):
     print(s3_manager.list_buckets())
 
     # --- Create Local Zarr Store --- #
-    temporary_directory = str(tmp_path)
+    temporary_directory = "/tmp"  # str(tmp_path)
     zarr_path = f"{temporary_directory}/example.model"
     ds = xr.Dataset(
         {
@@ -250,7 +263,6 @@ def test_add_file(tmp_path):
     ds.to_zarr(zarr_path, zarr_version=2)  # TODO: jump to version 3
 
     # --- Upload to S3 --- #
-    s3fs_manager = S3FSManager()
     # TODO: just copy from a to b
     # foo = s3_manager.upload_files_to_bucket(local_directory=zarr_path, object_prefix='ship/cruise/sensor/example.model', bucket_name=test_bucket_name)
     # s3_manager.upload_file(zarr_path + '/.zmetadata', test_bucket_name, 'ship/cruise/sensor/example.model/.zmetadata')
@@ -318,6 +330,7 @@ def test_add_file(tmp_path):
     assert s3_zarr_xr.a[0, 1].values == 42
 
     # server.stop()
+    server.stop()
 
 
 #####################################################################

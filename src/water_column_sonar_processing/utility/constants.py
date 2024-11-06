@@ -50,6 +50,12 @@ class Coordinates(Enum):
     LONGITUDE_LONG_NAME = "Longitude"
     LONGITUDE_STANDARD_NAME = "longitude"
 
+    BOTTOM = "bottom"
+    BOTTOM_DTYPE = "float32"
+    BOTTOM_UNITS = "m"
+    BOTTOM_LONG_NAME = "Detected sea floor depth"
+    BOTTOM_STANDARD_NAME = "bottom"
+
     SV = "Sv"
     SV_DTYPE = "float32"  # TODO: experiment with dtype of int
     SV_UNITS = "dB"

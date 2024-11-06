@@ -178,6 +178,7 @@ class CreateEmptyZarrStore:
         finally:
             cleaner = Cleaner()
             cleaner.delete_local_files()
+            # TODO: should delete zarr store in temp directory too?
         print("Done creating cruise level model store")
 
 
