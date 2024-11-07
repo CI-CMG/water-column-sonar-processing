@@ -21,7 +21,7 @@ def teardown_module():
 
 ### Test Interpolation ###
 @mock_aws
-@pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.skip(reason="no way of currently testing resample regrid")
 def test_resample_regrid():
     # Opens s3 input model store as xr and writes data to output model store
     resample_regrid = ResampleRegrid()

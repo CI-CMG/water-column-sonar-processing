@@ -10,6 +10,7 @@ import aiohttp.typedefs
 import botocore.awsrequest
 import botocore.model
 import numpy as np
+import pytest
 
 # import pytest
 import xarray as xr
@@ -233,6 +234,7 @@ def teardown_module():
 # @mock_aws
 # @pytest
 # def test_add_file(tmp_path):
+@pytest.mark.skip(reason="no way of currently testing add_file with s3fs")
 def test_add_file():
     # https://github.com/fsspec/s3fs/blob/2c074502c2d6a9be0d3f05eb678f4cc5add2e7e5/s3fs/tests/test_s3fs.py#L76
     # https://github.com/search?q=mock_aws+s3fs&type=code
