@@ -12,26 +12,28 @@ from numcodecs import Blosc
 from datetime import datetime
 
 from water_column_sonar_processing.aws.s3fs_manager import S3FSManager
+from water_column_sonar_processing.geometry.geometry_manager import GeometryManager
 from water_column_sonar_processing.utility import Cleaner
-
+from pathlib import Path
 
 TEMPDIR = "/tmp"
+
 
 # This code is getting copied from echofish-aws-raw-to-zarr-lambda
 class RawToZarr:
     #######################################################
     def __init__(
-        self,
-        # s3_operations,
-        # dynamo_operations,
-        # sns_operations,
-        # input_bucket,
-        # output_bucket,
-        # table_name,
-        # output_bucket_access_key,
-        # output_bucket_secret_access_key,
-        # done_topic_arn,
-        # # overwrite_existing_zarr_store,
+            self,
+            # s3_operations,
+            # dynamo_operations,
+            # sns_operations,
+            # input_bucket,
+            # output_bucket,
+            # table_name,
+            # output_bucket_access_key,
+            # output_bucket_secret_access_key,
+            # done_topic_arn,
+            # # overwrite_existing_zarr_store,
     ):
         # TODO: revert to Blosc.BITSHUFFLE, troubleshooting misc error
         self.__compressor = Blosc(cname="zstd", clevel=2)  # shuffle=Blosc.NOSHUFFLE
@@ -118,36 +120,46 @@ class RawToZarr:
 
     ############################################################################
     ############################################################################
-    def __write_geojson_to_file(
-            self,
-            store_name,
-            data
-    ) -> None:
-        print('Writing GeoJSON to file.')
-        with open(os.path.join(store_name, 'geo.json'), "w") as outfile:
-            outfile.write(data)
-
     ############################################################################
-    def __create_local_zarr_store(
+    def raw_to_zarr(
             self,
-            raw_file_name,
+            ship_name,
             cruise_name,
             sensor_name,
-            output_zarr_prefix,
-            store_name
+            file_name,
     ):
-        print(f'Opening raw: {raw_file_name} and creating local zarr store.')
+        print(f'Opening raw: {file_name} and creating zarr store.')
+        geometry_manager = GeometryManager()
         try:
             gc.collect()
-            print('Opening raw file with echopype.')  # TODO: next idea is use garbage collector...
-            echodata = ep.open_raw(raw_file_name, sonar_model=sensor_name, use_swap=True, max_mb=100)  # use_swap=True
+            print('Opening raw file with echopype.')
+            bucket_name="test_input_bucket" # noaa-wcsd-pds
+            s3_file_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
+            # s3_file_path = Path(f"s3://noaa-wcsd-pds/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}")
+            # TODO: add the bottom file here
+            echodata = ep.open_raw(
+                raw_file=s3_file_path,
+                sonar_model=sensor_name,
+                # include_bot=True,
+                use_swap=True,
+                # max_chunk_size=100,
+                storage_options={'anon': True}
+            )
             print('Compute volume backscattering strength (Sv) from raw data.')
             ds_sv = ep.calibrate.compute_Sv(echodata)
             print('Done computing volume backscattering strength (Sv) from raw data.')
             frequencies = echodata.environment.frequency_nominal.values
             #################################################################
             # Get GPS coordinates
-            gps_data, lat, lon = self.__get_gps_data(echodata=echodata)
+            gps_data, lat, lon = geometry_manager.read_echodata_gps_data(
+                echodata=echodata,
+                ship_name=ship_name,
+                cruise_name=cruise_name,
+                sensor_name=sensor_name,
+                file_name=file_name,
+                write_geojson=True
+            )
+            # gps_data, lat, lon = self.__get_gps_data(echodata=echodata)
             #################################################################
             # Technically the min_echo_range would be 0 m.
             # TODO: this var name is supposed to represent minimum resolution of depth measurements
@@ -207,14 +219,6 @@ class RawToZarr:
             secret_access_key=self.__output_bucket_secret_access_key
         )
         return all_uploads
-
-    ############################################################################
-    def __publish_done_message(
-            self,
-            message
-    ):
-        print("Sending done message")
-        self.__sns_operations.publish(self.__done_topic_arn, json.dumps(message))
 
     ############################################################################
     def execute(self, input_message):
@@ -289,12 +293,12 @@ class RawToZarr:
             #######################################################################
         # except Exception as err:
         #     print(f'Exception encountered: {err}')
-            # self.__update_processing_status(
-            #     file_name=input_file_name,
-            #     cruise_name=cruise_name,
-            #     pipeline_status='FAILURE_RAW_TO_ZARR',
-            #     error_message=str(err),
-            # )
+        # self.__update_processing_status(
+        #     file_name=input_file_name,
+        #     cruise_name=cruise_name,
+        #     pipeline_status='FAILURE_RAW_TO_ZARR',
+        #     error_message=str(err),
+        # )
         finally:
             self.__delete_all_local_raw_and_zarr_files()
         #######################################################################
@@ -302,69 +306,69 @@ class RawToZarr:
     ############################################################################
 
 ################################################################################
-    ############################################################################
-    # TODO: DELETE
-    # def __get_gps_data(
-    #         self,
-    #         echodata: ep.echodata.echodata.EchoData
-    # ) -> tuple:
-    #     print('Getting GPS data.')
-    #     try:
-    #         # if 'latitude' not in echodata.platform.variables and 'longitude' not in echodata.platform.variables:
-    #         #     raise KeyError;
-    #         assert(  # TODO: raise error, e.g. KeyError
-    #                 'latitude' in echodata.platform.variables and 'longitude' in echodata.platform.variables
-    #         ), "Problem: GPS coordinates not found in echodata."
-    #         latitude = echodata.platform.latitude.values
-    #         longitude = echodata.platform.longitude.values  # len(longitude) == 14691
-    #         # RE: time coordinates: https://github.com/OSOceanAcoustics/echopype/issues/656#issue-1219104771
-    #         assert(
-    #                 'time1' in echodata.platform.variables and 'time1' in echodata.environment.variables
-    #         ), "Problem: Time coordinate not found in echodata."
-    #         # 'nmea_times' are times from the nmea datalogger associated with GPS
-    #         #   nmea times, unlike env times, can be sorted
-    #         nmea_times = np.sort(echodata.platform.time1.values)
-    #         # 'time1' are times from the echosounder associated with transducer measurement
-    #         time1 = echodata.environment.time1.values
-    #         # Align 'sv_times' to 'nmea_times'
-    #         assert(
-    #                 np.all(time1[:-1] <= time1[1:]) and np.all(nmea_times[:-1] <= nmea_times[1:])
-    #         ), "Problem: NMEA time stamps are not sorted."
-    #         # Finds the indices where 'v' can be inserted just to the right of 'a'
-    #         indices = np.searchsorted(a=nmea_times, v=time1, side="right") - 1
-    #         #
-    #         lat = latitude[indices]
-    #         lat[indices < 0] = np.nan  # values recorded before indexing are set to nan
-    #         lon = longitude[indices]
-    #         lon[indices < 0] = np.nan
-    #         if len(lat) < 2 or len(lon) < 2:
-    #             raise Exception("There was not enough data in lat or lon to create geojson.")
-    #         assert(  # TODO: raise ValueError
-    #                 np.all(lat[~np.isnan(lat)] >= -90.) and np.all(lat[~np.isnan(lat)] <= 90.) and np.all(lon[~np.isnan(lon)] >= -180.) and np.all(lon[~np.isnan(lon)] <= 180.)
-    #         ), "Problem: Data falls outside GPS bounds!"
-    #         # TODO: check for visits to null island
-    #         # https://osoceanacoustics.github.io/echopype-examples/echopype_tour.html
-    #         print(np.count_nonzero(np.isnan(lat)))
-    #         print(np.count_nonzero(np.isnan(lon)))
-    #         if len(lat[~np.isnan(lat)]) < 1:
-    #             raise RuntimeError(f"Problem all data is NaN.")
-    #         time1 = time1[~np.isnan(lat)]
-    #         lat = lat[~np.isnan(lat)]
-    #         lon = lon[~np.isnan(lon)]
-    #         #
-    #         gps_df = pd.DataFrame({
-    #             'latitude': lat,
-    #             'longitude': lon,
-    #             'time1': time1
-    #         }).set_index(['time1'])
-    #         gps_gdf = geopandas.GeoDataFrame(
-    #             gps_df,
-    #             geometry=geopandas.points_from_xy(gps_df['longitude'], gps_df['latitude']),
-    #             crs="epsg:4326"  # TODO: does this sound right?
-    #         )
-    #         # GeoJSON FeatureCollection with IDs as "time1"
-    #         geo_json = gps_gdf.to_json()
-    #     except Exception as err:
-    #         print(f'Exception encountered creating local Zarr store with echopype: {err}')
-    #         raise
-    #     return geo_json, lat, lon
+############################################################################
+# TODO: DELETE
+# def __get_gps_data(
+#         self,
+#         echodata: ep.echodata.echodata.EchoData
+# ) -> tuple:
+#     print('Getting GPS data.')
+#     try:
+#         # if 'latitude' not in echodata.platform.variables and 'longitude' not in echodata.platform.variables:
+#         #     raise KeyError;
+#         assert(  # TODO: raise error, e.g. KeyError
+#                 'latitude' in echodata.platform.variables and 'longitude' in echodata.platform.variables
+#         ), "Problem: GPS coordinates not found in echodata."
+#         latitude = echodata.platform.latitude.values
+#         longitude = echodata.platform.longitude.values  # len(longitude) == 14691
+#         # RE: time coordinates: https://github.com/OSOceanAcoustics/echopype/issues/656#issue-1219104771
+#         assert(
+#                 'time1' in echodata.platform.variables and 'time1' in echodata.environment.variables
+#         ), "Problem: Time coordinate not found in echodata."
+#         # 'nmea_times' are times from the nmea datalogger associated with GPS
+#         #   nmea times, unlike env times, can be sorted
+#         nmea_times = np.sort(echodata.platform.time1.values)
+#         # 'time1' are times from the echosounder associated with transducer measurement
+#         time1 = echodata.environment.time1.values
+#         # Align 'sv_times' to 'nmea_times'
+#         assert(
+#                 np.all(time1[:-1] <= time1[1:]) and np.all(nmea_times[:-1] <= nmea_times[1:])
+#         ), "Problem: NMEA time stamps are not sorted."
+#         # Finds the indices where 'v' can be inserted just to the right of 'a'
+#         indices = np.searchsorted(a=nmea_times, v=time1, side="right") - 1
+#         #
+#         lat = latitude[indices]
+#         lat[indices < 0] = np.nan  # values recorded before indexing are set to nan
+#         lon = longitude[indices]
+#         lon[indices < 0] = np.nan
+#         if len(lat) < 2 or len(lon) < 2:
+#             raise Exception("There was not enough data in lat or lon to create geojson.")
+#         assert(  # TODO: raise ValueError
+#                 np.all(lat[~np.isnan(lat)] >= -90.) and np.all(lat[~np.isnan(lat)] <= 90.) and np.all(lon[~np.isnan(lon)] >= -180.) and np.all(lon[~np.isnan(lon)] <= 180.)
+#         ), "Problem: Data falls outside GPS bounds!"
+#         # TODO: check for visits to null island
+#         # https://osoceanacoustics.github.io/echopype-examples/echopype_tour.html
+#         print(np.count_nonzero(np.isnan(lat)))
+#         print(np.count_nonzero(np.isnan(lon)))
+#         if len(lat[~np.isnan(lat)]) < 1:
+#             raise RuntimeError(f"Problem all data is NaN.")
+#         time1 = time1[~np.isnan(lat)]
+#         lat = lat[~np.isnan(lat)]
+#         lon = lon[~np.isnan(lon)]
+#         #
+#         gps_df = pd.DataFrame({
+#             'latitude': lat,
+#             'longitude': lon,
+#             'time1': time1
+#         }).set_index(['time1'])
+#         gps_gdf = geopandas.GeoDataFrame(
+#             gps_df,
+#             geometry=geopandas.points_from_xy(gps_df['longitude'], gps_df['latitude']),
+#             crs="epsg:4326"  # TODO: does this sound right?
+#         )
+#         # GeoJSON FeatureCollection with IDs as "time1"
+#         geo_json = gps_gdf.to_json()
+#     except Exception as err:
+#         print(f'Exception encountered creating local Zarr store with echopype: {err}')
+#         raise
+#     return geo_json, lat, lon

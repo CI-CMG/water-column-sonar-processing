@@ -32,8 +32,8 @@ class ZarrManager:
         self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 
     #######################################################
-    @staticmethod
     def get_depth_values(
+        self,
         min_echo_range: float = 1.0,  # minimum depth measured (zero non-inclusive) from whole cruise
         max_echo_range: float = 100.0,  # maximum depth measured from whole cruise
     ):

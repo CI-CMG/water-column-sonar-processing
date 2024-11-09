@@ -1,7 +1,6 @@
 import boto3
-import os
 import pytest
-import requests
+# import requests
 # import s3fs
 from s3fs import S3FileSystem
 # import fs
@@ -10,6 +9,7 @@ from s3fs import S3FileSystem
 # from pyarrow import fs
 # from pyarrow.fs import FileSelector
 # from moto import mock_aws
+from moto import dynamodb, mock_aws
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
 test_bucket = "mybucket"
@@ -21,14 +21,10 @@ endpoint_url = f"http://{ip_address}:{port}"
 def s3_base():
     s3_server = ThreadedMotoServer(ip_address=ip_address, port=port)
     s3_server.start()
-    # if "AWS_ACCESS_KEY_ID" not in os.environ:
-    #     os.environ["AWS_ACCESS_KEY_ID"] = "test"
-    # if "AWS_SECRET_ACCESS_KEY" not in os.environ:
-    #     os.environ["AWS_SECRET_ACCESS_KEY"] = "test"
     yield
     s3_server.stop()
 
-
+@mock_aws
 def test_load_all_files(s3_base):
     s3_session = boto3.Session()
     s3_client = s3_session.client(service_name="s3", endpoint_url=f"http://{ip_address}:{port}")
@@ -47,7 +43,8 @@ def test_load_all_files(s3_base):
     s3_client.list_objects(Bucket='mybucket')
     s3fs.put_file("test.foo2", f"s3://{test_bucket}/test.foo2")
 
-    s3fs.ls(f"{test_bucket}")
+    all_objects = s3fs.ls(f"{test_bucket}")
+    assert len(all_objects) == 2
 
 # @mock_aws
 # @pytest.mark.skip(reason="not working currently, not intended to use this module anyway")

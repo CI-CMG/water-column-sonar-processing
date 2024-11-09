@@ -25,10 +25,14 @@ class S3Manager:
     #####################################################################
     def __init__(
         self,
+        input_endpoint_url: str,
+        output_endpoint_url: str,
         # TODO: Need to allow passing in of credentials when writing to protected bucket
     ):
         self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
         self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
+        self.input_endpoint_url = input_endpoint_url
+        self.output_endpoint_url = output_endpoint_url
         self.s3_region = os.environ.get("AWS_REGION", default="us-east-1")
         self.s3_client_config = Config(max_pool_connections=MAX_POOL_CONNECTIONS)
         self.s3_transfer_config = TransferConfig(
@@ -46,6 +50,7 @@ class S3Manager:
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
+            endpoint_url=input_endpoint_url,
         )
         self.s3_resource = boto3.resource(
             service_name="s3",
@@ -53,7 +58,6 @@ class S3Manager:
             region_name=self.s3_region,
         )
         # self.paginator = self.s3_client.get_paginator(operation_name='list_objects_v2')
-        # TODO: create both "s3_client_input" and "s3_client_output" ???
         self.s3_session_noaa_wcsd_zarr_pds = boto3.Session(
             aws_access_key_id=os.environ.get("OUTPUT_BUCKET_ACCESS_KEY"),
             aws_secret_access_key=os.environ.get("OUTPUT_BUCKET_SECRET_ACCESS_KEY"),
@@ -63,6 +67,7 @@ class S3Manager:
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
+            endpoint_url=output_endpoint_url,
         )
         self.s3_resource_noaa_wcsd_zarr_pds = (
             self.s3_session_noaa_wcsd_zarr_pds.resource(
@@ -136,6 +141,20 @@ class S3Manager:
             print(err)
         print("Done uploading files using threading pool.")
         return all_uploads
+
+    #####################################################################
+    def upload_file(
+            self,
+            body: str,
+            bucket: str,
+            key: str,
+    ):
+        self.s3_client_noaa_wcsd_zarr_pds.put_object(
+            Body=body,
+            Bucket=bucket,
+            Key=key,
+        )
+
 
     #####################################################################
     def upload_zarr_files_to_bucket(  # noaa-wcsd-model-pds

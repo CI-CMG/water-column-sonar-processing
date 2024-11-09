@@ -129,7 +129,7 @@ class GeometryManager:
             if write_geojson:
                 print("Creating local copy of geojson file.")
                 with open(geo_json_name, "w") as write_file:
-                    write_file.write(geo_json_line)
+                    write_file.write(geo_json_line) # NOTE: this file can includes zeros for lat lon
 
                 geo_json_prefix = (
                     f"spatial/geojson/{ship_name}/{cruise_name}/{sensor_name}"
@@ -223,6 +223,7 @@ class GeometryManager:
             raise
 
     ############################################################################
+    # COMES from the raw-to-zarr conversion
     def __write_geojson_to_file(
             self,
             store_name,
