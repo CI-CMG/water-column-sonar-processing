@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import geopandas
@@ -220,6 +221,16 @@ class GeometryManager:
         except Exception as err:  # Failure
             print(f"Exception encountered reading s3 GeoJSON: {err}")
             raise
+
+    ############################################################################
+    def __write_geojson_to_file(
+            self,
+            store_name,
+            data
+    ) -> None:
+        print('Writing GeoJSON to file.')
+        with open(os.path.join(store_name, 'geo.json'), "w") as outfile:
+            outfile.write(data)
 
 
 ###########################################################

@@ -2,6 +2,7 @@ import os
 
 import boto3
 import pandas as pd
+from datetime import datetime
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
 
@@ -166,5 +167,63 @@ class DynamoDBManager:
     ):
         pass
 
+    #####################################################################
+        # TODO: from test_raw_to_zarr get enum and use here
+        def __update_processing_status(
+                self,
+                file_name: str,
+                cruise_name: str,
+                pipeline_status: str,
+                error_message: str = None,
+        ):
+            print(f"Updating processing status to {pipeline_status}.")
+            if error_message:
+                print(f"Error message: {error_message}")
+                self.__dynamo.update_item(
+                    table_name=self.__table_name,
+                    key={
+                        'FILE_NAME': {'S': file_name},  # Partition Key
+                        'CRUISE_NAME': {'S': cruise_name},  # Sort Key
+                    },
+                    attribute_names={
+                        '#PT': 'PIPELINE_TIME',
+                        '#PS': 'PIPELINE_STATUS',
+                        '#EM': 'ERROR_MESSAGE',
+                    },
+                    expression='SET #PT = :pt, #PS = :ps, #EM = :em',
+                    attribute_values={
+                        ':pt': {
+                            'S': datetime.now().isoformat(timespec="seconds") + "Z"
+                        },
+                        ':ps': {
+                            'S': pipeline_status
+                        },
+                        ':em': {
+                            'S': error_message
+                        }
+                    }
+                )
+            else:
+                self.__dynamo.update_item(
+                    table_name=self.__table_name,
+                    key={
+                        'FILE_NAME': {'S': file_name},  # Partition Key
+                        'CRUISE_NAME': {'S': cruise_name},  # Sort Key
+                    },
+                    attribute_names={
+                        '#PT': 'PIPELINE_TIME',
+                        '#PS': 'PIPELINE_STATUS',
+                    },
+                    expression='SET #PT = :pt, #PS = :ps',
+                    attribute_values={
+                        ':pt': {
+                            'S': datetime.now().isoformat(timespec="seconds") + "Z"
+                        },
+                        ':ps': {
+                            'S': pipeline_status
+                        }
+                    }
+                )
+            print("Done updating processing status.")
 
 #########################################################################
