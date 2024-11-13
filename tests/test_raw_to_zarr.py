@@ -56,20 +56,19 @@ def test_raw_to_zarr(s3_base):
     # s3_session = boto3.Session()
     # s3_client = s3_session.client(service_name="s3", endpoint_url=f"http://{ip_address}:{port}")
     # s3_client.list_buckets()
-    s3_manager = S3Manager(input_endpoint_url=f"http://{ip_address}:{port}", output_endpoint_url=f"http://{ip_address}:{port}")
-    s3_manager.create_bucket(bucket_name="test_input_bucket")
-    s3_manager.upload_file(body="./test_resources/D20070724-T042400.bot", bucket="test_input_bucket", key="D20070724-T042400.bot")
-    s3_manager.upload_file(
-        body="./test_resources/D20070724-T042400.raw",
-        bucket="test_input_bucket",
-        key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.raw"
-   )
-    s3_manager.upload_file(
-        body="./test_resources/D20070724-T042400.bot",
-        bucket="test_input_bucket",
-        key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.bot"
-    )
-    s3_manager.create_bucket(bucket_name="test_output_bucket")
+    # s3_manager = S3Manager()# input_endpoint_url=f"http://{ip_address}:{port}", output_endpoint_url=f"http://{ip_address}:{port}")
+   #  s3_manager.create_bucket(bucket_name="test_input_bucket")
+   #  s3_manager.upload_file(
+   #      body="./test_resources/D20070724-T042400.raw",
+   #      bucket="test_input_bucket",
+   #      key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.raw"
+   # )
+   #  s3_manager.upload_file(
+   #      body="./test_resources/D20070724-T042400.bot",
+   #      bucket="test_input_bucket",
+   #      key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.bot"
+   #  )
+   #  s3_manager.create_bucket(bucket_name="test_output_bucket")
 
     # s3fs = S3FileSystem(endpoint_url=endpoint_url)
     dynamo_db_manager = DynamoDBManager()

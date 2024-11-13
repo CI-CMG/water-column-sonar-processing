@@ -143,7 +143,7 @@ class RawToZarr:
                 # include_bot=True,
                 use_swap=True,
                 # max_chunk_size=100,
-                storage_options={'anon': True}
+                # storage_options={'anon': True} # this was creating problems
             )
             print('Compute volume backscattering strength (Sv) from raw data.')
             ds_sv = ep.calibrate.compute_Sv(echodata)

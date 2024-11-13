@@ -25,14 +25,14 @@ class S3Manager:
     #####################################################################
     def __init__(
         self,
-        input_endpoint_url: str,
-        output_endpoint_url: str,
+        # input_endpoint_url: str,
+        # output_endpoint_url: str,
         # TODO: Need to allow passing in of credentials when writing to protected bucket
     ):
         self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
         self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
-        self.input_endpoint_url = input_endpoint_url
-        self.output_endpoint_url = output_endpoint_url
+        # self.input_endpoint_url = input_endpoint_url
+        # self.output_endpoint_url = output_endpoint_url
         self.s3_region = os.environ.get("AWS_REGION", default="us-east-1")
         self.s3_client_config = Config(max_pool_connections=MAX_POOL_CONNECTIONS)
         self.s3_transfer_config = TransferConfig(
@@ -50,7 +50,7 @@ class S3Manager:
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
-            endpoint_url=input_endpoint_url,
+            # endpoint_url=input_endpoint_url,
         )
         self.s3_resource = boto3.resource(
             service_name="s3",
@@ -69,12 +69,10 @@ class S3Manager:
             region_name=self.s3_region,
             endpoint_url=output_endpoint_url,
         )
-        self.s3_resource_noaa_wcsd_zarr_pds = (
-            self.s3_session_noaa_wcsd_zarr_pds.resource(
-                service_name="s3",
-                config=self.s3_client_config,
-                region_name=self.s3_region,
-            )
+        self.s3_resource_noaa_wcsd_zarr_pds = self.s3_session_noaa_wcsd_zarr_pds.resource(
+            service_name="s3",
+            config=self.s3_client_config,
+            region_name=self.s3_region,
         )
 
     def get_client(self):
