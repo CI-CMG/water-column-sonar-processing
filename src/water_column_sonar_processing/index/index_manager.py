@@ -21,7 +21,13 @@ class IndexManager:
         self,
         prefix="data/raw/",
     ):
-        # s3_client = self.s3_manager.s3_client
+        # s3_client =
+        # paginator = self.s3_manager.s3_client.get_paginator('list_objects_v2')
+        # self.paginate = paginator.paginate(Bucket=self.input_bucket_name, Prefix=prefix, Delimiter="/")
+        # page_iterator = paginator.paginate(Bucket=self.input_bucket_name, Prefix=prefix, Delimiter="/")
+        #page_iterator = self.s3_manager.paginator.paginate(
+        #    Bucket=self.input_bucket_name, Prefix=prefix, Delimiter="/"
+        #)
         page_iterator = self.s3_manager.paginator.paginate(
             Bucket=self.input_bucket_name, Prefix=prefix, Delimiter="/"
         )
@@ -38,6 +44,9 @@ class IndexManager:
         self,
         ship_prefixes,  # e.g. 'data/raw/Alaska_Knight/'
     ):
+        # s3_client = self.s3_manager.get_client() # TODO: get rid of these client calls, consolidate
+        # paginator = self.s3_manager.s3_client.get_paginator('list_objects_v2')
+        # paginator = s3_client.get_paginator('list_objects_v2') # TODO: get rid of these client calls, consolidate
         cruises = []
         for ship_prefix in ship_prefixes:
             page_iterator = self.s3_manager.paginator.paginate(
@@ -52,6 +61,8 @@ class IndexManager:
         self,
         cruise_prefixes,
     ):
+        # s3_client = self.s3_manager.get_client() # TODO: get rid of these client calls, consolidate
+        # paginator = s3_client.get_paginator('list_objects_v2') # TODO: get rid of these client calls, consolidate
         cruise_sensors = []  # includes all sensor types
         for cruise_prefix in cruise_prefixes:
             page_iterator = self.s3_manager.paginator.paginate(

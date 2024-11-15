@@ -2,6 +2,9 @@ import json
 import os
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Optional
+# def foo(a: str, b: Optional[str] = None) -> str or None:
+#     pass
 
 import boto3
 from boto3.s3.transfer import TransferConfig
@@ -67,18 +70,19 @@ class S3Manager:
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
-            endpoint_url=output_endpoint_url,
+            # endpoint_url=output_endpoint_url,
         )
         self.s3_resource_noaa_wcsd_zarr_pds = self.s3_session_noaa_wcsd_zarr_pds.resource(
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
         )
+        self.paginator = self.s3_client.get_paginator('list_objects_v2')
 
-    def get_client(self):
+    def get_client(self): # TODO: do i need this?
         return self.s3_session.client(
             service_name="s3",
-            config=self.__s3_client_config,
+            config=self.s3_client_config,
             region_name=self.s3_region,
         )
 

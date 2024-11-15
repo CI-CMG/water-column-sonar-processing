@@ -35,7 +35,7 @@ def test_s3_manager():
     # --- tests the src --- #
     s3_manager.put(bucket_name=test_bucket_name, key="the_key", body="the_body")
 
-    s3_object = s3_manager.get(bucket_name=test_bucket_name, key="the_key")
+    s3_object = s3_manager.get_object(bucket_name=test_bucket_name, key_name="the_key")
 
     body = s3_object.get()["Body"].read().decode("utf-8")
 
