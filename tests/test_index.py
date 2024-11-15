@@ -6,17 +6,52 @@ from water_column_sonar_processing.index.index_manager import IndexManager
 #######################################################
 def setup_module(module):
     print("setup")
-    env_file = find_dotenv(".env-prod")
-    load_dotenv(dotenv_path=env_file, override=True)
-
+    # env_file = find_dotenv(".env-test")
+    # load_dotenv(dotenv_path=env_file, override=True)
 
 def teardown_module(module):
     print("teardown")
 
+#######################################################
+#######################################################
+def test_list_ships():
+    pass
+
 
 #######################################################
+def test_list_cruises():
+    pass
+
+#######################################################
+def test_list_ek60_cruises():
+    pass
 
 
+#######################################################
+def test_get_raw_files():
+    pass
+
+#######################################################
+def test_get_raw_files_csv():
+    pass
+
+#######################################################
+def test_get_subset_ek60_prefix():
+    pass
+
+#######################################################
+def test_scan_datagram():
+    pass
+
+#######################################################
+def test_get_subset_datagrams():
+    pass
+
+#######################################################
+def test_get_ek60_objects():
+    pass
+
+#######################################################
 def test_get_calibration_information():
     input_bucket_name = "noaa-wcsd-pds"
     calibration_bucket = "noaa-wcsd-pds-index"
@@ -27,6 +62,7 @@ def test_get_calibration_information():
     calibration_information = index_manager.get_calibration_information()
     assert "DP06_EK80" in list(calibration_information["DATASET_NAME"])
     assert "DY1906" in list(calibration_information["DATASET_NAME"])
+    assert "AL0806" not in list(calibration_information["DATASET_NAME"])
 
 
 # @mock_s3

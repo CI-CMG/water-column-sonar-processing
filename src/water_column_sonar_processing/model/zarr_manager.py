@@ -142,6 +142,7 @@ class ZarrManager:
             overwrite=self.__overwrite,
         )
 
+        # LATITUDE is indexed by TIME
         root.latitude.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
 
         root.latitude.attrs["long_name"] = Coordinates.LATITUDE_LONG_NAME.value
@@ -160,6 +161,7 @@ class ZarrManager:
             overwrite=self.__overwrite,
         )
 
+        # LONGITUDE is indexed by TIME
         root.longitude.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
 
         root.longitude.attrs["long_name"] = Coordinates.LONGITUDE_LONG_NAME.value
@@ -170,19 +172,20 @@ class ZarrManager:
         # --- Coordinate: Bottom --- #
         root.create_dataset(
             name=Coordinates.BOTTOM.value,
-            # data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
+            data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
             shape=width,
             chunks=Constants.TILE_SIZE.value,
             dtype=np.dtype(Coordinates.BOTTOM_DTYPE.value),
             compressor=self.__compressor,
-            fill_value=np.nan,
+            fill_value=0.0,
             overwrite=self.__overwrite,
         )
 
-        root.longitude.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
+        # BOTTOM is indexed by TIME
+        root.bottom.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
 
-        root.longitude.attrs["long_name"] = Coordinates.LONGITUDE_LONG_NAME.value
-        root.longitude.attrs["units"] = Coordinates.LONGITUDE_UNITS.value
+        root.bottom.attrs["long_name"] = Coordinates.BOTTOM_LONG_NAME.value
+        root.bottom.attrs["units"] = Coordinates.BOTTOM_UNITS.value
 
         #####################################################################
         # --- Coordinate: Frequency --- #

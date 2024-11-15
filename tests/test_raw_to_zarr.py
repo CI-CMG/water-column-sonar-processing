@@ -1,18 +1,7 @@
-import boto3
-# import numcodecs
-# import numpy as np
 import pytest
-# import xarray as xr
-# import zarr
-from s3fs import S3FileSystem
-from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
-
-from tests.test_s3_manager import input_bucket_name
 from water_column_sonar_processing.aws import DynamoDBManager
-from water_column_sonar_processing.aws.s3_manager import S3Manager
-# from water_column_sonar_processing.model.zarr_manager import ZarrManager
 from water_column_sonar_processing.processing.raw_to_zarr import RawToZarr
 
 # TEMPDIR = "/tmp"
@@ -21,6 +10,7 @@ ip_address = "127.0.0.1"
 port = 5555
 endpoint_url = f"http://{ip_address}:{port}"
 table_name = "test_table"
+
 
 #######################################################
 # def setup_module():
@@ -40,6 +30,7 @@ def s3_base():
     yield
     s3_server.stop()
 
+
 #######################################################
 #######################################################
 # Test data with less than 4 points, only has 2
@@ -57,18 +48,18 @@ def test_raw_to_zarr(s3_base):
     # s3_client = s3_session.client(service_name="s3", endpoint_url=f"http://{ip_address}:{port}")
     # s3_client.list_buckets()
     # s3_manager = S3Manager()# input_endpoint_url=f"http://{ip_address}:{port}", output_endpoint_url=f"http://{ip_address}:{port}")
-   #  s3_manager.create_bucket(bucket_name="test_input_bucket")
-   #  s3_manager.upload_file(
-   #      body="./test_resources/D20070724-T042400.raw",
-   #      bucket="test_input_bucket",
-   #      key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.raw"
-   # )
-   #  s3_manager.upload_file(
-   #      body="./test_resources/D20070724-T042400.bot",
-   #      bucket="test_input_bucket",
-   #      key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.bot"
-   #  )
-   #  s3_manager.create_bucket(bucket_name="test_output_bucket")
+    #  s3_manager.create_bucket(bucket_name="test_input_bucket")
+    #  s3_manager.upload_file(
+    #      body="./test_resources/D20070724-T042400.raw",
+    #      bucket="test_input_bucket",
+    #      key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.raw"
+    # )
+    #  s3_manager.upload_file(
+    #      body="./test_resources/D20070724-T042400.bot",
+    #      bucket="test_input_bucket",
+    #      key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.bot"
+    #  )
+    #  s3_manager.create_bucket(bucket_name="test_output_bucket")
 
     # s3fs = S3FileSystem(endpoint_url=endpoint_url)
     dynamo_db_manager = DynamoDBManager()
@@ -97,12 +88,12 @@ def test_raw_to_zarr(s3_base):
     )
 
     ship_name = "Henry_B._Bigelow"
-    #cruise_name = "HB0707"
+    # cruise_name = "HB0707"
     cruise_name = "HB0706"
     sensor_name = "EK60"
-    #file_name = "D20070711-T182032.raw"
+    # file_name = "D20070711-T182032.raw"
     # file_name = "D20070720-T224031.raw" # 84 KB
-    file_name = "D20070724-T042400.raw" # 1 MB
+    file_name = "D20070724-T042400.raw"  # 1 MB
 
     # SET UP S3 CLIENT
     # SET UP S3FS
@@ -124,7 +115,6 @@ def test_raw_to_zarr(s3_base):
     # )
     # #######################################################################
     # TODO: remove sns stuff self.__publish_done_message(input_message)
-
 
 #######################################################
 #######################################################
