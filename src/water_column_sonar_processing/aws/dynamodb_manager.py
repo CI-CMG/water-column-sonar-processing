@@ -36,31 +36,28 @@ class DynamoDBManager:
     #     assert (status_code == 200), "Problem, unable to update dynamodb table."
 
     #####################################################################
-    def create_table(
-        self,
-        table_name,
-        key_schema,
-        attribute_definitions,
-    ):
-        self.__dynamodb_client.create_table(
-            AttributeDefinitions=attribute_definitions,
-            TableName=table_name,
-            KeySchema=key_schema,
-            BillingMode="PAY_PER_REQUEST",  # "PROVISIONED",
-            # ProvisionedThroughput={
-            #     'ReadCapacityUnits': 1_000,
-            #     'WriteCapacityUnits': 1_000
-            # }
-        )
+    # def create_table(
+    #     self,
+    #     table_name,
+    #     key_schema,
+    #     attribute_definitions,
+    # ):
+    #     self.__dynamodb_client.create_table(
+    #         AttributeDefinitions=attribute_definitions,
+    #         TableName=table_name,
+    #         KeySchema=key_schema,
+    #         BillingMode="PAY_PER_REQUEST",  # "PROVISIONED",
+    #
+    #     )
 
     #####################################################################
     def create_water_column_sonar_table(
         self,
         table_name,
     ):
-        self.create_table(
-            table_name=table_name,
-            key_schema=[
+        self.__dynamodb_client.create_table(
+            TableName=table_name,
+            KeySchema=[
                 {
                     "AttributeName": "FILE_NAME",
                     "KeyType": "HASH",
@@ -70,14 +67,27 @@ class DynamoDBManager:
                     "KeyType": "RANGE",
                 },
             ],
-            attribute_definitions=[
+            AttributeDefinitions=[
                 {"AttributeName": "FILE_NAME", "AttributeType": "S"},
                 {"AttributeName": "CRUISE_NAME", "AttributeType": "S"},
             ],
+            BillingMode="PAY_PER_REQUEST"
+            # ProvisionedThroughput={
+            #     'ReadCapacityUnits': 1_000,
+            #     'WriteCapacityUnits': 1_000
+            # }
         )
+        # TODO: after creating status is 'CREATING', wait until 'ACTIVE'
+        response = self.__dynamodb_client.describe_table(TableName=table_name)
+        print(response) # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/client/describe_table.html
+        # response['Table']['TableStatus'] == 'ACTIVE'
 
     #####################################################################
-    def get_item(self, table_name, key):
+    def get_item(
+            self,
+            table_name,
+            key
+    ):
         response = self.__dynamodb_client.get_item(TableName=table_name, Key=key)
         item = None
         if response["ResponseMetadata"]["HTTPStatusCode"] == 200:

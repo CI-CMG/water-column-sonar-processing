@@ -169,6 +169,10 @@ __pycache__
 *.zarr
 *.csv
 
+*.raw
+*.bot
+*.idx
+
 .idea
 .pytest_cache
 .coverage

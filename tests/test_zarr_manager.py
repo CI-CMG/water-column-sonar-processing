@@ -99,7 +99,8 @@ def test_zarr_manager():
     assert file_xr.longitude.dtype == "float32"
     assert file_xr.depth.dtype == "float32"
     assert file_xr.time.dtype == "<M8[ns]"
-    assert file_xr.frequency.dtype == "float64"
+    assert file_xr.frequency.dtype == "float64" # TODO: There is a problem here
+    assert file_xr.bottom.dtype == "float32"
 
     # TODO: test depths
     # TODO: test compression
@@ -131,7 +132,6 @@ def test_open_zarr_with_zarr_read_write():
         sensor_name=sensor_name,
         frequencies=[18_000, 38_000, 70_000, 120_000],
         width=1201,  # number of ping samples recorded
-        # height=123,
         min_echo_range=0.5,
         max_echo_range=250.0,  # maximum depth found in cruise
         calibration_status=True,
@@ -140,7 +140,7 @@ def test_open_zarr_with_zarr_read_write():
     # TODO: copy store to bucket
 
     # TODO: open model store with model
-    pass
+    # pass
 
 
 #######################################################

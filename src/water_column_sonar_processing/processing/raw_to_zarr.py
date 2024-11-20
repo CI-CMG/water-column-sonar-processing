@@ -1,20 +1,11 @@
 import gc
 import os
-
 import echopype as ep
-import geopandas
 import numcodecs
 import numpy as np
-import pandas as pd
-# import xarray as xr
-import zarr
 from numcodecs import Blosc
-from datetime import datetime
-
-from water_column_sonar_processing.aws.s3fs_manager import S3FSManager
 from water_column_sonar_processing.geometry.geometry_manager import GeometryManager
 from water_column_sonar_processing.utility import Cleaner
-from pathlib import Path
 
 TEMPDIR = "/tmp"
 
@@ -123,6 +114,7 @@ class RawToZarr:
     ############################################################################
     def raw_to_zarr(
             self,
+            bucket_name, #="test_input_bucket"  # noaa-wcsd-pds
             ship_name,
             cruise_name,
             sensor_name,
@@ -133,10 +125,10 @@ class RawToZarr:
         try:
             gc.collect()
             print('Opening raw file with echopype.')
-            bucket_name="test_input_bucket" # noaa-wcsd-pds
             s3_file_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
             # s3_file_path = Path(f"s3://noaa-wcsd-pds/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}")
             # TODO: add the bottom file here
+            # GEtting here and am not able to read s3 files
             echodata = ep.open_raw(
                 raw_file=s3_file_path,
                 sonar_model=sensor_name,

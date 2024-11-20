@@ -1,7 +1,7 @@
 import pytest
 from moto import mock_aws
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
-from water_column_sonar_processing.aws import DynamoDBManager
+from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.processing.raw_to_zarr import RawToZarr
 
 # TEMPDIR = "/tmp"
@@ -41,24 +41,28 @@ def s3_base():
 
 #######################################################
 # @mock_aws(config={"core": {"service_whitelist": ["dynamodb", "s3"]}})
-# @mock_aws(config={"core": {"service_whitelist": ["dynamodb", "s3"]}})
+# @mock_aws(config={"core": {"service_whitelist": ["dynamodb"]}})
 @mock_aws
 def test_raw_to_zarr(s3_base):
     # s3_session = boto3.Session()
+    s3_manager = S3Manager()
+    s3_manager.list_buckets()
     # s3_client = s3_session.client(service_name="s3", endpoint_url=f"http://{ip_address}:{port}")
     # s3_client.list_buckets()
     # s3_manager = S3Manager()# input_endpoint_url=f"http://{ip_address}:{port}", output_endpoint_url=f"http://{ip_address}:{port}")
-    #  s3_manager.create_bucket(bucket_name="test_input_bucket")
-    #  s3_manager.upload_file(
-    #      body="./test_resources/D20070724-T042400.raw",
-    #      bucket="test_input_bucket",
-    #      key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.raw"
-    # )
-    #  s3_manager.upload_file(
-    #      body="./test_resources/D20070724-T042400.bot",
-    #      bucket="test_input_bucket",
-    #      key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.bot"
-    #  )
+    s3_manager.create_bucket(bucket_name="test_bucket")
+    s3_manager.list_buckets()
+    s3_manager.upload_file(
+         body="./test_resources/D20070724-T042400.raw",
+         bucket="test_bucket",
+         key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.raw"
+    )
+    s3_manager.upload_file(
+        body="./test_resources/D20070724-T042400.bot",
+        bucket="test_bucket",
+        key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.bot"
+    )
+    s3_manager.list_objects(bucket_name="test_bucket", prefix="")
     #  s3_manager.create_bucket(bucket_name="test_output_bucket")
 
     # s3fs = S3FileSystem(endpoint_url=endpoint_url)
@@ -68,24 +72,7 @@ def test_raw_to_zarr(s3_base):
     # s3_client.create_bucket(Bucket="test_output_bucket")
 
     # ---Create Table--- #
-    # TODO: move create tabel into DynamoDBManager
-    dynamo_db_manager.create_table(
-        table_name=table_name,
-        key_schema=[
-            {
-                "AttributeName": "FILE_NAME",
-                "KeyType": "HASH",
-            },
-            {
-                "AttributeName": "CRUISE_NAME",
-                "KeyType": "RANGE",
-            },
-        ],
-        attribute_definitions=[
-            {"AttributeName": "FILE_NAME", "AttributeType": "S"},
-            {"AttributeName": "CRUISE_NAME", "AttributeType": "S"},
-        ],
-    )
+    dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
 
     ship_name = "Henry_B._Bigelow"
     # cruise_name = "HB0707"
@@ -101,10 +88,16 @@ def test_raw_to_zarr(s3_base):
     # CREATE INPUT BUCKET [real]
     # CREATE OUTPUT BUCKET [mocked]
     # Update_processing_status PROCESSING_RAW_TO_ZARR in DynamoDB
-    # Test if zarr store already exists
+    # TODO: Test if zarr store already exists
     # TODO: try without downloading file self.__s3.download_file(bucket_name=self.__input_bucket, key=bucket_key, file_name=input_file_name)
     raw_to_zarr = RawToZarr()
-    raw_to_zarr.raw_to_zarr(ship_name=ship_name, cruise_name=cruise_name, sensor_name=sensor_name, file_name=file_name)
+    raw_to_zarr.raw_to_zarr(
+        bucket_name="test_bucket",
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        file_name=file_name
+    )
     # #######################################################################
     # self.__upload_files_to_output_bucket(store_name, output_zarr_prefix)
     # #######################################################################

@@ -58,24 +58,7 @@ def test_dynamodb_manager():
     dynamo_db_manager = DynamoDBManager()
 
     # ---Create Table--- #
-    # TODO: move create tabel into DynamoDBManager
-    dynamo_db_manager.create_table(
-        table_name=table_name,
-        key_schema=[
-            {
-                "AttributeName": "FILE_NAME",
-                "KeyType": "HASH",
-            },
-            {
-                "AttributeName": "CRUISE_NAME",
-                "KeyType": "RANGE",
-            },
-        ],
-        attribute_definitions=[
-            {"AttributeName": "FILE_NAME", "AttributeType": "S"},
-            {"AttributeName": "CRUISE_NAME", "AttributeType": "S"},
-        ],
-    )
+    dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
 
     # ---Add Items to Table--- #
     test_channels = [

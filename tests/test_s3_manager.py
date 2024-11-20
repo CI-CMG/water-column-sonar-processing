@@ -30,14 +30,14 @@ def test_s3_manager():
     s3_manager = S3Manager()
     s3_manager.create_bucket(bucket_name=test_bucket_name)
     print(s3_manager.list_buckets())
-    # s3.create_bucket(bucket_name=test_bucket_name)
 
     # --- tests the src --- #
     s3_manager.put(bucket_name=test_bucket_name, key="the_key", body="the_body")
+    s3_manager.list_objects(bucket_name=test_bucket_name, prefix="")
 
     s3_object = s3_manager.get_object(bucket_name=test_bucket_name, key_name="the_key")
 
-    body = s3_object.get()["Body"].read().decode("utf-8")
+    body = s3_object["Body"].read().decode("utf-8")
 
     assert body == "the_body"
 

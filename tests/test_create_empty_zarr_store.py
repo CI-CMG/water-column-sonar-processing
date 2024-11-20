@@ -47,7 +47,7 @@ def test_create_empty_zarr_store():
 
     # [1] create dynamodb table
     dynamo_db_manager.create_water_column_sonar_table(
-        table_name="water-column-sonar-table"
+        table_name="water-column-sonar-table" # TODO: use the other create table?
     )
 
     # [2] bootstrap w/ test data
