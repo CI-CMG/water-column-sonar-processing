@@ -5,7 +5,6 @@ import numpy as np
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 
-from tests.test_raw_to_zarr import table_name
 from water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
 from water_column_sonar_processing.aws.s3_manager import S3Manager
 from water_column_sonar_processing.aws.sns_manager import SNSManager

@@ -25,7 +25,7 @@ def teardown_module():
 
 #######################################################
 @mock_aws
-def test_create_empty_zarr_store():
+def test_create_empty_zarr_store():  # PASSING, needs modification at end
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager()
 
@@ -39,15 +39,17 @@ def test_create_empty_zarr_store():
     # [0] create bucket with test files
     input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
     output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
+
     s3_manager.create_bucket(bucket_name=input_bucket_name)
     s3_manager.create_bucket(bucket_name=output_bucket_name)
     print(s3_manager.list_buckets())
+
     # TODO: put at the path where it needs to be deleted
     s3_manager.put(bucket_name=input_bucket_name, key="the_key", body="the_body")
 
     # [1] create dynamodb table
     dynamo_db_manager.create_water_column_sonar_table(
-        table_name="water-column-sonar-table" # TODO: use the other create table?
+        table_name="water-column-sonar-table"
     )
 
     # [2] bootstrap w/ test data
@@ -80,7 +82,7 @@ def test_create_empty_zarr_store():
         249.792,
         249.792,
         249.792,
-        999.744,
+        999.744, # note: different depth
         249.792,
         249.792,
         249.792,
@@ -211,7 +213,7 @@ def test_create_empty_zarr_store():
         tempdir="/tmp",
     )
 
-    assert os.path.exists(f"/tmp/{cruise_name}.zarr")
+    assert os.path.exists(f"/tmp/{cruise_name}.zarr") # TODO: create better tmp directory for testing
     # TODO: should actually assert in the bucket
     # mount and verify:
     # shape

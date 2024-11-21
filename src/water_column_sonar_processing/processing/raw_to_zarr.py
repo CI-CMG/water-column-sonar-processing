@@ -4,6 +4,9 @@ import echopype as ep
 import numcodecs
 import numpy as np
 from numcodecs import Blosc
+from pathlib import Path, PurePath
+
+# from tests.test_raw_to_zarr import endpoint_url
 from water_column_sonar_processing.geometry.geometry_manager import GeometryManager
 from water_column_sonar_processing.utility import Cleaner
 
@@ -15,6 +18,7 @@ class RawToZarr:
     #######################################################
     def __init__(
             self,
+            # endpoint_url,
             # s3_operations,
             # dynamo_operations,
             # sns_operations,
@@ -32,6 +36,7 @@ class RawToZarr:
         self.__num_threads = numcodecs.blosc.get_nthreads()
         self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
         self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
+        # self.endpoint_url = endpoint_url,
         # self.__s3 = s3_operations
         # self.__dynamo = dynamo_operations
         # self.__sns_operations = sns_operations
@@ -125,17 +130,17 @@ class RawToZarr:
         try:
             gc.collect()
             print('Opening raw file with echopype.')
-            s3_file_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
+            # s3_f/;/ile_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
             # s3_file_path = Path(f"s3://noaa-wcsd-pds/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}")
             # TODO: add the bottom file here
             # GEtting here and am not able to read s3 files
             echodata = ep.open_raw(
-                raw_file=s3_file_path,
+                raw_file=file_name,
                 sonar_model=sensor_name,
                 # include_bot=True,
                 use_swap=True,
                 # max_chunk_size=100,
-                # storage_options={'anon': True} # this was creating problems
+                storage_options={'anon': True } # 'endpoint_url': self.endpoint_url} # this was creating problems
             )
             print('Compute volume backscattering strength (Sv) from raw data.')
             ds_sv = ep.calibrate.compute_Sv(echodata)

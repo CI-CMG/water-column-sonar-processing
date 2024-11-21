@@ -2,16 +2,15 @@
 # defined for Python 3.12
 # Note: be careful with conversions for pandas >=2.0.0, timestamps will have a lot of problems
 
-aiobotocore~=2.9.0
-aiohttp~=3.10.10
-boto3==1.33.13
-botocore~=1.33.13
+aiobotocore==2.15.2
+boto3==1.35.36
+botocore==1.35.36
 echopype==0.9.0
 fiona==1.10.1
 # Alternative to geopandas: pyogrio
 geopandas==1.0.1
-mock~=5.1.0
-moto~=5.0.18
+mock==5.1.0
+moto==5.0.21
 numcodecs==0.13.1
 numpy==1.26.4
 pandas==2.2.3

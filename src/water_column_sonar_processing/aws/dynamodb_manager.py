@@ -9,7 +9,11 @@ from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 #########################################################################
 class DynamoDBManager:
     #####################################################################
-    def __init__(self):
+    def __init__(
+            self,
+            # endpoint_url
+    ):
+        # self.endpoint_url = endpoint_url
         self.__dynamodb_session = boto3.Session(
             aws_access_key_id=os.environ.get("ACCESS_KEY_ID"),
             aws_secret_access_key=os.environ.get("SECRET_ACCESS_KEY"),
@@ -17,9 +21,11 @@ class DynamoDBManager:
         )
         self.__dynamodb_resource = self.__dynamodb_session.resource(
             service_name="dynamodb",
+            # endpoint_url=self.endpoint_url
         )
         self.__dynamodb_client = self.__dynamodb_session.client(
             service_name="dynamodb",
+            # endpoint_url=self.endpoint_url
         )
         self.type_serializer = TypeSerializer()  # https://stackoverflow.com/a/46738251
         self.type_deserializer = TypeDeserializer()
@@ -36,20 +42,6 @@ class DynamoDBManager:
     #     assert (status_code == 200), "Problem, unable to update dynamodb table."
 
     #####################################################################
-    # def create_table(
-    #     self,
-    #     table_name,
-    #     key_schema,
-    #     attribute_definitions,
-    # ):
-    #     self.__dynamodb_client.create_table(
-    #         AttributeDefinitions=attribute_definitions,
-    #         TableName=table_name,
-    #         KeySchema=key_schema,
-    #         BillingMode="PAY_PER_REQUEST",  # "PROVISIONED",
-    #
-    #     )
-
     #####################################################################
     def create_water_column_sonar_table(
         self,
@@ -80,20 +72,37 @@ class DynamoDBManager:
         # TODO: after creating status is 'CREATING', wait until 'ACTIVE'
         response = self.__dynamodb_client.describe_table(TableName=table_name)
         print(response) # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/client/describe_table.html
-        # response['Table']['TableStatus'] == 'ACTIVE'
+        # sleep then response['Table']['TableStatus'] == 'ACTIVE'
 
     #####################################################################
-    def get_item(
-            self,
-            table_name,
-            key
+    # don't think this is used?
+    # def get_item(
+    #         self,
+    #         table_name,
+    #         key
+    # ):
+    #     response = self.__dynamodb_client.get_item(TableName=table_name, Key=key)
+    #     item = None
+    #     if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+    #         if "Item" in response:
+    #             item = response["Item"]
+    #     return item
+
+    #####################################################################
+    def get_table_item(
+        self,
+        table_name,
+        key,
     ):
-        response = self.__dynamodb_client.get_item(TableName=table_name, Key=key)
-        item = None
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            if "Item" in response:
-                item = response["Item"]
-        return item
+        """
+        Gets a single row from the db.
+        """
+        table = self.__dynamodb_resource.Table(table_name)
+        response = table.get_item(Key=key)
+        # TODO:
+        # if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+        #     throw error
+        return response
 
     #####################################################################
     def update_item(
@@ -116,13 +125,18 @@ class DynamoDBManager:
         assert status_code == 200, "Problem, unable to update dynamodb table."
 
     #####################################################################
+    # TODO: change to "get_cruise_as_df"
     def get_table_as_df(
         self,
         ship_name,
         cruise_name,
         sensor_name,
         table_name,
-    ):
+    ) -> pd.DataFrame:
+        """
+        To be used to initialize a cruise, deletes all entries associated with that cruise
+        in the database.
+        """
         expression_attribute_values = {
             ":cr": {"S": cruise_name},
             ":se": {"S": sensor_name},
@@ -139,6 +153,9 @@ class DynamoDBManager:
             FilterExpression=filter_expression,
         )
         # Note: table.scan() has 1 MB limit on results so pagination is used
+        if len(response["Items"]) == 0:
+            return pd.DataFrame() # If no results, return empty dataframe
+
         data = response["Items"]
 
         while "LastEvaluatedKey" in response:
@@ -157,83 +174,104 @@ class DynamoDBManager:
         return df.sort_values(by="START_TIME", ignore_index=True)
 
     #####################################################################
-    # is this used?
-    def get_table_item(
-        self,
-        table_name,
-        key,
-    ):
-        # a bit more high level, uses resource to get table item
-        table = self.__dynamodb_resource.Table(table_name)
-        response = table.get_item(Key=key)
-        return response
-
-    #####################################################################
-    # TODO: add helper method to delete the data
-    def delete_cruise(
+    # TODO: WIP
+    def delete_item(
         self,
         table_name,
         cruise_name,
+        file_name,
     ):
-        pass
+        """
+        Finds all rows associated with a cruise and deletes them.
+        """
+        response = self.__dynamodb_client.delete_item(
+            Key={
+                "CRUISE_NAME": {
+                    "S": cruise_name
+                },
+                "FILE_NAME": {
+                    "S": file_name
+                }
+            },
+            TableName=table_name,
+            ReturnConsumedCapacity="TOTALS",
+        )
+        # TODO: there should be attributes included in response but they are missing
+        # if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
+        #     throw error
+        return response
 
     #####################################################################
-        # TODO: from test_raw_to_zarr get enum and use here
-        def __update_processing_status(
-                self,
-                file_name: str,
-                cruise_name: str,
-                pipeline_status: str,
-                error_message: str = None,
-        ):
-            print(f"Updating processing status to {pipeline_status}.")
-            if error_message:
-                print(f"Error message: {error_message}")
-                self.__dynamo.update_item(
-                    table_name=self.__table_name,
-                    key={
-                        'FILE_NAME': {'S': file_name},  # Partition Key
-                        'CRUISE_NAME': {'S': cruise_name},  # Sort Key
-                    },
-                    attribute_names={
-                        '#PT': 'PIPELINE_TIME',
-                        '#PS': 'PIPELINE_STATUS',
-                        '#EM': 'ERROR_MESSAGE',
-                    },
-                    expression='SET #PT = :pt, #PS = :ps, #EM = :em',
-                    attribute_values={
-                        ':pt': {
-                            'S': datetime.now().isoformat(timespec="seconds") + "Z"
-                        },
-                        ':ps': {
-                            'S': pipeline_status
-                        },
-                        ':em': {
-                            'S': error_message
-                        }
-                    }
-                )
-            else:
-                self.__dynamo.update_item(
-                    table_name=self.__table_name,
-                    key={
-                        'FILE_NAME': {'S': file_name},  # Partition Key
-                        'CRUISE_NAME': {'S': cruise_name},  # Sort Key
-                    },
-                    attribute_names={
-                        '#PT': 'PIPELINE_TIME',
-                        '#PS': 'PIPELINE_STATUS',
-                    },
-                    expression='SET #PT = :pt, #PS = :ps',
-                    attribute_values={
-                        ':pt': {
-                            'S': datetime.now().isoformat(timespec="seconds") + "Z"
-                        },
-                        ':ps': {
-                            'S': pipeline_status
-                        }
-                    }
-                )
-            print("Done updating processing status.")
+    def describe_table(
+            self,
+            table_name,
+    ):
+        """
+        Get a description of the table. Used to verify that records were added/removed.
+        """
+        response = self.__dynamodb_client.describe_table(TableName=table_name)
+        print(response)
+        return response
+
+
+
+    #####################################################################
+    # TODO: from test_raw_to_zarr get enum and use here
+    # def __update_processing_status(
+    #         self,
+    #         file_name: str,
+    #         cruise_name: str,
+    #         pipeline_status: str,
+    #         error_message: str = None,
+    # ):
+    #     print(f"Updating processing status to {pipeline_status}.")
+    #     if error_message:
+    #         print(f"Error message: {error_message}")
+    #         self.__dynamo.update_item(
+    #             table_name=self.__table_name,
+    #             key={
+    #                 'FILE_NAME': {'S': file_name},  # Partition Key
+    #                 'CRUISE_NAME': {'S': cruise_name},  # Sort Key
+    #             },
+    #             attribute_names={
+    #                 '#PT': 'PIPELINE_TIME',
+    #                 '#PS': 'PIPELINE_STATUS',
+    #                 '#EM': 'ERROR_MESSAGE',
+    #             },
+    #             expression='SET #PT = :pt, #PS = :ps, #EM = :em',
+    #             attribute_values={
+    #                 ':pt': {
+    #                     'S': datetime.now().isoformat(timespec="seconds") + "Z"
+    #                 },
+    #                 ':ps': {
+    #                     'S': pipeline_status
+    #                 },
+    #                 ':em': {
+    #                     'S': error_message
+    #                 }
+    #             }
+    #         )
+    #     else:
+    #         self.__dynamo.update_item(
+    #             table_name=self.__table_name,
+    #             key={
+    #                 'FILE_NAME': {'S': file_name},  # Partition Key
+    #                 'CRUISE_NAME': {'S': cruise_name},  # Sort Key
+    #             },
+    #             attribute_names={
+    #                 '#PT': 'PIPELINE_TIME',
+    #                 '#PS': 'PIPELINE_STATUS',
+    #             },
+    #             expression='SET #PT = :pt, #PS = :ps',
+    #             attribute_values={
+    #                 ':pt': {
+    #                     'S': datetime.now().isoformat(timespec="seconds") + "Z"
+    #                 },
+    #                 ':ps': {
+    #                     'S': pipeline_status
+    #                 }
+    #             }
+    #         )
+    #     print("Done updating processing status.")
 
 #########################################################################

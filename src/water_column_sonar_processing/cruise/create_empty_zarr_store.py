@@ -17,6 +17,7 @@ numcodecs.blosc.set_nthreads(1)
 # creates the latlon data: foo = ep.consolidate.add_location(ds_Sv, echodata)
 
 
+# TODO: change name to "CreateLocalEmptyZarrStore"
 class CreateEmptyZarrStore:
     #######################################################
     def __init__(
@@ -28,6 +29,7 @@ class CreateEmptyZarrStore:
 
     #######################################################
 
+    # TODO: move this to the s3_manager
     def upload_zarr_store_to_s3(
         self,
         local_directory: str,

@@ -2,6 +2,7 @@ import os
 
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
+from os import walk
 
 from water_column_sonar_processing.aws.s3_manager import S3Manager, chunked
 
@@ -22,7 +23,7 @@ def teardown_module():
 
 #######################################################
 @mock_aws
-def test_s3_manager():
+def test_s3_manager(tmp_path):
     # test-input-bucket
     test_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
 
@@ -43,6 +44,13 @@ def test_s3_manager():
 
     all_buckets = s3_manager.list_buckets()
     print(all_buckets)
+
+    s3_manager.download_file(bucket_name=test_bucket_name, key="the_key", file_name="the_file")
+
+
+    filenames = next(walk(""), (None, None, []))[2]  # [] if no file
+    assert 'the_file' in filenames
+
 
 
 #######################################################

@@ -1,4 +1,5 @@
 import pytest
+from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
@@ -21,14 +22,23 @@ table_name = "test_table"
 #
 # def teardown_module():
 #     print("teardown")
+def setup_module():
+    print("setup")
+    env_file = find_dotenv(".env-test")
+    load_dotenv(dotenv_path=env_file, override=True)
 
 
-@pytest.fixture(scope="module")
-def s3_base():
-    s3_server = ThreadedMotoServer(ip_address=ip_address, port=port)
-    s3_server.start()
-    yield
-    s3_server.stop()
+def teardown_module():
+    print("teardown")
+
+
+
+# @pytest.fixture(scope="module")
+# def s3_base():
+#     s3_server = ThreadedMotoServer(ip_address=ip_address, port=port)
+#     s3_server.start()
+#     yield
+#     s3_server.stop()
 
 
 #######################################################
@@ -43,30 +53,32 @@ def s3_base():
 # @mock_aws(config={"core": {"service_whitelist": ["dynamodb", "s3"]}})
 # @mock_aws(config={"core": {"service_whitelist": ["dynamodb"]}})
 @mock_aws
-def test_raw_to_zarr(s3_base):
+def test_raw_to_zarr():
+    #def test_raw_to_zarr(s3_base):
     # s3_session = boto3.Session()
-    s3_manager = S3Manager()
+    s3_manager = S3Manager()#endpoint_url=endpoint_url)
     s3_manager.list_buckets()
     # s3_client = s3_session.client(service_name="s3", endpoint_url=f"http://{ip_address}:{port}")
     # s3_client.list_buckets()
     # s3_manager = S3Manager()# input_endpoint_url=f"http://{ip_address}:{port}", output_endpoint_url=f"http://{ip_address}:{port}")
-    s3_manager.create_bucket(bucket_name="test_bucket")
+    input_bucket_name = "test_bucket"
+    s3_manager.create_bucket(bucket_name=input_bucket_name)
     s3_manager.list_buckets()
     s3_manager.upload_file(
          body="./test_resources/D20070724-T042400.raw",
-         bucket="test_bucket",
+         bucket=input_bucket_name,
          key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.raw"
     )
     s3_manager.upload_file(
         body="./test_resources/D20070724-T042400.bot",
-        bucket="test_bucket",
+        bucket=input_bucket_name,
         key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.bot"
     )
-    s3_manager.list_objects(bucket_name="test_bucket", prefix="")
+    s3_manager.list_objects(bucket_name=input_bucket_name, prefix="")
     #  s3_manager.create_bucket(bucket_name="test_output_bucket")
 
     # s3fs = S3FileSystem(endpoint_url=endpoint_url)
-    dynamo_db_manager = DynamoDBManager()
+    dynamo_db_manager = DynamoDBManager()# endpoint_url=endpoint_url)
 
     # s3_client.create_bucket(Bucket="test_input_bucket")
     # s3_client.create_bucket(Bucket="test_output_bucket")
@@ -90,7 +102,10 @@ def test_raw_to_zarr(s3_base):
     # Update_processing_status PROCESSING_RAW_TO_ZARR in DynamoDB
     # TODO: Test if zarr store already exists
     # TODO: try without downloading file self.__s3.download_file(bucket_name=self.__input_bucket, key=bucket_key, file_name=input_file_name)
-    raw_to_zarr = RawToZarr()
+    raw_to_zarr = RawToZarr() # endpoint_url=endpoint_url)
+    # s3_file_path = f"s3://{input_bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
+    s3_file_path = f"/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
+    s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=file_name)
     raw_to_zarr.raw_to_zarr(
         bucket_name="test_bucket",
         ship_name=ship_name,
