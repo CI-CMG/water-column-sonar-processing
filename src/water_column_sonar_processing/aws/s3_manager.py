@@ -80,6 +80,7 @@ class S3Manager:
             region_name=self.s3_region,
         )
         self.paginator = self.s3_client.get_paginator('list_objects_v2')
+        self.paginator_noaa_wcsd_zarr_pds = self.s3_client_noaa_wcsd_zarr_pds.get_paginator('list_objects_v2')
 
     def get_client(self): # TODO: do i need this?
         return self.s3_session.client(
@@ -110,14 +111,16 @@ class S3Manager:
     #####################################################################
     def upload_nodd_file(
         self,
+        output_bucket_name: str,
         file_name: str,
         key: str,
     ):
-        self.s3_client_noaa_wcsd_zarr_pds.upload_file(
-            Filename=file_name,
-            Bucket=self.output_bucket_name,
-            Key=key,
-        )
+        # self.s3_client_noaa_wcsd_zarr_pds.upload_file(
+        #     Filename=file_name,
+        #     Bucket=self.output_bucket_name,
+        #     Key=key,
+        # )
+        self.s3_resource_noaa_wcsd_zarr_pds.Bucket(output_bucket_name).upload_file(Filename=file_name, Key=key)
         return key
 
     #####################################################################
@@ -147,7 +150,7 @@ class S3Manager:
         return all_uploads
 
     #####################################################################
-    def upload_file(
+    def upload_nodd_file(
             self,
             body: str,
             bucket: str,
@@ -159,6 +162,15 @@ class S3Manager:
             Key=key,
         )
 
+    # TODO: this uses resource, try to use client
+    def upload_file(
+            self,
+            filename: str,
+            bucket_name: str,
+            key: str,
+    ):
+        # self.s3_client.upload_file(Filename=filename, Bucket=bucket, Key=key)
+        self.s3_resource.Bucket(bucket_name).upload_file(Filename=filename, Key=key)
 
     #####################################################################
     def upload_zarr_files_to_bucket(  # noaa-wcsd-model-pds
@@ -190,30 +202,32 @@ class S3Manager:
     #####################################################################
     # used: raw-to-model
     def list_objects(  # noaa-wcsd-pds and noaa-wcsd-model-pds
-        self, bucket_name, prefix
+        self,
+        bucket_name,
+        prefix
     ):
         # analog to "find_children_objects"
         # Returns a list of key strings for each object in bucket defined by prefix
-        s3_client = self.s3_client
+        # s3_client = self.s3_client
         keys = []
-        paginator = s3_client.get_paginator("list_objects_v2")
-        page_iterator = paginator.paginate(Bucket=bucket_name, Prefix=prefix)
+        # paginator = s3_client.get_paginator("list_objects_v2")
+        page_iterator = self.paginator.paginate(Bucket=bucket_name, Prefix=prefix)
         for page in page_iterator:
             if "Contents" in page.keys():
                 keys.extend([k["Key"] for k in page["Contents"]])
         return keys
 
-    def list_nodd_objects(  # These are used by the geometry for uploading data
-        self,
-        prefix,
-    ):
-        # Returns a list of key strings for each object in bucket defined by prefix
-        keys = []
-        paginator = self.s3_client_noaa_wcsd_zarr_pds.get_paginator("list_objects_v2")
-        for page in paginator.paginate(Bucket=self.output_bucket_name, Prefix=prefix):
-            if "Contents" in page.keys():
-                keys.extend([k["Key"] for k in page["Contents"]])
-        return keys
+    # def list_nodd_objects(  # These are used by the geometry for uploading data
+    #     self,
+    #     prefix,
+    # ):
+    #     # Returns a list of key strings for each object in bucket defined by prefix
+    #     keys = []
+    #     page_iterator = self.paginator_noaa_wcsd_zarr_pds.paginate(Bucket=self.output_bucket_name, Prefix=prefix):
+    #     for page in paginator.paginate(Bucket=self.output_bucket_name, Prefix=prefix):
+    #         if "Contents" in page.keys():
+    #             keys.extend([k["Key"] for k in page["Contents"]])
+    #     return keys
 
     #####################################################################
     # TODO: change name to "directory"
@@ -305,6 +319,7 @@ class S3Manager:
         file_name,
     ):
         self.s3_client.download_file(Bucket=bucket_name, Key=key, Filename=file_name)
+        # TODO: if bottom file doesn't exist, don't fail downloader
         print("downloaded file")
 
     #####################################################################

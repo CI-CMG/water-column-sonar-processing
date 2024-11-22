@@ -120,27 +120,26 @@ class RawToZarr:
     def raw_to_zarr(
             self,
             bucket_name, #="test_input_bucket"  # noaa-wcsd-pds
+            output_bucket_name,
             ship_name,
             cruise_name,
             sensor_name,
-            file_name,
+            raw_file_name,
     ):
-        print(f'Opening raw: {file_name} and creating zarr store.')
+        print(f'Opening raw: {raw_file_name} and creating zarr store.')
         geometry_manager = GeometryManager()
         try:
             gc.collect()
             print('Opening raw file with echopype.')
-            # s3_f/;/ile_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
+            # s3_file_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
             # s3_file_path = Path(f"s3://noaa-wcsd-pds/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}")
-            # TODO: add the bottom file here
-            # GEtting here and am not able to read s3 files
             echodata = ep.open_raw(
-                raw_file=file_name,
+                raw_file=raw_file_name,
                 sonar_model=sensor_name,
-                # include_bot=True,
+                include_bot=True,
                 use_swap=True,
                 # max_chunk_size=100,
-                storage_options={'anon': True } # 'endpoint_url': self.endpoint_url} # this was creating problems
+                # storage_options={'anon': True } # 'endpoint_url': self.endpoint_url} # this was creating problems
             )
             print('Compute volume backscattering strength (Sv) from raw data.')
             ds_sv = ep.calibrate.compute_Sv(echodata)
@@ -150,10 +149,12 @@ class RawToZarr:
             # Get GPS coordinates
             gps_data, lat, lon = geometry_manager.read_echodata_gps_data(
                 echodata=echodata,
+                bucket_name=bucket_name,
+                output_bucket_name=output_bucket_name,
                 ship_name=ship_name,
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
-                file_name=file_name,
+                file_name=raw_file_name,
                 write_geojson=True
             )
             # gps_data, lat, lon = self.__get_gps_data(echodata=echodata)
@@ -172,15 +173,19 @@ class RawToZarr:
             #
             #################################################################
             # Create the zarr store
+            store_name = f"{Path(raw_file_name).stem}.zarr"
             ds_sv.to_zarr(store=store_name)
             #################################################################
             print('Note: Adding GeoJSON inside Zarr store')
-            self.__write_geojson_to_file(store_name=store_name, data=gps_data)
+            self.__write_geojson_to_file(
+                store_name=store_name,
+                data=gps_data
+            )
             #################################################################
             self.__zarr_info_to_table(
                 file_name=raw_file_name,
                 cruise_name=cruise_name,
-                zarr_path=os.path.join(output_zarr_prefix, store_name),
+                zarr_path=os.path.join(f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/", store_name),
                 min_echo_range=min_echo_range,
                 max_echo_range=max_echo_range,
                 num_ping_time_dropna=num_ping_time_dropna,

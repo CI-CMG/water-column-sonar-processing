@@ -33,6 +33,8 @@ class GeometryManager:
     def read_echodata_gps_data(
         self,
         echodata,
+        bucket_name,
+        output_bucket_name,
         ship_name,
         cruise_name,
         sensor_name,
@@ -124,7 +126,7 @@ class GeometryManager:
                 crs="epsg:4326",
             )
             # Note: We set np.nan to 0,0 so downstream missing values can be omitted
-
+            # TODO: so what ends up here is data with corruption at null island!!!
             geo_json_line = gps_gdf.to_json()
             if write_geojson:
                 print("Creating local copy of geojson file.")
@@ -137,7 +139,8 @@ class GeometryManager:
 
                 print("Checking s3 and deleting any existing GeoJSON file.")
                 s3_manager = S3Manager()
-                s3_objects = s3_manager.list_nodd_objects(
+                s3_objects = s3_manager.list_objects(
+                    bucket_name=output_bucket_name,
                     prefix=f"{geo_json_prefix}/{geo_json_name}"
                 )
                 if len(s3_objects) > 0:
@@ -148,6 +151,7 @@ class GeometryManager:
 
                 print("Upload GeoJSON to s3.")
                 s3_manager.upload_nodd_file(
+                    output_bucket_name=output_bucket_name,
                     file_name=geo_json_name,  # file_name
                     key=f"{geo_json_prefix}/{geo_json_name}",  # key
                 )

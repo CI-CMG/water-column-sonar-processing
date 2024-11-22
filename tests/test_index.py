@@ -26,7 +26,6 @@ def test_list_cruises():
 def test_list_ek60_cruises():
     pass
 
-
 #######################################################
 def test_get_raw_files():
     pass
@@ -52,10 +51,19 @@ def test_get_ek60_objects():
     pass
 
 #######################################################
-def test_get_calibration_information():
+def test_get_calibration_information(): # good
+    """
+    Reads the calibrated_cruises.csv file and determines which cruises have calibration information saved.
+    """
     input_bucket_name = "noaa-wcsd-pds"
     calibration_bucket = "noaa-wcsd-pds-index"
     calibration_key = "calibrated_cruises.csv"
+
+    # TODO: create bucket
+
+    # TODO: put calibration file in bucket
+
+    # TODO: mock reading from bucket
 
     index_manager = IndexManager(input_bucket_name, calibration_bucket, calibration_key)
 
@@ -80,7 +88,7 @@ def test_get_calibration_information():
 #     all_ek60_data = index.index()
 #     print(all_ek60_data)
 
-
+# TODO: mock this, right now it is generating csvs for all ek60 cruises
 def test_get_all_cruise_raw_files(tmp_path):
     input_bucket_name = "noaa-wcsd-pds"
     calibration_bucket = "noaa-wcsd-pds-index"
@@ -182,6 +190,7 @@ def test_get_all_cruise_raw_files(tmp_path):
         datagram = index_manager.scan_datagram(select_key=select_key)
         if datagram == "CON0":  # if ek60
             print(f"{c_n} is ek60")
+            # TODO: this is currently writing to csv, TODO: write to dynamodb
             ### create csv file with all raw file paths ###
             index_manager.get_raw_files_csv(
                 ship_name=s_n, cruise_name=c_n, sensor_name="EK60"

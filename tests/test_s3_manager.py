@@ -33,6 +33,7 @@ def test_s3_manager(tmp_path):
     print(s3_manager.list_buckets())
 
     # --- tests the src --- #
+    # TODO: create tmp directory with tmp file and upload that
     s3_manager.put(bucket_name=test_bucket_name, key="the_key", body="the_body")
     s3_manager.list_objects(bucket_name=test_bucket_name, prefix="")
 

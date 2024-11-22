@@ -103,7 +103,10 @@ class IndexManager:
         print("done")
 
     #################################################################
-    def get_subset_ek60_prefix(self, df: pd.DataFrame) -> pd.DataFrame:
+    def get_subset_ek60_prefix( # TODO: is this used?
+        self,
+        df: pd.DataFrame
+    ) -> pd.DataFrame:
         # Returns all objects with 'EK60' in prefix of file path
         # Note that this can include 'EK80' data that are false-positives
         # in dataframe with ['key', 'filename', 'ship', 'cruise', 'sensor', 'size', 'date', 'datagram']
@@ -147,7 +150,10 @@ class IndexManager:
         return pd.DataFrame(objects)
 
     #################################################################
-    def scan_datagram(self, select_key: str) -> list:
+    def scan_datagram(
+        self,
+        select_key: str
+    ) -> list:
         # Reads the first 8 bytes of S3 file. Used to determine if ek60 or ek80
         # Note: uses boto3 session instead of boto3 client: https://github.com/boto/boto3/issues/801
         # select_key = 'data/raw/Albatross_Iv/AL0403/EK60/L0005-D20040302-T200108-EK60.raw'
@@ -163,7 +169,10 @@ class IndexManager:
         return first_datagram
 
     #################################################################
-    def get_subset_datagrams(self, df: pd.DataFrame) -> list:
+    def get_subset_datagrams(
+        self,
+        df: pd.DataFrame
+    ) -> list:
         print("getting subset of datagrams")
         select_keys = list(
             df[["KEY", "CRUISE"]].drop_duplicates(subset="CRUISE")["KEY"].values
@@ -182,7 +191,9 @@ class IndexManager:
 
     #################################################################
     def get_ek60_objects(
-        self, df: pd.DataFrame, subset_datagrams: list
+        self,
+        df: pd.DataFrame,
+        subset_datagrams: list
     ) -> pd.DataFrame:
         # for each key write datagram value to all other files in same cruise
         for subset_datagram in subset_datagrams:
