@@ -113,6 +113,9 @@ def test_raw_to_zarr():
         sensor_name=sensor_name,
         raw_file_name=raw_file_name
     )
+
+    # TODO: test if zarr store is accessible in the s3 bucket
+
     # #######################################################################
     # self.__upload_files_to_output_bucket(store_name, output_zarr_prefix)
     # #######################################################################
