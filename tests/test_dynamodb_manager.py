@@ -200,6 +200,7 @@ def update_dynamodb_item(
         key={
             "FILE_NAME": {"S": file_name},  # Partition Key
             "CRUISE_NAME": {"S": cruise_name},  # Sort Key
+            # TODO: should be FILE_NAME & SENSOR_NAME? so they are truly unique for when two sensors are processed within one cruise
         },
         expression_attribute_names={
             "#CH": "CHANNELS",

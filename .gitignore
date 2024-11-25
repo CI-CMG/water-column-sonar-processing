@@ -1,3 +1,8 @@
+tests/*.zarr
+tests/*.bot
+tests/*.raw
+tests/*.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

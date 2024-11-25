@@ -27,13 +27,12 @@ class GeometryManager:
         self,
     ):
         self.DECIMAL_PRECISION = 5  # precision for GPS coordinates
-        self.SIMPLIFICATION_TOLERANCE = 0.0001  # RDP simplification to street level
+        self.SIMPLIFICATION_TOLERANCE = 0.0001  # RDP simplification to "street level"
 
     #######################################################
     def read_echodata_gps_data(
         self,
         echodata,
-        bucket_name,
         output_bucket_name,
         ship_name,
         cruise_name,
@@ -131,7 +130,7 @@ class GeometryManager:
             if write_geojson:
                 print("Creating local copy of geojson file.")
                 with open(geo_json_name, "w") as write_file:
-                    write_file.write(geo_json_line) # NOTE: this file can includes zeros for lat lon
+                    write_file.write(geo_json_line) # NOTE: this file can include zeros for lat lon
 
                 geo_json_prefix = (
                     f"spatial/geojson/{ship_name}/{cruise_name}/{sensor_name}"
@@ -151,9 +150,9 @@ class GeometryManager:
 
                 print("Upload GeoJSON to s3.")
                 s3_manager.upload_nodd_file(
-                    output_bucket_name=output_bucket_name,
                     file_name=geo_json_name,  # file_name
                     key=f"{geo_json_prefix}/{geo_json_name}",  # key
+                    output_bucket_name=output_bucket_name,
                 )
 
                 # TODO: delete geo_json file

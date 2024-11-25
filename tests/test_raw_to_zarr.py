@@ -53,13 +53,12 @@ def teardown_module():
 @mock_aws
 def test_raw_to_zarr():
     #def test_raw_to_zarr(s3_base):
-    # s3_session = boto3.Session()
     s3_manager = S3Manager()#endpoint_url=endpoint_url)
     s3_manager.list_buckets()
     # s3_client = s3_session.client(service_name="s3", endpoint_url=f"http://{ip_address}:{port}")
     # s3_client.list_buckets()
     # s3_manager = S3Manager()# input_endpoint_url=f"http://{ip_address}:{port}", output_endpoint_url=f"http://{ip_address}:{port}")
-    input_bucket_name = "test_bucket"
+    input_bucket_name = "test_input_bucket"
     output_bucket_name = "test_output_bucket"
     s3_manager.create_bucket(bucket_name=input_bucket_name)
     s3_manager.create_bucket(bucket_name=output_bucket_name)
@@ -75,20 +74,19 @@ def test_raw_to_zarr():
         bucket_name=input_bucket_name,
         key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.bot"
     )
-    s3_manager.list_objects(bucket_name=input_bucket_name, prefix="")
-    #  s3_manager.create_bucket(bucket_name="test_output_bucket")
+    assert len(s3_manager.list_objects(bucket_name=input_bucket_name, prefix="")) == 2
+
+    # TODO: put stale geojson & zarr store to test deleting
+    s3_manager.create_bucket(bucket_name="test_output_bucket")
+    assert len(s3_manager.list_buckets()["Buckets"]) == 2
 
     # s3fs = S3FileSystem(endpoint_url=endpoint_url)
     dynamo_db_manager = DynamoDBManager()# endpoint_url=endpoint_url)
-
-    # s3_client.create_bucket(Bucket="test_input_bucket")
-    # s3_client.create_bucket(Bucket="test_output_bucket")
 
     # ---Create Empty Table--- #
     dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
 
     ship_name = "Henry_B._Bigelow"
-    # cruise_name = "HB0707"
     cruise_name = "HB0706"
     sensor_name = "EK60"
     # file_name = "D20070711-T182032.raw"
@@ -98,6 +96,7 @@ def test_raw_to_zarr():
 
     # TODO: Test if zarr store already exists
 
+    # TODO: move this into the raw_to_zarr function
     # s3_file_path = f"s3://{input_bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
     s3_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
     s3_bottom_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
@@ -106,7 +105,8 @@ def test_raw_to_zarr():
 
     raw_to_zarr = RawToZarr()  # endpoint_url=endpoint_url)
     raw_to_zarr.raw_to_zarr(
-        bucket_name="test_bucket",
+        table_name=table_name,
+        input_bucket_name="test_input_bucket",
         output_bucket_name="test_output_bucket",
         ship_name=ship_name,
         cruise_name=cruise_name,
@@ -115,6 +115,8 @@ def test_raw_to_zarr():
     )
 
     # TODO: test if zarr store is accessible in the s3 bucket
+
+    # TODO: check the dynamodb dataframe to see if info is updated there
 
     # #######################################################################
     # self.__upload_files_to_output_bucket(store_name, output_zarr_prefix)

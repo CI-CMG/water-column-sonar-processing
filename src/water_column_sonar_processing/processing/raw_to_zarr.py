@@ -6,6 +6,7 @@ import numpy as np
 from numcodecs import Blosc
 from pathlib import Path, PurePath
 
+from water_column_sonar_processing.aws import DynamoDBManager
 # from tests.test_raw_to_zarr import endpoint_url
 from water_column_sonar_processing.geometry.geometry_manager import GeometryManager
 from water_column_sonar_processing.utility import Cleaner
@@ -52,6 +53,7 @@ class RawToZarr:
     ############################################################################
     def __zarr_info_to_table(
             self,
+            table_name,
             file_name,
             cruise_name,
             zarr_path,
@@ -64,54 +66,48 @@ class RawToZarr:
             channels
     ):
         print('Writing Zarr information to DynamoDB table.')
-        self.__dynamo.update_item(
-            table_name=self.__table_name,
+        dynamodb_manager = DynamoDBManager()
+        dynamodb_manager.update_item(
+            table_name=table_name,
             key={
                 'FILE_NAME': {'S': file_name},  # Partition Key
                 'CRUISE_NAME': {'S': cruise_name},  # Sort Key
-                # TODO: should be FILE_NAME & SENSOR_NAME so they are truely unique for when two sensors are processed within one cruise
             },
-            expression='SET #ZB = :zb, #ZP = :zp, #MINER = :miner, #MAXER = :maxer, #P = :p, #ST = :st, #ET = :et, #F = :f, #C = :c',
-            attribute_names={
+            expression_attribute_names={
+                '#CH': 'CHANNELS',
+                '#ET': 'END_TIME',
+                '#FR': 'FREQUENCIES',
+                '#MA': 'MAX_ECHO_RANGE',
+                '#MI': 'MIN_ECHO_RANGE',
+                '#ND': 'NUM_PING_TIME_DROPNA',
+                '#ST': 'START_TIME',
                 '#ZB': 'ZARR_BUCKET',
                 '#ZP': 'ZARR_PATH',
-                '#MINER': 'MIN_ECHO_RANGE',
-                '#MAXER': 'MAX_ECHO_RANGE',
-                '#P': 'NUM_PING_TIME_DROPNA',
-                '#ST': 'START_TIME',
-                '#ET': 'END_TIME',
-                '#F': 'FREQUENCIES',
-                '#C': 'CHANNELS',
             },
-            attribute_values={
-                ':zb': {
-                    'S': self.__output_bucket
-                },
-                ':zp': {
-                    'S': zarr_path
-                },
-                ':miner': {
-                    'N': str(np.round(min_echo_range, 4))
-                },
-                ':maxer': {
-                    'N': str(np.round(max_echo_range, 4))
-                },
-                ':p': {
-                    'N': str(num_ping_time_dropna)
-                },
-                ':st': {
-                    'S': start_time
-                },
-                ':et': {
-                    'S': end_time
-                },
-                ':f': {
-                    'L': [{'N': str(i)} for i in frequencies]
-                },
-                ':c': {
-                    'L': [{'S': i} for i in channels]
-                }
-            }
+            expression_attribute_values={
+                ":ch": {"L": [{"S": i} for i in channels]},
+                ":et": {"S": end_time},
+                ":fr": {"L": [{"N": str(i)} for i in frequencies]},
+                ":ma": {"N": str(np.round(max_echo_range, 4))},
+                ":mi": {"N": str(np.round(min_echo_range, 4))},
+                ":nd": {"N": str(num_ping_time_dropna)},
+                ":st": {"S": start_time},
+                ":zb": {"S": self.output_bucket_name},
+                ":zp": { "S": zarr_path },
+            },
+            # update_expression='SET #ZB = :zb, #ZP = :zp, #MINER = :miner, #MAXER = :maxer, #P = :p, #ST = :st, #ET = :et, #F = :f, #C = :c',
+            update_expression=(
+                "SET "
+                "#CH = :ch, "
+                "#ET = :et, "
+                "#FR = :fr, "
+                "#MA = :ma, "
+                "#MI = :mi, "
+                "#ND = :nd, "
+                "#ST = :st, "
+                "#ZB = :zb, "
+                "#ZP = :zp"
+            ),
         )
 
     ############################################################################
@@ -119,7 +115,8 @@ class RawToZarr:
     ############################################################################
     def raw_to_zarr(
             self,
-            bucket_name, #="test_input_bucket"  # noaa-wcsd-pds
+            table_name,
+            input_bucket_name, #="test_input_bucket"  # noaa-wcsd-pds
             output_bucket_name,
             ship_name,
             cruise_name,
@@ -128,6 +125,8 @@ class RawToZarr:
     ):
         print(f'Opening raw: {raw_file_name} and creating zarr store.')
         geometry_manager = GeometryManager()
+        cleaner = Cleaner()
+        cleaner.delete_local_files(file_types=["*.zarr", "*.json"]) # TODO: include bot and raw?ß
         try:
             gc.collect()
             print('Opening raw file with echopype.')
@@ -149,7 +148,6 @@ class RawToZarr:
             # Get GPS coordinates
             gps_data, lat, lon = geometry_manager.read_echodata_gps_data(
                 echodata=echodata,
-                bucket_name=bucket_name,
                 output_bucket_name=output_bucket_name,
                 ship_name=ship_name,
                 cruise_name=cruise_name,
@@ -161,6 +159,7 @@ class RawToZarr:
             #################################################################
             # Technically the min_echo_range would be 0 m.
             # TODO: this var name is supposed to represent minimum resolution of depth measurements
+            # TODO revert this so that smaller diffs can be used
             # The most minimum the resolution can be is as small as 0.25 meters
             min_echo_range = np.maximum(0.25, np.nanmin(np.diff(ds_sv.echo_range.values)))
             max_echo_range = float(np.nanmax(ds_sv.echo_range))
@@ -176,16 +175,18 @@ class RawToZarr:
             store_name = f"{Path(raw_file_name).stem}.zarr"
             ds_sv.to_zarr(store=store_name)
             #################################################################
-            print('Note: Adding GeoJSON inside Zarr store')
-            self.__write_geojson_to_file(
-                store_name=store_name,
-                data=gps_data
-            )
+            # TODO: do i still need this?
+            # print('Note: Adding GeoJSON inside Zarr store')
+            # self.__write_geojson_to_file( # Was trying to write geojson to the L1 zarr store
+            #     store_name=store_name,
+            #     data=gps_data
+            # )
             #################################################################
             self.__zarr_info_to_table(
+                table_name=table_name,
                 file_name=raw_file_name,
                 cruise_name=cruise_name,
-                zarr_path=os.path.join(f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/", store_name),
+                zarr_path=os.path.join(f"level_1/{ship_name}/{cruise_name}/{sensor_name}/", store_name),
                 min_echo_range=min_echo_range,
                 max_echo_range=max_echo_range,
                 num_ping_time_dropna=num_ping_time_dropna,
@@ -194,6 +195,7 @@ class RawToZarr:
                 frequencies=frequencies,
                 channels=channels
             )
+            print('here')
         except Exception as err:
             print(f'Exception encountered creating local Zarr store with echopype: {err}')
             raise RuntimeError(f"Problem creating local Zarr store, {err}")
@@ -223,87 +225,88 @@ class RawToZarr:
         return all_uploads
 
     ############################################################################
-    def execute(self, input_message):
-        ship_name = input_message['shipName']
-        cruise_name = input_message['cruiseName']
-        sensor_name = input_message['sensorName']
-        input_file_name = input_message['fileName']
-        #
-        try:
-            self.__update_processing_status(
-                file_name=input_file_name,
-                cruise_name=cruise_name,
-                pipeline_status="PROCESSING_RAW_TO_ZARR"
-            )
-            #######################################################################
-            store_name = f"{os.path.splitext(input_file_name)[0]}.zarr"
-            output_zarr_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}"
-            bucket_key = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{input_file_name}"
-            zarr_prefix = os.path.join("level_1", ship_name, cruise_name, sensor_name)
-            #
-            os.chdir(TEMPDIR)  # Lambdas require use of temp directory
-            #######################################################################
-            #######################################################################
-            # Check if zarr store already exists
-            s3_objects = self.__s3.list_objects(
-                bucket_name=self.__output_bucket,
-                prefix=f"{zarr_prefix}/{os.path.splitext(input_file_name)[0]}.zarr/",
-                access_key_id=self.__output_bucket_access_key,
-                secret_access_key=self.__output_bucket_secret_access_key
-            )
-            if len(s3_objects) > 0:
-                print('Zarr store data already exists in s3, deleting existing and continuing.')
-                self.__s3.delete_objects(
-                    bucket_name=self.__output_bucket,
-                    objects=s3_objects,
-                    access_key_id=self.__output_bucket_access_key,
-                    secret_access_key=self.__output_bucket_secret_access_key
-                )
-            #######################################################################
-            # self.__delete_all_local_raw_and_zarr_files()
-            Cleaner.delete_local_files(file_types=["*.raw*", "*.zarr"])
-            self.__s3.download_file(
-                bucket_name=self.__input_bucket,
-                key=bucket_key,
-                file_name=input_file_name
-            )
-            self.__create_local_zarr_store(
-                raw_file_name=input_file_name,
-                cruise_name=cruise_name,
-                sensor_name=sensor_name,
-                output_zarr_prefix=output_zarr_prefix,
-                store_name=store_name
-            )
-            #######################################################################
-            self.__upload_files_to_output_bucket(store_name, output_zarr_prefix)
-            #######################################################################
-            # # TODO: verify count of objects matches
-            # s3_objects = self.__s3.list_objects(
-            #     bucket_name=self.__output_bucket,
-            #     prefix=f"{zarr_prefix}/{os.path.splitext(input_file_name)[0]}.zarr/",
-            #     access_key_id=self.__output_bucket_access_key,
-            #     secret_access_key=self.__output_bucket_secret_access_key
-            # )
-            #######################################################################
-            self.__update_processing_status(
-                file_name=input_file_name,
-                cruise_name=cruise_name,
-                pipeline_status='SUCCESS_RAW_TO_ZARR'
-            )
-            #######################################################################
-            self.__publish_done_message(input_message)
-            #######################################################################
-        # except Exception as err:
-        #     print(f'Exception encountered: {err}')
-        # self.__update_processing_status(
-        #     file_name=input_file_name,
-        #     cruise_name=cruise_name,
-        #     pipeline_status='FAILURE_RAW_TO_ZARR',
-        #     error_message=str(err),
-        # )
-        finally:
-            self.__delete_all_local_raw_and_zarr_files()
-        #######################################################################
+    # TODO: does this get called?
+    # def execute(self, input_message):
+    #     ship_name = input_message['shipName']
+    #     cruise_name = input_message['cruiseName']
+    #     sensor_name = input_message['sensorName']
+    #     input_file_name = input_message['fileName']
+    #     #
+    #     try:
+    #         self.__update_processing_status(
+    #             file_name=input_file_name,
+    #             cruise_name=cruise_name,
+    #             pipeline_status="PROCESSING_RAW_TO_ZARR"
+    #         )
+    #         #######################################################################
+    #         store_name = f"{os.path.splitext(input_file_name)[0]}.zarr"
+    #         output_zarr_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}"
+    #         bucket_key = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{input_file_name}"
+    #         zarr_prefix = os.path.join("level_1", ship_name, cruise_name, sensor_name)
+    #         #
+    #         os.chdir(TEMPDIR)  # Lambdas require use of temp directory
+    #         #######################################################################
+    #         #######################################################################
+    #         # Check if zarr store already exists
+    #         s3_objects = self.__s3.list_objects(
+    #             bucket_name=self.__output_bucket,
+    #             prefix=f"{zarr_prefix}/{os.path.splitext(input_file_name)[0]}.zarr/",
+    #             access_key_id=self.__output_bucket_access_key,
+    #             secret_access_key=self.__output_bucket_secret_access_key
+    #         )
+    #         if len(s3_objects) > 0:
+    #             print('Zarr store data already exists in s3, deleting existing and continuing.')
+    #             self.__s3.delete_objects(
+    #                 bucket_name=self.__output_bucket,
+    #                 objects=s3_objects,
+    #                 access_key_id=self.__output_bucket_access_key,
+    #                 secret_access_key=self.__output_bucket_secret_access_key
+    #             )
+    #         #######################################################################
+    #         # self.__delete_all_local_raw_and_zarr_files()
+    #         Cleaner.delete_local_files(file_types=["*.raw*", "*.zarr"])
+    #         self.__s3.download_file(
+    #             bucket_name=self.__input_bucket,
+    #             key=bucket_key,
+    #             file_name=input_file_name
+    #         )
+    #         self.__create_local_zarr_store(
+    #             raw_file_name=input_file_name,
+    #             cruise_name=cruise_name,
+    #             sensor_name=sensor_name,
+    #             output_zarr_prefix=output_zarr_prefix,
+    #             store_name=store_name
+    #         )
+    #         #######################################################################
+    #         self.__upload_files_to_output_bucket(store_name, output_zarr_prefix)
+    #         #######################################################################
+    #         # # TODO: verify count of objects matches
+    #         # s3_objects = self.__s3.list_objects(
+    #         #     bucket_name=self.__output_bucket,
+    #         #     prefix=f"{zarr_prefix}/{os.path.splitext(input_file_name)[0]}.zarr/",
+    #         #     access_key_id=self.__output_bucket_access_key,
+    #         #     secret_access_key=self.__output_bucket_secret_access_key
+    #         # )
+    #         #######################################################################
+    #         self.__update_processing_status(
+    #             file_name=input_file_name,
+    #             cruise_name=cruise_name,
+    #             pipeline_status='SUCCESS_RAW_TO_ZARR'
+    #         )
+    #         #######################################################################
+    #         self.__publish_done_message(input_message)
+    #         #######################################################################
+    #     # except Exception as err:
+    #     #     print(f'Exception encountered: {err}')
+    #     # self.__update_processing_status(
+    #     #     file_name=input_file_name,
+    #     #     cruise_name=cruise_name,
+    #     #     pipeline_status='FAILURE_RAW_TO_ZARR',
+    #     #     error_message=str(err),
+    #     # )
+    #     finally:
+    #         self.__delete_all_local_raw_and_zarr_files()
+    #######################################################################
 
     ############################################################################
 

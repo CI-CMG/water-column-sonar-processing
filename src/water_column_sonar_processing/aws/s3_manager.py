@@ -109,21 +109,6 @@ class S3Manager:
         return client.list_buckets()
 
     #####################################################################
-    def upload_nodd_file(
-        self,
-        output_bucket_name: str,
-        file_name: str,
-        key: str,
-    ):
-        # self.s3_client_noaa_wcsd_zarr_pds.upload_file(
-        #     Filename=file_name,
-        #     Bucket=self.output_bucket_name,
-        #     Key=key,
-        # )
-        self.s3_resource_noaa_wcsd_zarr_pds.Bucket(output_bucket_name).upload_file(Filename=file_name, Key=key)
-        return key
-
-    #####################################################################
     def upload_files_with_thread_pool_executor(
         self,
         all_files: list,
@@ -134,7 +119,7 @@ class S3Manager:
             with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
                 futures = [
                     executor.submit(
-                        self.upload_nodd_file,
+                        self.upload_nodd_file2,  # TODO: verify which one is using this
                         all_file[0],  # file_name
                         all_file[1],  # key
                     )
@@ -151,6 +136,24 @@ class S3Manager:
 
     #####################################################################
     def upload_nodd_file(
+        self,
+        file_name: str,
+        key: str,
+        output_bucket_name: str,
+    ):
+        """
+        Used to upload a single file, e.g. the GeoJSON file to the NODD bucket
+        """
+        # self.s3_client_noaa_wcsd_zarr_pds.upload_file(
+        #     Filename=file_name,
+        #     Bucket=self.output_bucket_name,
+        #     Key=key
+        # )
+        self.s3_resource_noaa_wcsd_zarr_pds.Bucket(output_bucket_name).upload_file(Filename=file_name, Key=key)
+        return key
+
+    #####################################################################
+    def upload_nodd_file2(
             self,
             body: str,
             bucket: str,
@@ -201,7 +204,7 @@ class S3Manager:
 
     #####################################################################
     # used: raw-to-model
-    def list_objects(  # noaa-wcsd-pds and noaa-wcsd-model-pds
+    def list_objects(  # noaa-wcsd-pds and noaa-wcsd-zarr-pds
         self,
         bucket_name,
         prefix
