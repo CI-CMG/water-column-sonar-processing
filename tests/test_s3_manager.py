@@ -22,6 +22,20 @@ def teardown_module():
 
 
 #######################################################
+def test_create_file(tmp_path):
+    CONTENT = "file_content"
+    # d = tmp_path / "sub"
+    # d.mkdir()
+    # tmp_path.mkdir()
+    # print(d)
+    p = tmp_path / "hello.txt"
+    p.write_text(CONTENT, encoding="utf-8")
+    assert p.read_text(encoding="utf-8") == CONTENT
+    assert len(list(tmp_path.iterdir())) == 1
+    # assert 0
+
+
+# TODO: fix problem where this is creating remaining files
 @mock_aws
 def test_s3_manager(tmp_path):
     # test-input-bucket
@@ -46,13 +60,12 @@ def test_s3_manager(tmp_path):
     all_buckets = s3_manager.list_buckets()
     print(all_buckets)
 
-    s3_manager.download_file(bucket_name=test_bucket_name, key="the_key", file_name="the_file")
+    file_path =  tmp_path / "the_file.txt"
+    s3_manager.download_file(bucket_name=test_bucket_name, key="the_key", file_name=file_path)
 
-
-    filenames = next(walk(""), (None, None, []))[2]  # [] if no file
-    assert 'the_file' in filenames
-
-
+    assert len(list(tmp_path.iterdir())) == 1
+    # filenames = next(walk(""), (None, None, []))[2]  # [] if no file
+    # assert 'the_file' in filenames
 
 #######################################################
 # TODO: Tests

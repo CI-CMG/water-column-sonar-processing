@@ -316,7 +316,7 @@ class S3Manager:
         self,
         bucket_name,
         key,
-        file_name,
+        file_name, # where the file will be saved
     ):
         self.s3_client.download_file(Bucket=bucket_name, Key=key, Filename=file_name)
         # TODO: if bottom file doesn't exist, don't fail downloader
