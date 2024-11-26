@@ -18,10 +18,13 @@ def teardown_module():
 
 #######################################################
 
-
 # @mock_s3
 def test_geometry_manager(tmp_path):
-    bucket_name = "noaa-wcsd-pds"
+    """
+    # TODO: need to find a small file to test with, put into test bucket, read from there into
+    """
+    input_bucket_name = "noaa-wcsd-pds"
+    output_bucket_name = "noaa-wcsd-zarr-pds"
     # file_name = 'D20070719-T232718.raw'  # too big
     # file_name = 'D20070720-T224031.raw'  # has >4 points in dataset
     file_name = "D20070724-T042400.raw"
@@ -30,7 +33,7 @@ def test_geometry_manager(tmp_path):
     cruise_name = "HB0706"
     sensor_name = "EK60"
 
-    s3_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
+    s3_path = f"s3://{input_bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
     # s3_path = f"r2d2-testing-level-2-data/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model"
 
     print(s3_path)
@@ -44,13 +47,14 @@ def test_geometry_manager(tmp_path):
 
     geometry_manager = GeometryManager()
 
-    time, lat, lon = geometry_manager.read_echodata_gps_data(
+    time, lat, lon = geometry_manager.read_echodata_gps_data( # gps_df.index.values, gps_df.latitude.values, gps_df.longitude.values
         echodata=echodata,
+        output_bucket_name=output_bucket_name,
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         file_name=file_name,
-        write_geojson=False,
+        write_geojson=False
     )
     # NOTE CHECK FOR NULL ISLAND ON RETURN
     null_island_indices = list(

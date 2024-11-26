@@ -1,15 +1,7 @@
 import boto3
 import pytest
-# import requests
-# import s3fs
 from s3fs import S3FileSystem
-# import fs
-# from pyarrow import fs, FileSelector
-# import pyarrow as pa
-# from pyarrow import fs
-# from pyarrow.fs import FileSelector
-# from moto import mock_aws
-from moto import dynamodb, mock_aws
+from moto import mock_aws
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
 test_bucket = "mybucket"
@@ -25,23 +17,23 @@ def s3_base():
     s3_server.stop()
 
 @mock_aws
-def test_load_all_files(s3_base):
-    s3_session = boto3.Session()
-    s3_client = s3_session.client(service_name="s3", endpoint_url=f"http://{ip_address}:{port}")
+def test_load_all_files(s3_base, tmp_path):
+    s3_session = boto3.Session() # TODO: don't do this primitive like this
+    s3_client = s3_session.client(service_name="s3", endpoint_url=endpoint_url)
     s3_client.list_buckets()
 
     s3fs = S3FileSystem(endpoint_url=endpoint_url)
 
-    with open("test.foo1", "w") as file:
+    with open(tmp_path / "test.foo1", "w") as file:
         file.write("test123")
 
-    with open("test.foo2", "w") as file:
+    with open(tmp_path / "test.foo2", "w") as file:
         file.write("test456")
 
     s3_client.create_bucket(Bucket=test_bucket)
-    s3_client.upload_file("test.foo1", test_bucket, "test.foo1")
+    s3_client.upload_file(tmp_path / "test.foo1", test_bucket, "test.foo1")
     s3_client.list_objects(Bucket='mybucket')
-    s3fs.put_file("test.foo2", f"s3://{test_bucket}/test.foo2")
+    s3fs.put_file(tmp_path / "test.foo2", f"s3://{test_bucket}/test.foo2")
 
     all_objects = s3fs.ls(f"{test_bucket}")
     assert len(all_objects) == 2

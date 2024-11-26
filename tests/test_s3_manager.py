@@ -64,8 +64,6 @@ def test_s3_manager(tmp_path):
     s3_manager.download_file(bucket_name=test_bucket_name, key="the_key", file_name=file_path)
 
     assert len(list(tmp_path.iterdir())) == 1
-    # filenames = next(walk(""), (None, None, []))[2]  # [] if no file
-    # assert 'the_file' in filenames
 
 #######################################################
 # TODO: Tests

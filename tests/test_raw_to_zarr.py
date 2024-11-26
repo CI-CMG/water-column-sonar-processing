@@ -31,6 +31,11 @@ def setup_module():
 def teardown_module():
     print("teardown")
 
+@pytest.fixture
+def raw_to_zarr_test_path(test_path):
+    return test_path["RAW_TO_ZARR_TEST_PATH"]
+
+
 # @pytest.fixture(scope="module")
 # def s3_base():
 #     s3_server = ThreadedMotoServer(ip_address=ip_address, port=port)
@@ -51,7 +56,7 @@ def teardown_module():
 # @mock_aws(config={"core": {"service_whitelist": ["dynamodb", "s3"]}})
 # @mock_aws(config={"core": {"service_whitelist": ["dynamodb"]}})
 @mock_aws
-def test_raw_to_zarr():
+def test_raw_to_zarr(raw_to_zarr_test_path):
     #def test_raw_to_zarr(s3_base):
     s3_manager = S3Manager()#endpoint_url=endpoint_url)
     s3_manager.list_buckets()
@@ -64,8 +69,9 @@ def test_raw_to_zarr():
     s3_manager.create_bucket(bucket_name=output_bucket_name)
     # TODO: put objects in the output bucket so they can be deleted
     s3_manager.list_buckets()
+    foo_path = raw_to_zarr_test_path.joinpath("D20070724-T042400.raw")
     s3_manager.upload_file( # TODO: upload to correct bucket
-         filename="./test_resources/D20070724-T042400.raw",
+         filename=foo_path # "./test_resources/D20070724-T042400.raw",
          bucket_name=input_bucket_name,
          key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.raw"
     )
