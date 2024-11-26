@@ -121,8 +121,7 @@ class DynamoDBManager:
             UpdateExpression=update_expression,
         )
         status_code = response["ResponseMetadata"]["HTTPStatusCode"]
-        # TODO: change to exception
-        assert response['ConsumedCapacity'].keys() == ('TableName', 'CapacityUnits')
+        assert response['ConsumedCapacity']['TableName'] == table_name
         assert status_code == 200, "Problem, unable to update dynamodb table."
 
     #####################################################################

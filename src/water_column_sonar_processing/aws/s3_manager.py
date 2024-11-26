@@ -109,32 +109,6 @@ class S3Manager:
         return client.list_buckets()
 
     #####################################################################
-    def upload_files_with_thread_pool_executor(
-        self,
-        all_files: list,
-    ):
-        # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
-        all_uploads = []
-        try:  # TODO: problem with threadpool here, missing child files
-            with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-                futures = [
-                    executor.submit(
-                        self.upload_nodd_file2,  # TODO: verify which one is using this
-                        all_file[0],  # file_name
-                        all_file[1],  # key
-                    )
-                    for all_file in all_files
-                ]
-                for future in as_completed(futures):
-                    result = future.result()
-                    if result:
-                        all_uploads.extend(result)
-        except Exception as err:
-            print(err)
-        print("Done uploading files using threading pool.")
-        return all_uploads
-
-    #####################################################################
     def upload_nodd_file(
         self,
         file_name: str,
@@ -144,26 +118,49 @@ class S3Manager:
         """
         Used to upload a single file, e.g. the GeoJSON file to the NODD bucket
         """
-        # self.s3_client_noaa_wcsd_zarr_pds.upload_file(
-        #     Filename=file_name,
-        #     Bucket=self.output_bucket_name,
-        #     Key=key
-        # )
         self.s3_resource_noaa_wcsd_zarr_pds.Bucket(output_bucket_name).upload_file(Filename=file_name, Key=key)
         return key
 
     #####################################################################
-    def upload_nodd_file2(
-            self,
-            body: str,
-            bucket: str,
-            key: str,
+    def upload_files_with_thread_pool_executor(
+        self,
+        output_bucket_name: str,
+        all_files: list,
     ):
-        self.s3_client_noaa_wcsd_zarr_pds.put_object(
-            Body=body,
-            Bucket=bucket,
-            Key=key,
-        )
+        # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
+        all_uploads = []
+        try:  # TODO: problem with threadpool here, missing child files
+            with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+                futures = [
+                    executor.submit(
+                        self.upload_nodd_file,  # TODO: verify which one is using this
+                        all_file[0],  # file_name
+                        all_file[1],  # key
+                        output_bucket_name,  # output_bucket_name
+                    )
+                    for all_file in all_files
+                ]
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result:
+                        all_uploads.extend([result])
+        except Exception as err:
+            print(err)
+        print("Done uploading files using threading pool.")
+        return all_uploads
+
+    #####################################################################
+    # def upload_nodd_file2(
+    #         self,
+    #         body: str,
+    #         bucket: str,
+    #         key: str,
+    # ):
+    #     self.s3_client_noaa_wcsd_zarr_pds.put_object(
+    #         Body=body,
+    #         Bucket=bucket,
+    #         Key=key,
+    #     )
 
     # TODO: this uses resource, try to use client
     def upload_file(
@@ -203,7 +200,7 @@ class S3Manager:
         return all_uploads
 
     #####################################################################
-    # used: raw-to-model
+    # used: raw-to-zarr
     def list_objects(  # noaa-wcsd-pds and noaa-wcsd-zarr-pds
         self,
         bucket_name,

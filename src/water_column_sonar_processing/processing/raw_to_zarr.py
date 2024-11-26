@@ -4,10 +4,10 @@ import echopype as ep
 import numcodecs
 import numpy as np
 from numcodecs import Blosc
-from pathlib import Path, PurePath
+from datetime import datetime
+from pathlib import Path # , PurePath
 
-from water_column_sonar_processing.aws import DynamoDBManager
-# from tests.test_raw_to_zarr import endpoint_url
+from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.geometry.geometry_manager import GeometryManager
 from water_column_sonar_processing.utility import Cleaner
 
@@ -19,43 +19,29 @@ class RawToZarr:
     #######################################################
     def __init__(
             self,
-            # endpoint_url,
-            # s3_operations,
-            # dynamo_operations,
-            # sns_operations,
-            # input_bucket,
-            # output_bucket,
-            # table_name,
             # output_bucket_access_key,
             # output_bucket_secret_access_key,
-            # done_topic_arn,
             # # overwrite_existing_zarr_store,
     ):
         # TODO: revert to Blosc.BITSHUFFLE, troubleshooting misc error
         self.__compressor = Blosc(cname="zstd", clevel=2)  # shuffle=Blosc.NOSHUFFLE
         self.__overwrite = True
         self.__num_threads = numcodecs.blosc.get_nthreads()
-        self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
-        self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
-        # self.endpoint_url = endpoint_url,
-        # self.__s3 = s3_operations
-        # self.__dynamo = dynamo_operations
-        # self.__sns_operations = sns_operations
-        # self.__input_bucket = input_bucket
-        # self.__output_bucket = output_bucket
+        # self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
+        # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
         # self.__table_name = table_name
-        # self.__output_bucket_access_key = output_bucket_access_key
-        # self.__output_bucket_secret_access_key = output_bucket_secret_access_key
-        # self.__done_topic_arn = done_topic_arn
         # # self.__overwrite_existing_zarr_store = overwrite_existing_zarr_store
 
     ############################################################################
     ############################################################################
     def __zarr_info_to_table(
             self,
+            output_bucket_name,
             table_name,
-            file_name,
+            ship_name,
             cruise_name,
+            sensor_name,
+            file_name,
             zarr_path,
             min_echo_range,
             max_echo_range,
@@ -67,6 +53,10 @@ class RawToZarr:
     ):
         print('Writing Zarr information to DynamoDB table.')
         dynamodb_manager = DynamoDBManager()
+
+        # The problem is that these values were never populated
+        # and so when the query looks for values that aren't there
+        # they fail
         dynamodb_manager.update_item(
             table_name=table_name,
             key={
@@ -76,10 +66,15 @@ class RawToZarr:
             expression_attribute_names={
                 '#CH': 'CHANNELS',
                 '#ET': 'END_TIME',
+                # "#ED": "ERROR_DETAIL",
                 '#FR': 'FREQUENCIES',
                 '#MA': 'MAX_ECHO_RANGE',
                 '#MI': 'MIN_ECHO_RANGE',
                 '#ND': 'NUM_PING_TIME_DROPNA',
+                "#PS": "PIPELINE_STATUS",
+                "#PT": "PIPELINE_TIME",
+                "#SE": "SENSOR_NAME",
+                "#SH": "SHIP_NAME",
                 '#ST': 'START_TIME',
                 '#ZB': 'ZARR_BUCKET',
                 '#ZP': 'ZARR_PATH',
@@ -87,23 +82,32 @@ class RawToZarr:
             expression_attribute_values={
                 ":ch": {"L": [{"S": i} for i in channels]},
                 ":et": {"S": end_time},
+                # ":ed": {"S": ""},
                 ":fr": {"L": [{"N": str(i)} for i in frequencies]},
                 ":ma": {"N": str(np.round(max_echo_range, 4))},
                 ":mi": {"N": str(np.round(min_echo_range, 4))},
                 ":nd": {"N": str(num_ping_time_dropna)},
+                ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
+                ":pt": {"S": datetime.now().isoformat(timespec="seconds") + "Z"},
+                ":se": {"S": sensor_name},
+                ":sh": {"S": ship_name},
                 ":st": {"S": start_time},
-                ":zb": {"S": self.output_bucket_name},
+                ":zb": {"S": output_bucket_name},
                 ":zp": { "S": zarr_path },
             },
-            # update_expression='SET #ZB = :zb, #ZP = :zp, #MINER = :miner, #MAXER = :maxer, #P = :p, #ST = :st, #ET = :et, #F = :f, #C = :c',
             update_expression=(
                 "SET "
                 "#CH = :ch, "
                 "#ET = :et, "
+                # "#ED = :ed, "
                 "#FR = :fr, "
                 "#MA = :ma, "
                 "#MI = :mi, "
                 "#ND = :nd, "
+                "#PS = :ps, "
+                "#PT = :pt, "
+                "#SE = :se, "
+                "#SH = :sh, "
                 "#ST = :st, "
                 "#ZB = :zb, "
                 "#ZP = :zp"
@@ -113,10 +117,32 @@ class RawToZarr:
     ############################################################################
     ############################################################################
     ############################################################################
+    def __upload_files_to_output_bucket(
+            self,
+            output_bucket_name,
+            local_directory,
+            object_prefix,
+    ):
+        # Note: this will be passed credentials if using NODD
+        s3_manager = S3Manager()
+        print('Uploading files using thread pool executor.')
+        all_files = []
+        for subdir, dirs, files in os.walk(local_directory):
+            for file in files:
+                local_path = os.path.join(subdir, file)
+                s3_key = os.path.join(object_prefix, local_path)
+                all_files.append([local_path, s3_key])
+        # all_files
+        all_uploads = s3_manager.upload_files_with_thread_pool_executor(
+            output_bucket_name=output_bucket_name,
+            all_files=all_files,
+        )
+        return all_uploads
+
+    ############################################################################
     def raw_to_zarr(
             self,
             table_name,
-            input_bucket_name, #="test_input_bucket"  # noaa-wcsd-pds
             output_bucket_name,
             ship_name,
             cruise_name,
@@ -161,7 +187,10 @@ class RawToZarr:
             # TODO: this var name is supposed to represent minimum resolution of depth measurements
             # TODO revert this so that smaller diffs can be used
             # The most minimum the resolution can be is as small as 0.25 meters
-            min_echo_range = np.maximum(0.25, np.nanmin(np.diff(ds_sv.echo_range.values)))
+            min_echo_range = np.maximum(
+                0.25,
+                np.nanmin(np.diff(ds_sv.echo_range.values))
+            )
             max_echo_range = float(np.nanmax(ds_sv.echo_range))
             #
             num_ping_time_dropna = lat[~np.isnan(lat)].shape[0]  # symmetric to lon
@@ -182,11 +211,15 @@ class RawToZarr:
             #     data=gps_data
             # )
             #################################################################
+            output_zarr_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"
             self.__zarr_info_to_table(
+                output_bucket_name=output_bucket_name,
                 table_name=table_name,
-                file_name=raw_file_name,
+                ship_name=ship_name,
                 cruise_name=cruise_name,
-                zarr_path=os.path.join(f"level_1/{ship_name}/{cruise_name}/{sensor_name}/", store_name),
+                sensor_name=sensor_name,
+                file_name=raw_file_name,
+                zarr_path=os.path.join(output_zarr_prefix, store_name),
                 min_echo_range=min_echo_range,
                 max_echo_range=max_echo_range,
                 num_ping_time_dropna=num_ping_time_dropna,
@@ -195,34 +228,36 @@ class RawToZarr:
                 frequencies=frequencies,
                 channels=channels
             )
+            ###################################################################
+            #######################################################################
+            self.__upload_files_to_output_bucket(
+                output_bucket_name=output_bucket_name,
+                local_directory=store_name,
+                object_prefix=output_zarr_prefix
+            )
+            #######################################################################
+            # # TODO: verify count of objects matches
+            # s3_objects = self.__s3.list_objects(
+            #     bucket_name=self.__output_bucket,
+            #     prefix=f"{zarr_prefix}/{os.path.splitext(input_file_name)[0]}.zarr/",
+            #     access_key_id=self.__output_bucket_access_key,
+            #     secret_access_key=self.__output_bucket_secret_access_key
+            # )
+            #######################################################################
+            # self.__update_processing_status(
+            #     file_name=input_file_name,
+            #     cruise_name=cruise_name,
+            #     pipeline_status='SUCCESS_RAW_TO_ZARR'
+            # )
+            #######################################################################
+            # self.__publish_done_message(input_message)
             print('here')
         except Exception as err:
             print(f'Exception encountered creating local Zarr store with echopype: {err}')
             raise RuntimeError(f"Problem creating local Zarr store, {err}")
+        finally:
+            cleaner.delete_local_files(file_types=["*.raw", "*.bot", "*.zarr", "*.json"])
         print('Done creating local zarr store.')
-
-    ############################################################################
-    def __upload_files_to_output_bucket(
-            self,
-            local_directory,
-            object_prefix,
-    ):
-        # Note: this will be passed credentials if using NODD
-        print('Uploading files using thread pool executor.')
-        all_files = []
-        for subdir, dirs, files in os.walk(local_directory):
-            for file in files:
-                local_path = os.path.join(subdir, file)
-                s3_key = os.path.join(object_prefix, local_path)
-                all_files.append([local_path, s3_key])
-        # all_files
-        all_uploads = self.__s3.upload_files_with_thread_pool_executor(
-            bucket_name=self.__output_bucket,
-            all_files=all_files,
-            access_key_id=self.__output_bucket_access_key,
-            secret_access_key=self.__output_bucket_secret_access_key
-        )
-        return all_uploads
 
     ############################################################################
     # TODO: does this get called?
@@ -312,68 +347,3 @@ class RawToZarr:
 
 ################################################################################
 ############################################################################
-# TODO: DELETE
-# def __get_gps_data(
-#         self,
-#         echodata: ep.echodata.echodata.EchoData
-# ) -> tuple:
-#     print('Getting GPS data.')
-#     try:
-#         # if 'latitude' not in echodata.platform.variables and 'longitude' not in echodata.platform.variables:
-#         #     raise KeyError;
-#         assert(  # TODO: raise error, e.g. KeyError
-#                 'latitude' in echodata.platform.variables and 'longitude' in echodata.platform.variables
-#         ), "Problem: GPS coordinates not found in echodata."
-#         latitude = echodata.platform.latitude.values
-#         longitude = echodata.platform.longitude.values  # len(longitude) == 14691
-#         # RE: time coordinates: https://github.com/OSOceanAcoustics/echopype/issues/656#issue-1219104771
-#         assert(
-#                 'time1' in echodata.platform.variables and 'time1' in echodata.environment.variables
-#         ), "Problem: Time coordinate not found in echodata."
-#         # 'nmea_times' are times from the nmea datalogger associated with GPS
-#         #   nmea times, unlike env times, can be sorted
-#         nmea_times = np.sort(echodata.platform.time1.values)
-#         # 'time1' are times from the echosounder associated with transducer measurement
-#         time1 = echodata.environment.time1.values
-#         # Align 'sv_times' to 'nmea_times'
-#         assert(
-#                 np.all(time1[:-1] <= time1[1:]) and np.all(nmea_times[:-1] <= nmea_times[1:])
-#         ), "Problem: NMEA time stamps are not sorted."
-#         # Finds the indices where 'v' can be inserted just to the right of 'a'
-#         indices = np.searchsorted(a=nmea_times, v=time1, side="right") - 1
-#         #
-#         lat = latitude[indices]
-#         lat[indices < 0] = np.nan  # values recorded before indexing are set to nan
-#         lon = longitude[indices]
-#         lon[indices < 0] = np.nan
-#         if len(lat) < 2 or len(lon) < 2:
-#             raise Exception("There was not enough data in lat or lon to create geojson.")
-#         assert(  # TODO: raise ValueError
-#                 np.all(lat[~np.isnan(lat)] >= -90.) and np.all(lat[~np.isnan(lat)] <= 90.) and np.all(lon[~np.isnan(lon)] >= -180.) and np.all(lon[~np.isnan(lon)] <= 180.)
-#         ), "Problem: Data falls outside GPS bounds!"
-#         # TODO: check for visits to null island
-#         # https://osoceanacoustics.github.io/echopype-examples/echopype_tour.html
-#         print(np.count_nonzero(np.isnan(lat)))
-#         print(np.count_nonzero(np.isnan(lon)))
-#         if len(lat[~np.isnan(lat)]) < 1:
-#             raise RuntimeError(f"Problem all data is NaN.")
-#         time1 = time1[~np.isnan(lat)]
-#         lat = lat[~np.isnan(lat)]
-#         lon = lon[~np.isnan(lon)]
-#         #
-#         gps_df = pd.DataFrame({
-#             'latitude': lat,
-#             'longitude': lon,
-#             'time1': time1
-#         }).set_index(['time1'])
-#         gps_gdf = geopandas.GeoDataFrame(
-#             gps_df,
-#             geometry=geopandas.points_from_xy(gps_df['longitude'], gps_df['latitude']),
-#             crs="epsg:4326"  # TODO: does this sound right?
-#         )
-#         # GeoJSON FeatureCollection with IDs as "time1"
-#         geo_json = gps_gdf.to_json()
-#     except Exception as err:
-#         print(f'Exception encountered creating local Zarr store with echopype: {err}')
-#         raise
-#     return geo_json, lat, lon

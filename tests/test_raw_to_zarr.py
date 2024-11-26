@@ -97,7 +97,6 @@ def test_raw_to_zarr():
     # TODO: Test if zarr store already exists
 
     # TODO: move this into the raw_to_zarr function
-    # s3_file_path = f"s3://{input_bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
     s3_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
     s3_bottom_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
     s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
@@ -106,8 +105,7 @@ def test_raw_to_zarr():
     raw_to_zarr = RawToZarr()  # endpoint_url=endpoint_url)
     raw_to_zarr.raw_to_zarr(
         table_name=table_name,
-        input_bucket_name="test_input_bucket",
-        output_bucket_name="test_output_bucket",
+        output_bucket_name=output_bucket_name,
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
@@ -115,11 +113,21 @@ def test_raw_to_zarr():
     )
 
     # TODO: test if zarr store is accessible in the s3 bucket
+    number_of_files = s3_manager.list_objects(bucket_name=output_bucket_name, prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/")
+    # Ensure that all the files were uploaded properly
+    assert len(number_of_files) == 69
 
     # TODO: check the dynamodb dataframe to see if info is updated there
+    # ---Verify Data is Populated in Table--- #
+    df_after = dynamo_db_manager.get_table_as_df(
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        table_name=table_name,
+    )
+    print(df_after)
+    assert df_after.shape == (1, 15)
 
-    # #######################################################################
-    # self.__upload_files_to_output_bucket(store_name, output_zarr_prefix)
     # #######################################################################
     # self.__update_processing_status(
     #     file_name=input_file_name,
@@ -127,7 +135,6 @@ def test_raw_to_zarr():
     #     pipeline_status='SUCCESS_RAW_TO_ZARR'
     # )
     # #######################################################################
-    # TODO: remove sns stuff self.__publish_done_message(input_message)
 
 #######################################################
 #######################################################

@@ -227,7 +227,7 @@ def update_dynamodb_item(
             ":mi": {"N": str(np.round(0.25001, 4))},
             ":nd": {"N": str(2428)},
             ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
-            ":pt": {"S": "2023-10-02T08:08:08Z"},
+            ":pt": {"S": "2023-10-02T08:08:080Z"}, # datetime.now().isoformat(timespec="seconds") + "Z"
             ":se": {"S": sensor_name},
             ":sh": {"S": ship_name},
             ":st": {"S": "2006-04-19T18:46:12.564Z"},
@@ -332,17 +332,19 @@ def test_delete_item(): # PASSING
     response = dynamo_db_manager.describe_table(table_name=table_name)
     assert response['Table']['ItemCount'] == 4
     df1 = dynamo_db_manager.get_table_as_df(
-        table_name=table_name,
         ship_name=ship_name1,
         cruise_name=cruise_name1,
         sensor_name="EK60",
+        table_name=table_name,
     )
     df2 = dynamo_db_manager.get_table_as_df(
-        table_name=table_name,
         ship_name=ship_name2,
         cruise_name=cruise_name2,
         sensor_name="EK60",
+        table_name=table_name,
     )
+    assert df1.shape[0] == 2 # TODO: check actual filenames
+    assert df2.shape[0] == 2
 
     # ---Delete cruise From Table Again--- #
     dynamo_db_manager.delete_item(
