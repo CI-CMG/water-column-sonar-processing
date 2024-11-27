@@ -1,5 +1,6 @@
 import pytest
 from dotenv import find_dotenv, load_dotenv
+from moto import mock_aws
 
 from src.water_column_sonar_processing.aws import S3Manager
 from src.water_column_sonar_processing.index.index_manager import IndexManager
@@ -20,7 +21,8 @@ def index_test_path(test_path):
 
 #######################################################
 #@pytest.mark.skip(reason="no way of currently testing this")
-def test_get_calibration_information(): # good
+@mock_aws
+def test_get_calibration_information(index_test_path): # good
     """
     Reads the calibrated_cruises.csv file and determines which cruises have calibration information saved.
     """
