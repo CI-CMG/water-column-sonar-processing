@@ -6,9 +6,9 @@ import xarray as xr
 import zarr
 from numcodecs import Blosc
 
-from water_column_sonar_processing.aws.s3fs_manager import S3FSManager
-from water_column_sonar_processing.utility.constants import Constants, Coordinates
-from water_column_sonar_processing.utility.timestamp import Timestamp
+from src.water_column_sonar_processing.aws.s3fs_manager import S3FSManager
+from src.water_column_sonar_processing.utility.constants import Constants, Coordinates
+from src.water_column_sonar_processing.utility.timestamp import Timestamp
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)

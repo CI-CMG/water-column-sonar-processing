@@ -7,9 +7,9 @@ from numcodecs import Blosc
 from datetime import datetime
 from pathlib import Path # , PurePath
 
-from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
-from water_column_sonar_processing.geometry.geometry_manager import GeometryManager
-from water_column_sonar_processing.utility import Cleaner
+from src.water_column_sonar_processing.aws import DynamoDBManager, S3Manager
+from src.water_column_sonar_processing.geometry.geometry_manager import GeometryManager
+from src.water_column_sonar_processing.utility import Cleaner
 
 TEMPDIR = "/tmp"
 

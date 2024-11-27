@@ -3,8 +3,8 @@ import numpy as np
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 
-from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
-from water_column_sonar_processing.cruise.create_empty_zarr_store import (
+from src.water_column_sonar_processing.aws import DynamoDBManager, S3Manager
+from src.water_column_sonar_processing.cruise.create_empty_zarr_store import (
     CreateEmptyZarrStore,
 )
 

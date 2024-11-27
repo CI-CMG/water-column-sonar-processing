@@ -3,10 +3,10 @@ import os
 import numcodecs
 import numpy as np
 
-from water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
-from water_column_sonar_processing.aws.s3_manager import S3Manager
-from water_column_sonar_processing.model.zarr_manager import ZarrManager
-from water_column_sonar_processing.utility.cleaner import Cleaner
+from src.water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
+from src.water_column_sonar_processing.aws.s3_manager import S3Manager
+from src.water_column_sonar_processing.model.zarr_manager import ZarrManager
+from src.water_column_sonar_processing.utility.cleaner import Cleaner
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)

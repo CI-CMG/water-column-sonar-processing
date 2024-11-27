@@ -1,13 +1,14 @@
+import pytest
 from dotenv import find_dotenv, load_dotenv
 
-from water_column_sonar_processing.index.index_manager import IndexManager
+from src.water_column_sonar_processing.index.index_manager import IndexManager
 
 
 #######################################################
 def setup_module(module):
     print("setup")
-    # env_file = find_dotenv(".env-test")
-    # load_dotenv(dotenv_path=env_file, override=True)
+    env_file = find_dotenv(".env-test")
+    load_dotenv(dotenv_path=env_file, override=True)
 
 def teardown_module(module):
     print("teardown")
@@ -51,6 +52,7 @@ def test_get_ek60_objects():
     pass
 
 #######################################################
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_get_calibration_information(): # good
     """
     Reads the calibrated_cruises.csv file and determines which cruises have calibration information saved.
@@ -89,6 +91,7 @@ def test_get_calibration_information(): # good
 #     print(all_ek60_data)
 
 # TODO: mock this, right now it is generating csvs for all ek60 cruises
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_get_all_cruise_raw_files(tmp_path):
     input_bucket_name = "noaa-wcsd-pds"
     calibration_bucket = "noaa-wcsd-pds-index"

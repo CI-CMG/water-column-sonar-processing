@@ -1,9 +1,5 @@
 import os
 from pathlib import Path
-
-# from shapely import wkt
-# import json
-# from shapely.geometry import shape, GeometryCollection
 import fiona
 import geopandas
 import pandas as pd

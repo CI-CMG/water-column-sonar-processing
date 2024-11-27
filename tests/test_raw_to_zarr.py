@@ -1,10 +1,11 @@
 import pytest
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
-from moto.moto_server.threaded_moto_server import ThreadedMotoServer
-from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
-from water_column_sonar_processing.processing.raw_to_zarr import RawToZarr
 from pathlib import Path
+
+from src.water_column_sonar_processing.aws import DynamoDBManager, S3Manager
+from src.water_column_sonar_processing.processing.raw_to_zarr import RawToZarr
+
 
 # TEMPDIR = "/tmp"
 # test_bucket = "mybucket"
@@ -69,14 +70,13 @@ def test_raw_to_zarr(raw_to_zarr_test_path):
     s3_manager.create_bucket(bucket_name=output_bucket_name)
     # TODO: put objects in the output bucket so they can be deleted
     s3_manager.list_buckets()
-    foo_path = raw_to_zarr_test_path.joinpath("D20070724-T042400.raw")
     s3_manager.upload_file( # TODO: upload to correct bucket
-         filename=foo_path # "./test_resources/D20070724-T042400.raw",
+         filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.raw"), # "./test_resources/D20070724-T042400.raw",
          bucket_name=input_bucket_name,
          key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.raw"
     )
     s3_manager.upload_file( # TODO: this uses resource, try to use client
-        filename="./test_resources/D20070724-T042400.bot",
+        filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.bot"), # "test_resources/raw_to_zarr/D20070724-T042400.bot",
         bucket_name=input_bucket_name,
         key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.bot"
     )

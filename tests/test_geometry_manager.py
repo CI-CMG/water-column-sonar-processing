@@ -2,7 +2,7 @@ import echopype as ep
 import numpy as np
 from dotenv import find_dotenv, load_dotenv
 
-from water_column_sonar_processing.geometry.geometry_manager import GeometryManager
+from src.water_column_sonar_processing.geometry.geometry_manager import GeometryManager
 
 
 #######################################################

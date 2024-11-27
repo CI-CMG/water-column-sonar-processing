@@ -7,8 +7,8 @@ import zarr
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 
-from water_column_sonar_processing.aws.s3_manager import S3Manager
-from water_column_sonar_processing.model.zarr_manager import ZarrManager
+from src.water_column_sonar_processing.aws.s3_manager import S3Manager
+from src.water_column_sonar_processing.model.zarr_manager import ZarrManager
 
 # TEMPDIR = "/tmp"
 

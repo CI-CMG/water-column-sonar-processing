@@ -2,7 +2,6 @@ import os
 
 import boto3
 import pandas as pd
-from datetime import datetime
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 
 

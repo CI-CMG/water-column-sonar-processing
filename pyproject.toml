@@ -25,19 +25,29 @@ dynamic = ["dependencies"]
 Homepage = "https://github.com/CI-CMG/water-column-sonar-processing"
 Issues = "https://github.com/CI-CMG/water-column-sonar-processing/issues"
 
-#[pytest]
+#[tool.pytest.ini_options]
+#filterwarnings = [
+#    "error",
+#    "ignore::UserWarning",
+#    # note the use of single quote below to denote "raw" strings in TOML
+#    'ignore:function ham\(\) is deprecated:DeprecationWarning',
+#]
 #pythonpath = "src"
 #testpaths = "tests"
+#[pytest]
+#addopts = [
+#    "-p no:warnings"
+#]
 
-[tool.pytest.ini_options]
-minversion = "6.0"
-#addopts = "-ra -q"
-testpaths = [
-    "tests",
-]
+#[tool.pytest.ini_options]
+#minversion = "6.0"
+##addopts = "-ra -q"
+#testpaths = [
+#    "tests",
+#]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
-optional-dependencies = {dev = { file = ["requirements-dev.txt"] }}
+optional-dependencies = {dev = { file = ["requirements_dev.txt"] }}
 
 # https://packaging.python.org/en/latest/guides/writing-pyproject-toml/

@@ -1,12 +1,8 @@
 import json
 import os
+import boto3
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Optional
-# def foo(a: str, b: Optional[str] = None) -> str or None:
-#     pass
-
-import boto3
 from boto3.s3.transfer import TransferConfig
 from botocore.config import Config
 from botocore.exceptions import ClientError
