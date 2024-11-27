@@ -1,6 +1,7 @@
 import pytest
 from dotenv import find_dotenv, load_dotenv
 
+from src.water_column_sonar_processing.aws import S3Manager
 from src.water_column_sonar_processing.index.index_manager import IndexManager
 
 
@@ -13,60 +14,37 @@ def setup_module(module):
 def teardown_module(module):
     print("teardown")
 
-#######################################################
-#######################################################
-def test_list_ships():
-    pass
-
+@pytest.fixture
+def index_test_path(test_path):
+    return test_path["INDEX_TEST_PATH"]
 
 #######################################################
-def test_list_cruises():
-    pass
-
-#######################################################
-def test_list_ek60_cruises():
-    pass
-
-#######################################################
-def test_get_raw_files():
-    pass
-
-#######################################################
-def test_get_raw_files_csv():
-    pass
-
-#######################################################
-def test_get_subset_ek60_prefix():
-    pass
-
-#######################################################
-def test_scan_datagram():
-    pass
-
-#######################################################
-def test_get_subset_datagrams():
-    pass
-
-#######################################################
-def test_get_ek60_objects():
-    pass
-
-#######################################################
-@pytest.mark.skip(reason="no way of currently testing this")
+#@pytest.mark.skip(reason="no way of currently testing this")
 def test_get_calibration_information(): # good
     """
     Reads the calibrated_cruises.csv file and determines which cruises have calibration information saved.
     """
-    input_bucket_name = "noaa-wcsd-pds"
-    calibration_bucket = "noaa-wcsd-pds-index"
+    input_bucket_name = "test-noaa-wcsd-pds"
+    calibration_bucket = "test-noaa-wcsd-pds-index"
     calibration_key = "calibrated_cruises.csv"
 
     # TODO: create bucket
+    s3_manager = S3Manager()
+
+    output_bucket_name = "test_output_bucket"
+    s3_manager.create_bucket(bucket_name=calibration_bucket)
+    # TODO: put objects in the output bucket so they can be deleted
+    s3_manager.list_buckets()
+    s3_manager.upload_file(  # TODO: upload to correct bucket
+        filename=index_test_path.joinpath(calibration_key),
+        bucket_name=calibration_bucket,
+        key=calibration_key
+    )
 
     # TODO: put calibration file in bucket
 
     # TODO: mock reading from bucket
-
+    # TODO: why do i need the bucket name?
     index_manager = IndexManager(input_bucket_name, calibration_bucket, calibration_key)
 
     calibration_information = index_manager.get_calibration_information()

@@ -17,18 +17,5 @@ def dump_output_dir():
 def test_path():
     return {
         'RAW_TO_ZARR_TEST_PATH': TEST_DATA_FOLDER / "raw_to_zarr",
-        # 'ROOT': TEST_DATA_FOLDER,
-        # 'EA640': TEST_DATA_FOLDER / "ea640",
-        # 'EK60': TEST_DATA_FOLDER / "ek60",
-        # 'EK80': TEST_DATA_FOLDER / "ek80",
-        # 'EK80_NEW': TEST_DATA_FOLDER / "ek80_new",
-        # 'ES60': TEST_DATA_FOLDER / "es60",
-        # 'ES70': TEST_DATA_FOLDER / "es70",
-        # 'ES80': TEST_DATA_FOLDER / "es80",
-        # 'AZFP': TEST_DATA_FOLDER / "azfp",
-        # 'AZFP6': TEST_DATA_FOLDER / "azfp6",
-        # 'AD2CP': TEST_DATA_FOLDER / "ad2cp",
-        # 'EK80_CAL': TEST_DATA_FOLDER / "ek80_bb_with_calibration",
-        # 'EK80_EXT': TEST_DATA_FOLDER / "ek80_ext",
-        # 'ECS': TEST_DATA_FOLDER / "ecs",
+        'INDEX_TEST_PATH': TEST_DATA_FOLDER / "index",
     }
