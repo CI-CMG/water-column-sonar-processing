@@ -43,9 +43,6 @@ def test_get_calibration_information(index_test_path): # good
         key=calibration_key
     )
 
-    # TODO: put calibration file in bucket
-
-    # TODO: mock reading from bucket
     # TODO: why do i need the bucket name?
     index_manager = IndexManager(input_bucket_name, calibration_bucket, calibration_key)
 
