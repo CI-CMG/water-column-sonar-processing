@@ -2,15 +2,13 @@ import os
 
 import numcodecs
 import numpy as np
+import pytest
 import xarray as xr
 import zarr
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
-
 from src.water_column_sonar_processing.aws.s3_manager import S3Manager
 from src.water_column_sonar_processing.model.zarr_manager import ZarrManager
-
-# TEMPDIR = "/tmp"
 
 
 #######################################################
@@ -19,20 +17,21 @@ def setup_module():
     env_file = find_dotenv(".env-test")
     load_dotenv(dotenv_path=env_file, override=True)
 
-
 def teardown_module():
     print("teardown")
 
+# The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future.
+# Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+@pytest.fixture(scope='function')
+def zarr_manager_test_path(test_path):
+    return test_path["ZARR_MANAGER_TEST_PATH"]
 
 #######################################################
 @mock_aws
-# def test_zarr_manager(tmp_path=TEMPDIR):
-def test_zarr_manager():
+def test_zarr_manager(zarr_manager_test_path):
     # Tests creating model store and opening with both xarray and
     # model libraries
-
-    temporary_directory = "/tmp"  # str(tmp_path)
-
+    # temporary_directory = "/tmp"  # str(tmp_path)
     ship_name = "test_ship"
     cruise_name = "test_cruise"
     sensor_name = "EK60"
@@ -40,7 +39,7 @@ def test_zarr_manager():
 
     zarr_manager = ZarrManager()
     zarr_manager.create_zarr_store(
-        path=temporary_directory,
+        path=zarr_manager_test_path,
         ship_name=ship_name,
         cruise_name=cruise_name,  # TODO: just pass stem
         sensor_name=sensor_name,
@@ -51,7 +50,7 @@ def test_zarr_manager():
         calibration_status=True,
     )
 
-    assert os.path.exists(f"{temporary_directory}/{cruise_name}.zarr")
+    assert os.path.exists(f"{zarr_manager_test_path}/{cruise_name}.zarr")
 
     # TODO: copy to s3 bucket...
     numcodecs.blosc.use_threads = False
@@ -60,7 +59,7 @@ def test_zarr_manager():
     # synchronizer = model.ProcessSynchronizer(f"/mnt/model/{ship_name}_{cruise_name}.sync")
 
     cruise_zarr = zarr.open(
-        store=f"{temporary_directory}/{cruise_name}.zarr", mode="r"
+        store=f"{zarr_manager_test_path}/{cruise_name}.zarr", mode="r"
     )  # synchronizer=synchronizer)
     print(cruise_zarr.info)
 
@@ -74,7 +73,7 @@ def test_zarr_manager():
     # Open Zarr store with Xarray
     # TODO: move to separate test
     file_xr = xr.open_zarr(
-        store=f"{temporary_directory}/{cruise_name}.zarr", consolidated=None
+        store=f"{zarr_manager_test_path}/{cruise_name}.zarr", consolidated=None
     )  # synchronizer=SYNCHRONIZER)
     print(file_xr)
 
@@ -105,12 +104,20 @@ def test_zarr_manager():
     # TODO: test depths
     # TODO: test compression
 
+# @mock_aws
+# def test_whatever():
+#     asyncio.run(test_zarr_manager()) # Here
 
 #######################################################
+def test_zarr_manager_123(zarr_manager_test_path):
+    print("asdf")
+    s3_manager = S3Manager()
+    s3_manager.create_bucket(bucket_name="asdf")
+    assert 1
+
 @mock_aws
-# def test_open_zarr_with_zarr_read_write(tmp_path):
-def test_open_zarr_with_zarr_read_write():
-    temporary_directory = "/tmp"  # str(tmp_path)
+def test_open_zarr_with_zarr_read_write(zarr_manager_test_path):
+    temporary_directory = zarr_manager_test_path # "/tmp"  # str(tmp_path)
 
     # TODO: open with model python library and check format
     test_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
@@ -138,6 +145,7 @@ def test_open_zarr_with_zarr_read_write():
     )
 
     # TODO: copy store to bucket
+    print(zarr_path)
 
     # TODO: open model store with model
     # pass

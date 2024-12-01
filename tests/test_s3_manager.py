@@ -1,14 +1,14 @@
 import os
-
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
-from os import walk
 
-from src.water_column_sonar_processing.aws.s3_manager import S3Manager, chunked
+from src.water_column_sonar_processing.aws import S3Manager
+from src.water_column_sonar_processing.aws.s3_manager import chunked
+
+# from water_column_sonar_processing.aws.s3_manager import S3Manager, chunked
 
 input_bucket_name = "example_input_bucket"
 output_bucket_name = "example_output_bucket"
-
 
 #######################################################
 def setup_module():
