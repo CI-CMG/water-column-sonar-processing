@@ -23,12 +23,12 @@ def teardown_module():
 # The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future.
 # Valid fixture loop scopes are: "function", "class", "module", "package", "session"
 @pytest.fixture(scope='function')
-def zarr_manager_test_path(test_path):
+def zarr_manager_tmp_path(test_path):
     return test_path["ZARR_MANAGER_TEST_PATH"]
 
 #######################################################
 @mock_aws
-def test_zarr_manager(zarr_manager_test_path):
+def test_zarr_manager(zarr_manager_tmp_path):
     # Tests creating model store and opening with both xarray and
     # model libraries
     # temporary_directory = "/tmp"  # str(tmp_path)
@@ -116,8 +116,7 @@ def test_zarr_manager(zarr_manager_test_path):
 #     assert 1
 
 @mock_aws
-def test_open_zarr_with_zarr_read_write(zarr_manager_test_path):
-    temporary_directory = zarr_manager_test_path # "/tmp"  # str(tmp_path)
+def test_open_zarr_with_zarr_read_write(zarr_manager_tmp_path):
 
     # TODO: open with model python library and check format
     test_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
@@ -133,7 +132,7 @@ def test_open_zarr_with_zarr_read_write(zarr_manager_test_path):
 
     zarr_manager = ZarrManager()
     zarr_path = zarr_manager.create_zarr_store(
-        path=temporary_directory,
+        path=zarr_manager_tmp_path,
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,

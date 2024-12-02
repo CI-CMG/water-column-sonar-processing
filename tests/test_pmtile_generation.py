@@ -3,6 +3,8 @@ import s3fs
 from dotenv import find_dotenv, load_dotenv
 import xarray as xr
 
+from src.water_column_sonar_processing.geometry import PMTileGeneration
+
 
 # from src.water_column_sonar_processing.aws import S3Manager
 
@@ -50,21 +52,13 @@ def teardown_module():
 #     # _()
 
 # @mock_aws
-# def test_pmtile_generation(zarr_store_base, pmtile_generation_test_path):
+@pytest.skip
+def test_pmtile_generator(zarr_store_base, pmtile_generation_test_path):
     # ---Scan Bucket For All Zarr Stores--- #
     # https://noaa-wcsd-zarr-pds.s3.amazonaws.com/index.html#level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr/
     print("test")
-    s3_fs = s3fs.S3FileSystem(anon=True)
-    path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr"
-    zarr_store = s3fs.S3Map(root=path_to_zarr_store, s3=s3_fs)
-
-    # ---Open Zarr Store--- #
-    foo = xr.open_zarr(store=zarr_store, consolidated=None)
-    print(foo.Sv.shape)
-    time = foo.time.values
-    latitude = foo.latitude.values
-    longitude = foo.longitude.values
-    print(time[0], latitude[0], longitude[0])
+    pmtile_generation = PMTileGeneration()
+    pmtile_generation.pmtile_generator()
 
     # zarr_store_base2 = s3fs.S3Map(root=path_to_zarr_store, s3=zarr_store_base)
     # ds_zarr = xr.open_zarr(store=zarr_store_base2)
@@ -78,8 +72,3 @@ def teardown_module():
     # ---Add To GeoPandas Dataframe--- #
 
     # ---Export Shapefile--- #
-
-
-#######################################################
-# def test_get_zarr_store():
-#     assert False
