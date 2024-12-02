@@ -30,20 +30,16 @@ def teardown_module():
 #     s3fs.S3FileSystem(anon=True)
 #     yield
 
-def get_zarr():
-    print("test")
-    s3_fs = s3fs.S3FileSystem(anon=True)
-    path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr"
-    zarr_store = s3fs.S3Map(root=path_to_zarr_store, s3=s3_fs)
-    foo = xr.open_zarr(store=zarr_store)
-    foo.Sv.shape
-    return foo
+# def get_zarr():
+#     print("test")
+#     s3_fs = s3fs.S3FileSystem(anon=True)
+#     path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr"
+#     zarr_store = s3fs.S3Map(root=path_to_zarr_store, s3=s3_fs)
+#     foo = xr.open_zarr(store=zarr_store)
+#     foo.Sv.shape
+#     return foo
 
 
-
-def test():
-    ds_zarr = get_zarr()
-    print(ds_zarr.Sv.shape)
 
 # def test_async_s3(pmtile_generation_test_path):
 #     s3_fs = s3fs.S3FileSystem(anon=True)
@@ -57,11 +53,18 @@ def test():
 # def test_pmtile_generation(zarr_store_base, pmtile_generation_test_path):
     # ---Scan Bucket For All Zarr Stores--- #
     # https://noaa-wcsd-zarr-pds.s3.amazonaws.com/index.html#level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr/
-    # path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr"
-    # s3_store = s3fs_manager.s3_map(s3_zarr_store_path=path_to_zarr_store)
-    # s3 = s3fs.S3FileSystem(anon=True)
-    # zarr_store = s3fs.S3Map(root=path_to_zarr_store, s3=s3)
+    print("test")
+    s3_fs = s3fs.S3FileSystem(anon=True)
+    path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr"
+    zarr_store = s3fs.S3Map(root=path_to_zarr_store, s3=s3_fs)
+
     # ---Open Zarr Store--- #
+    foo = xr.open_zarr(store=zarr_store, consolidated=None)
+    print(foo.Sv.shape)
+    time = foo.time.values
+    latitude = foo.latitude.values
+    longitude = foo.longitude.values
+    print(time[0], latitude[0], longitude[0])
 
     # zarr_store_base2 = s3fs.S3Map(root=path_to_zarr_store, s3=zarr_store_base)
     # ds_zarr = xr.open_zarr(store=zarr_store_base2)

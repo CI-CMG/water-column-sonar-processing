@@ -109,11 +109,11 @@ def test_zarr_manager(zarr_manager_test_path):
 #     asyncio.run(test_zarr_manager()) # Here
 
 #######################################################
-def test_zarr_manager_123(zarr_manager_test_path):
-    print("asdf")
-    s3_manager = S3Manager()
-    s3_manager.create_bucket(bucket_name="asdf")
-    assert 1
+# def test_zarr_manager_123(zarr_manager_test_path):
+#     print("asdf")
+#     s3_manager = S3Manager()
+#     s3_manager.create_bucket(bucket_name="asdf")
+#     assert 1
 
 @mock_aws
 def test_open_zarr_with_zarr_read_write(zarr_manager_test_path):
