@@ -7,6 +7,7 @@ import pandas as pd
 import xarray as xr
 import geopandas
 import geopandas as gpd
+import pyogrio
 from shapely.geometry import LineString
 
 from src.water_column_sonar_processing.aws import S3Manager, S3FSManager
@@ -28,22 +29,22 @@ class PMTileGeneration(object):
         # geojson file. That
         result = list(Path("/Users/r2d2/Documents/echofish/geojson").rglob("*.json"))
         # result = result[:100]
-        iii = 0
+        jjj = 0
         pieces = []
-        for iii in range(len(result)):
-            file_name = os.path.normpath(result[iii]).split(os.sep)[-1]
+        for jjj in range(len(result)):
+            file_name = os.path.normpath(result[jjj]).split(os.sep)[-1]
             file_stem = os.path.splitext(os.path.basename(file_name))[0]
-            geom = gpd.read_file(result[iii]).iloc[0]["geometry"]
+            geom = gpd.read_file(result[jjj]).iloc[0]["geometry"]
             # TDOO: Filter (0,0) coordinates
             if len(geom.coords.xy[0]) < 2:
                 continue
             geom = LineString(list(zip(geom.coords.xy[1], geom.coords.xy[0])))
             pieces.append(
                 {
-                    "ship_name": os.path.normpath(result[iii]).split(os.sep)[-4],
-                    "cruise_name": os.path.normpath(result[iii]).split(os.sep)[-3],
+                    "ship_name": os.path.normpath(result[jjj]).split(os.sep)[-4],
+                    "cruise_name": os.path.normpath(result[jjj]).split(os.sep)[-3],
                     "file_stem": file_stem,
-                    "file_path": result[iii],
+                    "file_path": result[jjj],
                     "geom": geom,
                 }
             )
@@ -74,106 +75,147 @@ class PMTileGeneration(object):
         """
 
     #######################################################
+    # level_2_cruises = [
+    #    "HB0706",
+    # "HB0707",
+    # "HB0710",
+    # "HB0711",
+    # # #"HB0802", # problem
+    # "HB0803",
+    # "HB0805",
+    # "HB0806",
+    # "HB0807",
+    # "HB0901",
+    # "HB0902",
+    # "HB0903",
+    # "HB0904",
+    # "HB0905",
+    # "HB1002",
+    # "HB1006",
+    # "HB1102",
+    # #"HB1103", # shapely.errors.GEOSException: IllegalArgumentException: Non-finite envelope bounds passed to index insert
+    # #  ^ has nans
+    # "HB1105",
+    # "HB1201",
+    # "HB1206",
+    # "HB1301",
+    # "HB1303",
+    # "HB1304",
+    # "HB1401",
+    # "HB1402",
+    # "HB1403",
+    # "HB1405",
+    # "HB1501",
+    # "HB1502",
+    # "HB1503",
+    # "HB1506",
+    # "HB1507",
+    # #"HB1601", # problem, botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "https://noaa-wcsd-zarr-pds.s3.amazonaws.com/level_2/Henry_B._Bigelow/HB1601/EK60/HB1601.zarr/longitude/907"
+    # "HB1603",
+    # "HB1604",
+    # "HB1701",
+    # "HB1702",
+    # "HB1801",
+    # "HB1802",
+    # "HB1803",
+    # "HB1804",
+    # "HB1805",
+    # "HB1806",
+    # "HB1901",
+    # "HB1902",
+    # "HB1903",
+    # "HB1904",
+    # "HB1906",
+    # "HB1907",
+    # "HB2001",
+    # "HB2006",
+    # "HB2007",
+    # "HB20ORT",
+    # "HB20TR"
+    # ]
     # https://docs.protomaps.com/pmtiles/create
-    def pmtile_generator(self):
-        level_2_cruises = [
-            "HB0706",
-            "HB0707",
-            "HB0710",
-            "HB0711",
-            #"HB0802",
-            "HB0803",
-            "HB0805",
-            "HB0806",
-            "HB0807",
-            "HB0901",
-            "HB0902",
-            "HB0903",
-            "HB0904",
-            "HB0905",
-            "HB1002",
-            "HB1006",
-            "HB1102",
-            "HB1103",
-            "HB1105",
-            "HB1201",
-            "HB1206",
-            "HB1301",
-            "HB1303",
-            "HB1304",
-            "HB1401",
-            "HB1402",
-            "HB1403",
-            "HB1405",
-            "HB1501",
-            "HB1502",
-            "HB1503",
-            "HB1506",
-            "HB1507",
-            "HB1601",
-            "HB1603",
-            "HB1604",
-            "HB1701",
-            "HB1702",
-            "HB1801",
-            "HB1802",
-            "HB1803",
-            "HB1804",
-            "HB1805",
-            "HB1806",
-            "HB1901",
-            "HB1902",
-            "HB1903",
-            "HB1904",
-            "HB1906",
-            "HB1907",
-            "HB2001",
-            "HB2006",
-            "HB2007",
-            "HB20ORT",
-            "HB20TR"
-        ]
+    def pmtile_generator(self, level_2_cruises):
         s3_fs = s3fs.S3FileSystem(anon=True)
-        gps_gdf = geopandas.GeoDataFrame(columns=["ship", "cruise", "geometry"], geometry="geometry", crs="EPSG:4326")
-        #
         for iii in range(len(level_2_cruises)):
-            print(level_2_cruises[iii])
             cruise_name = level_2_cruises[iii]
+            print(cruise_name)
+            gps_gdf = geopandas.GeoDataFrame(
+                columns=["id", "ship", "cruise", "sensor", "geometry"],
+                geometry="geometry",
+                crs="EPSG:4326"
+            )
             path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/Henry_B._Bigelow/{cruise_name}/EK60/{cruise_name}.zarr"
             file_name = os.path.normpath(path_to_zarr_store).split(os.sep)[-1]
             file_stem = os.path.splitext(os.path.basename(file_name))[0]
             zarr_store = s3fs.S3Map(root=path_to_zarr_store, s3=s3_fs)
             # ---Open Zarr Store--- #
             # TODO: try-except to allow failures
-            xr_store = xr.open_zarr(store=zarr_store, consolidated=None)
+            print('opening store')
+            xr_store = xr.open_zarr(store=zarr_store, consolidated=False)
             print(xr_store.Sv.shape)
             # ---Read Zarr Store Time/Latitude/Longitude--- #
-            #time = xr_store.time.values
             latitude = xr_store.latitude.values
             longitude = xr_store.longitude.values
-            print(latitude[0], longitude[0])
+            if np.isnan(latitude).any() or np.isnan(longitude).any():
+                print(f'there was missing lat-lon data for {cruise_name}')
+                continue
             # ---Add To GeoPandas Dataframe--- #
+            print('creating linestring')
+            # TODO: experiment with tolerance "0.001"
             geom = LineString(list(zip(longitude, latitude))).simplify(tolerance=0.0001, preserve_topology=True)
-            # TODO: this is tooo slow!!!!!!!
-            gps_gdf.loc[iii] = ("Henry_B._Bigelow", file_stem, geom) # (ship, cruise, geometry)
-        #
-        # print(fiona.supported_drivers) # {'DXF': 'rw', 'CSV': 'raw', 'OpenFileGDB': 'raw', 'ESRIJSON': 'r', 'ESRI Shapefile': 'raw', 'FlatGeobuf': 'raw', 'GeoJSON': 'raw', 'GeoJSONSeq': 'raw', 'GPKG': 'raw', 'GML': 'rw', 'OGR_GMT': 'rw', 'GPX': 'rw', 'MapInfo File': 'raw', 'DGN': 'raw', 'S57': 'r', 'SQLite': 'raw', 'TopoJSON': 'r'}
-        #gps_gdf.to_file('dataframe.shp', crs="EPSG:4326", engine="fiona")
-        # Convert geojson feature collection to pmtiles
-        gps_gdf.to_file("dataframe.geojson", driver="GeoJSON", crs="EPSG:4326", engine="fiona")
-        print("done")
-        # ---Export Shapefile--- #
+            gps_gdf.loc[0] = (iii, "Henry_B._Bigelow", file_stem, "EK60", geom)  # (ship, cruise, sensor, geometry)
+            print('writing to file')
+            # gps_gdf.set_index('id', inplace=True)
+            # gps_gdf.to_file(f"dataframe_{cruise_name}.geojson", driver="GeoJSON", engine="pyogrio", layer_options={"ID_GENERATE": "YES"})
+            # https://gdal.org/en/latest/drivers/vector/jsonfg.html
+            gps_gdf.to_file(
+                f"dataframe_{cruise_name}.geojson",
+                driver="GeoJSON",
+                engine="pyogrio",
+                layer_options={"ID_FIELD": "id"}
+            )
+            # gps_gdf.to_file(f"dataframe_{cruise_name}.geojson", driver="GeoJSON", engine="pyogrio", id_generate=True)
 
+# print(fiona.supported_drivers) # {'DXF': 'rw', 'CSV': 'raw', 'OpenFileGDB': 'raw', 'ESRIJSON': 'r', 'ESRI Shapefile': 'raw', 'FlatGeobuf': 'raw', 'GeoJSON': 'raw', 'GeoJSONSeq': 'raw', 'GPKG': 'raw', 'GML': 'rw', 'OGR_GMT': 'rw', 'GPX': 'rw', 'MapInfo File': 'raw', 'DGN': 'raw', 'S57': 'r', 'SQLite': 'raw', 'TopoJSON': 'r'}
+#gps_gdf.to_file('dataframe.shp', crs="EPSG:4326", engine="fiona")
+# Convert geojson feature collection to pmtiles
+#gps_gdf.to_file("dataframe.geojson", driver="GeoJSON", crs="EPSG:4326", engine="fiona")
+#print("done")
+# ---Export Shapefile--- #
+
+
+
+#gps_gdf.set_geometry(col='geometry', inplace=True)
+#gps_gdf.__geo_interface__
+#gps_gdf.set_index('id', inplace=True)
+#gps_gdf.to_file(f"dataframe3.geojson", driver="GeoJSON", crs="EPSG:4326", engine="fiona", index=True)
+
+### this gives the right layer id values
+#gps_gdf.to_file(f"dataframe6.geojson", driver="GeoJSON", engine="pyogrio", layer_options={"ID_GENERATE": "YES"})
+# jq '{"type": "FeatureCollection", "features": [.[] | .features[]]}' --slurp input*.geojson > output.geojson
+#tippecanoe -zg --projection=EPSG:4326 -o water-column-sonar-id.pmtiles -l cruises output.geojson
+#tippecanoe -zg --convert-stringified-ids-to-numbers --projection=EPSG:4326 -o water-column-sonar-id.pmtiles -l cruises dataframe*.geojson
+{
+"type": "FeatureCollection",
+"name": "dataframe5",
+"features": [
+{ "type": "Feature", "id": 0, "properties": { "id": 0, "ship": "Henry_B._Bigelow", "cruise": "HB0706", "sensor": "EK60" }, "geometry": { "type": "LineString", "coordinates": [ [ -72.120498657226562, 39.659671783447266 ], [ -72.120773315429688, 39.660198211669922 ] ] } },
+{ "type": "Feature", "id": 1, "properties": { "id": 1, "ship": "Henry_B._Bigelow", "cruise": "HB0707", "sensor": "EK60" }, "geometry": { "type": "LineString", "coordinates": [ [ -71.797836303710938, 41.003166198730469 ], [ -71.797996520996094, 41.002998352050781 ], [ -71.798583984375, 41.002994537353516 ] ] } },
+{ "type": "Feature", "id": 2, "properties": { "id": 2, "ship": "Henry_B._Bigelow", "cruise": "HB0710", "sensor": "EK60" }, "geometry": { "type": "LineString", "coordinates": [ [ -72.489486694335938, 40.331901550292969 ], [ -72.490760803222656, 40.33099365234375 ] ] } }
+]
+}
 """
 # https://docs.protomaps.com/pmtiles/create
 #ogr2ogr -t_srs EPSG:4326 data.geojson dataframe.shp
 # Only need to do the second one here...
 tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises dataframe.geojson
+tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises --coalesce-densest-as-needed --extend-zooms-if-still-dropping dataframe*.geojson
+# used this to combine all the geojson files into single pmtile file (2024-12-03):
+tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises --coalesce-densest-as-needed --extend-zooms-if-still-dropping dataframe*.geojson
 
 TODO:
     run each one of the cruises in a separate ospool workflow.
-    each process gets own store
-    
+    each process gets own store    
 """
 ###########################################################
 

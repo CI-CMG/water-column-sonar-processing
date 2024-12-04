@@ -39,7 +39,7 @@ def test_zarr_manager(zarr_manager_tmp_path):
 
     zarr_manager = ZarrManager()
     zarr_manager.create_zarr_store(
-        path=zarr_manager_test_path,
+        path=zarr_manager_tmp_path,
         ship_name=ship_name,
         cruise_name=cruise_name,  # TODO: just pass stem
         sensor_name=sensor_name,
@@ -50,7 +50,7 @@ def test_zarr_manager(zarr_manager_tmp_path):
         calibration_status=True,
     )
 
-    assert os.path.exists(f"{zarr_manager_test_path}/{cruise_name}.zarr")
+    assert os.path.exists(f"{zarr_manager_tmp_path}/{cruise_name}.zarr")
 
     # TODO: copy to s3 bucket...
     numcodecs.blosc.use_threads = False
@@ -59,7 +59,7 @@ def test_zarr_manager(zarr_manager_tmp_path):
     # synchronizer = model.ProcessSynchronizer(f"/mnt/model/{ship_name}_{cruise_name}.sync")
 
     cruise_zarr = zarr.open(
-        store=f"{zarr_manager_test_path}/{cruise_name}.zarr", mode="r"
+        store=f"{zarr_manager_tmp_path}/{cruise_name}.zarr", mode="r"
     )  # synchronizer=synchronizer)
     print(cruise_zarr.info)
 
@@ -68,12 +68,12 @@ def test_zarr_manager(zarr_manager_tmp_path):
         1201,
         len(frequencies),
     )  # (depth, time, frequency)
-    assert cruise_zarr.Sv.chunks == (512, 512, 1)  # TODO: use enum?
+    assert cruise_zarr.Sv.chunks == (512, 512, len(frequencies))  # TODO: use enum?
 
     # Open Zarr store with Xarray
     # TODO: move to separate test
     file_xr = xr.open_zarr(
-        store=f"{zarr_manager_test_path}/{cruise_name}.zarr", consolidated=None
+        store=f"{zarr_manager_tmp_path}/{cruise_name}.zarr", consolidated=None
     )  # synchronizer=SYNCHRONIZER)
     print(file_xr)
 

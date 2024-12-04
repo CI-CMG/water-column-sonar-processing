@@ -2,6 +2,7 @@ tests/*.zarr
 tests/*.bot
 tests/*.raw
 tests/*.json
+*.geojson
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

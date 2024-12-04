@@ -52,13 +52,13 @@ def teardown_module():
 #     # _()
 
 # @mock_aws
-@pytest.skip
-def test_pmtile_generator(zarr_store_base, pmtile_generation_test_path):
-    # ---Scan Bucket For All Zarr Stores--- #
-    # https://noaa-wcsd-zarr-pds.s3.amazonaws.com/index.html#level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr/
-    print("test")
-    pmtile_generation = PMTileGeneration()
-    pmtile_generation.pmtile_generator()
+# @pytest.skip
+# def test_pmtile_generator(zarr_store_base, pmtile_generation_test_path):
+#     # ---Scan Bucket For All Zarr Stores--- #
+#     # https://noaa-wcsd-zarr-pds.s3.amazonaws.com/index.html#level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr/
+#     print("test")
+#     pmtile_generation = PMTileGeneration()
+#     pmtile_generation.pmtile_generator()
 
     # zarr_store_base2 = s3fs.S3Map(root=path_to_zarr_store, s3=zarr_store_base)
     # ds_zarr = xr.open_zarr(store=zarr_store_base2)

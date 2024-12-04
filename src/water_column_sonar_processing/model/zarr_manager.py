@@ -1,11 +1,9 @@
 import os
-
 import numcodecs
 import numpy as np
 import xarray as xr
 import zarr
 from numcodecs import Blosc
-
 
 from src.water_column_sonar_processing.aws.s3fs_manager import S3FSManager
 from src.water_column_sonar_processing.utility.constants import Constants, Coordinates
@@ -86,9 +84,9 @@ class ZarrManager:
             name=Coordinates.TIME.value,
             data=np.repeat(0.0, width),
             shape=width,
-            chunks=(
-                Constants.TILE_SIZE.value,
-            ),  # TODO: the chunking scheme doesn't seem to be working here
+            chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
+                # Constants.TILE_SIZE.value,
+            #),  # TODO: the chunking scheme doesn't seem to be working here
             dtype=np.dtype(Coordinates.TIME_DTYPE.value),
             compressor=self.__compressor,
             # fill_value=0.,
@@ -114,7 +112,7 @@ class ZarrManager:
             # TODO: verify that these values are correct
             data=depth_values,
             shape=len(depth_values),
-            chunks=Constants.TILE_SIZE.value,
+            chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
             dtype=np.dtype(
                 Coordinates.DEPTH_DTYPE.value
             ),  # float16 == 2 significant digits would be ideal
@@ -136,14 +134,14 @@ class ZarrManager:
             name=Coordinates.LATITUDE.value,
             data=np.repeat(0.0, width),
             shape=width,
-            chunks=Constants.TILE_SIZE.value,
+            chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
             dtype=np.dtype(Coordinates.LATITUDE_DTYPE.value),
             compressor=self.__compressor,
             fill_value=0.0,
             overwrite=self.__overwrite,
         )
 
-        # LATITUDE is indexed by TIME
+        # Note: LATITUDE is indexed by TIME
         root.latitude.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
 
         root.latitude.attrs["long_name"] = Coordinates.LATITUDE_LONG_NAME.value
@@ -155,14 +153,14 @@ class ZarrManager:
             name=Coordinates.LONGITUDE.value,
             data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
             shape=width,
-            chunks=Constants.TILE_SIZE.value,
+            chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
             dtype=np.dtype(Coordinates.LONGITUDE_DTYPE.value),
             compressor=self.__compressor,
             fill_value=0.0,
             overwrite=self.__overwrite,
         )
 
-        # LONGITUDE is indexed by TIME
+        # Note: LONGITUDE is indexed by TIME
         root.longitude.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
 
         root.longitude.attrs["long_name"] = Coordinates.LONGITUDE_LONG_NAME.value
@@ -175,7 +173,7 @@ class ZarrManager:
             name=Coordinates.BOTTOM.value,
             data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
             shape=width,
-            chunks=Constants.TILE_SIZE.value,
+            chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
             dtype=np.dtype(Coordinates.BOTTOM_DTYPE.value),
             compressor=self.__compressor,
             fill_value=0.0,
@@ -194,7 +192,7 @@ class ZarrManager:
             name=Coordinates.FREQUENCY.value,
             data=frequencies,
             shape=len(frequencies),
-            chunks=1,
+            chunks=len(frequencies),
             dtype=np.dtype(Coordinates.FREQUENCY_DTYPE.value),
             compressor=self.__compressor,
             fill_value=0.0,
@@ -217,7 +215,7 @@ class ZarrManager:
         root.create_dataset(
             name=Coordinates.SV.value,
             shape=(len(depth_values), width, len(frequencies)),
-            chunks=(Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, 1),
+            chunks=(Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, len(frequencies)),
             dtype=np.dtype(
                 Coordinates.SV_DTYPE.value
             ),  # TODO: try to experiment with 'float16'

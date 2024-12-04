@@ -4,6 +4,7 @@ from enum import Enum, Flag, unique
 @unique
 class Constants(Flag):
     TILE_SIZE = 512
+    SPATIOTEMPORAL_CHUNK_SIZE = 8192
 
 
 class Coordinates(Enum):
