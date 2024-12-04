@@ -50,6 +50,8 @@ Processing tool for converting L0 data to L1 and L2 as well as generating geospa
 ```commandline
 pytest --disable-warnings
 ```
+or
+> pytest --cache-clear --cov=src tests/ --cov-report=xml
 
 # Instructions
 Following this tutorial:
