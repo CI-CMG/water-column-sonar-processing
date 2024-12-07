@@ -159,18 +159,19 @@ class PMTileGeneration(object):
 
         file_type = 'dataframe_*.geojson'
         geojson_files = glob.glob(file_type)
-        for j in range(len(geojson_files)):
-            gps_gdf.loc[j] = geopandas.read_file(geojson_files[j])
-
-        # for iii in range(len(level_2_cruises)):
-        #     cruise_name = level_2_cruises[iii]
-        #     print(cruise_name)
-        #     geom = self.get_geospatial_info_from_zarr_store(ship_name="Henry_B._Bigelow", cruise_name=cruise_name)
-
-        #
-        # gps_gdf.loc[iii] = (iii, "Henry_B._Bigelow", cruise_name, "EK60", geom)  # (ship, cruise, sensor, geometry)
-        print('writing to file')
+        for jjj in range(len(geojson_files)):
+            print(jjj)
+            geom = geopandas.read_file(geojson_files[jjj])
+            gps_gdf.loc[jjj] = (jjj, geom.ship[0], geom.cruise[0], geom.sensor[0], geom.geometry[0])
+            #gps_gdf.loc[0] = (0, "Henry_B._Bigelow", cruise_name, "EK60", geom)  # (ship, cruise, sensor, geometry)
         print(gps_gdf)
+        gps_gdf.set_index('id', inplace=True)
+        gps_gdf.to_file(f"data.geojson", driver="GeoJSON", engine="pyogrio", layer_options={"ID_GENERATE": "YES"})
+        return list(gps_gdf.cruise)
+
+        # gps_gdf.loc[iii] = (iii, "Henry_B._Bigelow", cruise_name, "EK60", geom)  # (ship, cruise, sensor, geometry)
+        #print('writing to file')
+        #print(gps_gdf)
         # gps_gdf.set_index('id', inplace=True)
         # gps_gdf.to_file(f"dataframe_{cruise_name}.geojson", driver="GeoJSON", engine="pyogrio", layer_options={"ID_GENERATE": "YES"})
         # https://gdal.org/en/latest/drivers/vector/jsonfg.html

@@ -51,7 +51,7 @@ def teardown_module():
 #     print(ds_zarr.Sv.shape)
 #     # _()
 
-# @pytest.mark.skip(reason="no way of currently testing this without accessing actual zarr stores")
+@pytest.mark.skip(reason="This test uses actual data in s3 buckets")
 def test_get_geospatial_info_from_zarr_store():
     ship_name = "Henry_B._Bigelow"
     cruise_name = "HB0706"
@@ -60,7 +60,7 @@ def test_get_geospatial_info_from_zarr_store():
 
     assert processed_cruise
 
-# @pytest.mark.skip(reason="no way of currently testing this without accessing actual zarr stores")
+@pytest.mark.skip(reason="This test uses actual data in s3 buckets")
 def test_open_zarr_stores_with_thread_pool_executor():
     level_2_cruises = [
         "HB0706",
@@ -123,16 +123,16 @@ def test_open_zarr_stores_with_thread_pool_executor():
     processed_cruises = pmtile_generation.open_zarr_stores_with_thread_pool_executor(level_2_cruises)
     print(processed_cruises)
     print(level_2_cruises)
-
     assert len(processed_cruises) == len(level_2_cruises)
 
-# @pytest.mark.skip(reason="no way of currently testing this without accessing actual zarr stores")
+@pytest.mark.skip(reason="This test uses actual data in s3 buckets")
 def test_aggregate_geojson_into_dataframe():
     pmtile_generation = PMTileGeneration()
     processed_cruises = pmtile_generation.aggregate_geojson_into_dataframe()
-
     assert len(processed_cruises) > 0
-
+    # creates data.geojson
+    # then in the terminal
+    # tippecanoe -zg --projection=EPSG:4326 -o water-column-sonar-id.pmtiles -l cruises dataframe.geojson
 
 
 # @mock_aws
