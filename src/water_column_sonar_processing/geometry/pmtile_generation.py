@@ -81,6 +81,21 @@ class PMTileGeneration(object):
         """
 
     #######################################################
+    # TODO: temporary using this to get info
+    def get_info_from_zarr_store(
+        self,
+        ship_name,
+        cruise_names,
+    ):
+        total_size = 0
+        s3_fs = s3fs.S3FileSystem(anon=True)
+        for cruise_name in cruise_names:
+            path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
+            zarr_store = s3fs.S3Map(root=path_to_zarr_store, s3=s3_fs)
+            xr_store = xr.open_zarr(store=zarr_store, consolidated=None)
+            print(f'Cruise: {cruise_name}, shape: {xr_store.time.shape[0]}')
+            total_size = total_size + xr_store.time.shape[0]
+
     def get_geospatial_info_from_zarr_store(
         self,
         ship_name,
@@ -147,7 +162,9 @@ class PMTileGeneration(object):
 
     #######################################################
     # https://docs.protomaps.com/pmtiles/create
-    def aggregate_geojson_into_dataframe(self):
+    def aggregate_geojson_into_dataframe(
+        self
+    ):
         """
         iterate through cruises, threadpoolexecute geojson creation, aggregate geojson files into df,
         """
@@ -242,62 +259,6 @@ TODO:
 # ds_zarr = xr.open_zarr(zarr_store, consolidated=None)
 # print(ds_zarr.Sv.shape)
 
-### backup of cruises we can use ###
-# level_2_cruises = [
-    #    "HB0706",
-    # "HB0707",
-    # "HB0710",
-    # "HB0711",
-    # # #"HB0802", # problem
-    # "HB0803",
-    # "HB0805",
-    # "HB0806",
-    # "HB0807",
-    # "HB0901",
-    # "HB0902",
-    # "HB0903",
-    # "HB0904",
-    # "HB0905",
-    # "HB1002",
-    # "HB1006",
-    # "HB1102",
-    # #"HB1103", # shapely.errors.GEOSException: IllegalArgumentException: Non-finite envelope bounds passed to index insert
-    # #  ^ has nans
-    # "HB1105",
-    # "HB1201",
-    # "HB1206",
-    # "HB1301",
-    # "HB1303",
-    # "HB1304",
-    # "HB1401",
-    # "HB1402",
-    # "HB1403",
-    # "HB1405",
-    # "HB1501",
-    # "HB1502",
-    # "HB1503",
-    # "HB1506",
-    # "HB1507",
-    # #"HB1601", # problem, botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "https://noaa-wcsd-zarr-pds.s3.amazonaws.com/level_2/Henry_B._Bigelow/HB1601/EK60/HB1601.zarr/longitude/907"
-    # "HB1603",
-    # "HB1604",
-    # "HB1701",
-    # "HB1702",
-    # "HB1801",
-    # "HB1802",
-    # "HB1803",
-    # "HB1804",
-    # "HB1805",
-    # "HB1806",
-    # "HB1901",
-    # "HB1902",
-    # "HB1903",
-    # "HB1904",
-    # "HB1906",
-    # "HB1907",
-    # "HB2001",
-    # "HB2006",
-    # "HB2007",
-    # "HB20ORT",
-    # "HB20TR"
-    # ]
+
+
+total = [246847, 89911, 169763, 658047, 887640, 708771, 187099, 3672813, 4095002, 763268, 162727, 189454, 1925270, 3575857, 1031920, 1167590, 3737415, 4099957, 3990725, 3619996, 3573052, 2973090, 55851, 143192, 1550164, 3692819, 668400, 489735, 393260, 1311234, 242989, 4515760, 1303091, 704663, 270645, 3886437, 4204381, 1062090, 428639, 541455, 4206506, 298561, 1279329, 137416, 139836, 228947, 517949]

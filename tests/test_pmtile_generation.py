@@ -134,6 +134,70 @@ def test_aggregate_geojson_into_dataframe():
     # then in the terminal
     # tippecanoe -zg --projection=EPSG:4326 -o water-column-sonar-id.pmtiles -l cruises dataframe.geojson
 
+@pytest.mark.skip(reason="no way of currently testing this without accessing actual zarr stores")
+def test_get_info_from_zarr_store():
+    # this was just an experiment to get the total number of geospatial points
+    level_2_cruises = [
+        "HB0706",
+        "HB0707",
+        "HB0710",
+        "HB0711",
+        # #"HB0802", # problem
+        "HB0803",
+        "HB0805",
+        "HB0806",
+        "HB0807",
+        "HB0901",
+        "HB0902",
+        "HB0903",
+        "HB0904",
+        "HB0905",
+        "HB1002",
+        "HB1006",
+        "HB1102",
+        #"HB1103", # shapely.errors.GEOSException: IllegalArgumentException: Non-finite envelope bounds passed to index insert
+        #  ^ has nans
+        "HB1105",
+        "HB1201",
+        "HB1206",
+        "HB1301",
+        #"HB1303",
+        "HB1304",
+        "HB1401",
+        "HB1402",
+        "HB1403",
+        "HB1405",
+        "HB1501",
+        "HB1502",
+        "HB1503",
+        #"HB1506",
+        "HB1507",
+        #"HB1601", # problem, botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "https://noaa-wcsd-zarr-pds.s3.amazonaws.com/level_2/Henry_B._Bigelow/HB1601/EK60/HB1601.zarr/longitude/907"
+        #"HB1603",
+        #"HB1604",
+        "HB1701",
+        #"HB1702",
+        "HB1801",
+        "HB1802",
+        "HB1803",
+        "HB1804",
+        "HB1805",
+        "HB1806",
+        "HB1901",
+        "HB1902",
+        "HB1903",
+        "HB1904",
+        "HB1906",
+        "HB1907",
+        "HB2001",
+        "HB2006",
+        "HB2007",
+        "HB20ORT",
+        "HB20TR"
+    ]
+    pmtile_generation = PMTileGeneration()
+    foo = pmtile_generation.get_info_from_zarr_store("Henry_B._Bigelow", level_2_cruises)
+    print(foo) # total number of timestamps: 73_799_563
 
 # @mock_aws
 @pytest.mark.skip(reason="no way of currently testing this without accessing actual zarr stores")
