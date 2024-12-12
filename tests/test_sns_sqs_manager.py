@@ -4,8 +4,7 @@ import os
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 
-from src.water_column_sonar_processing.aws.sns_manager import SNSManager
-from src.water_column_sonar_processing.aws.sqs_manager import SQSManager
+from water_column_sonar_processing.aws import SNSManager, SQSManager
 
 
 #######################################################

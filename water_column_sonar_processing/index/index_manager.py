@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
-from src.water_column_sonar_processing.aws.s3_manager import S3Manager
+from water_column_sonar_processing.aws import S3Manager
 
 
 class IndexManager:

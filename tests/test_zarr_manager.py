@@ -7,8 +7,9 @@ import xarray as xr
 import zarr
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
-from src.water_column_sonar_processing.aws.s3_manager import S3Manager
-from src.water_column_sonar_processing.model.zarr_manager import ZarrManager
+# from src.water_column_sonar_processing.aws.s3_manager import S3Manager
+from water_column_sonar_processing.aws import S3Manager
+from water_column_sonar_processing.model import ZarrManager
 
 
 #######################################################
@@ -68,7 +69,7 @@ def test_zarr_manager(zarr_manager_tmp_path):
         1201,
         len(frequencies),
     )  # (depth, time, frequency)
-    assert cruise_zarr.Sv.chunks == (512, 512, len(frequencies))  # TODO: use enum?
+    assert cruise_zarr.Sv.chunks == (2048, 2048, len(frequencies))  # TODO: use enum?
 
     # Open Zarr store with Xarray
     # TODO: move to separate test

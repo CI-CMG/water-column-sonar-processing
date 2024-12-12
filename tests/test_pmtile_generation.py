@@ -1,9 +1,7 @@
 import pytest
-import s3fs
 from dotenv import find_dotenv, load_dotenv
-import xarray as xr
 
-from src.water_column_sonar_processing.geometry import PMTileGeneration
+from water_column_sonar_processing.geometry import PMTileGeneration
 
 
 # from src.water_column_sonar_processing.aws import S3Manager

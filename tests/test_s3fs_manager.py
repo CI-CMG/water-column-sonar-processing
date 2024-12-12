@@ -7,8 +7,8 @@ from dotenv import find_dotenv, load_dotenv
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
 
-from src.water_column_sonar_processing.aws.s3_manager import S3Manager
-from src.water_column_sonar_processing.aws.s3fs_manager import S3FSManager
+from water_column_sonar_processing.aws import S3Manager
+from water_column_sonar_processing.aws import S3FSManager
 
 
 #######################################################

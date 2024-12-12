@@ -3,10 +3,10 @@ import os
 
 import numpy as np
 
-from src.water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
-from src.water_column_sonar_processing.aws.s3_manager import S3Manager
-from src.water_column_sonar_processing.aws.s3fs_manager import S3FSManager
-from src.water_column_sonar_processing.aws.sns_manager import SNSManager
+from water_column_sonar_processing.aws import DynamoDBManager
+from water_column_sonar_processing.aws import S3Manager
+from water_column_sonar_processing.aws import S3FSManager
+from water_column_sonar_processing.aws import SNSManager
 
 
 ###########################################################

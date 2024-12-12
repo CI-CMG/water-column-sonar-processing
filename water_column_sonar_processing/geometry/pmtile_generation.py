@@ -12,8 +12,6 @@ import pyogrio
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from shapely.geometry import LineString
 
-from src.water_column_sonar_processing.aws import S3Manager, S3FSManager
-
 MAX_POOL_CONNECTIONS = 64
 MAX_CONCURRENCY = 64
 MAX_WORKERS = 64

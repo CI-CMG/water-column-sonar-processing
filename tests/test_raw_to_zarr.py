@@ -3,8 +3,8 @@ from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 from pathlib import Path
 
-from src.water_column_sonar_processing.aws import DynamoDBManager, S3Manager
-from src.water_column_sonar_processing.processing.raw_to_zarr import RawToZarr
+from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
+from water_column_sonar_processing.processing import RawToZarr
 
 
 # TEMPDIR = "/tmp"

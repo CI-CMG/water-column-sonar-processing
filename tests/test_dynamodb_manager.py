@@ -2,8 +2,8 @@ import numpy as np
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 
-from src.water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
-from src.water_column_sonar_processing.utility.pipeline_status import PipelineStatus
+from water_column_sonar_processing.aws import DynamoDBManager
+from water_column_sonar_processing.utility import PipelineStatus
 
 
 #######################################################

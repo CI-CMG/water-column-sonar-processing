@@ -5,9 +5,10 @@ import xarray as xr
 import zarr
 from numcodecs import Blosc
 
-from src.water_column_sonar_processing.aws.s3fs_manager import S3FSManager
-from src.water_column_sonar_processing.utility.constants import Constants, Coordinates
-from src.water_column_sonar_processing.utility.timestamp import Timestamp
+from water_column_sonar_processing.aws import S3FSManager
+from water_column_sonar_processing.utility import Constants
+from water_column_sonar_processing.utility import Timestamp
+from water_column_sonar_processing.utility import Coordinates
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)
@@ -89,7 +90,6 @@ class ZarrManager:
             #),  # TODO: the chunking scheme doesn't seem to be working here
             dtype=np.dtype(Coordinates.TIME_DTYPE.value),
             compressor=self.__compressor,
-            # fill_value=0.,
             fill_value=np.nan,  # TODO: do i want nan's?
             overwrite=self.__overwrite,
         )
@@ -117,7 +117,7 @@ class ZarrManager:
                 Coordinates.DEPTH_DTYPE.value
             ),  # float16 == 2 significant digits would be ideal
             compressor=self.__compressor,
-            # fill_value=np.nan,
+            fill_value=np.nan,
             overwrite=self.__overwrite,
         )
         # TODO: change to exception
@@ -132,12 +132,12 @@ class ZarrManager:
         # --- Coordinate: Latitude --- #
         root.create_dataset(
             name=Coordinates.LATITUDE.value,
-            data=np.repeat(0.0, width),
+            # data=np.repeat(0.0, width),
             shape=width,
             chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
             dtype=np.dtype(Coordinates.LATITUDE_DTYPE.value),
             compressor=self.__compressor,
-            fill_value=0.0,
+            fill_value=np.nan,
             overwrite=self.__overwrite,
         )
 
@@ -151,12 +151,12 @@ class ZarrManager:
         # --- Coordinate: Longitude --- #
         root.create_dataset(
             name=Coordinates.LONGITUDE.value,
-            data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
+            # data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
             shape=width,
             chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
             dtype=np.dtype(Coordinates.LONGITUDE_DTYPE.value),
             compressor=self.__compressor,
-            fill_value=0.0,
+            fill_value=np.nan,
             overwrite=self.__overwrite,
         )
 

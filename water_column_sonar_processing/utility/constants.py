@@ -3,8 +3,11 @@ from enum import Enum, Flag, unique
 
 @unique
 class Constants(Flag):
-    TILE_SIZE = 512
-    SPATIOTEMPORAL_CHUNK_SIZE = 8192
+    TILE_SIZE = 2048
+    # Average https://noaa-wcsd-zarr-pds.s3.us-east-1.amazonaws.com/level_2/Henry_B._Bigelow/HB0902/EK60/HB0902.zarr/time/927
+    # chunk size is ~1.3 kB, HB0902 cruise takes ~30 seconds to load all time/lat/lon data
+    # NOTE: larger value here will speed up the TurfJS download of data in the UI
+    SPATIOTEMPORAL_CHUNK_SIZE = int(1e5) # 2**17
 
 
 class Coordinates(Enum):

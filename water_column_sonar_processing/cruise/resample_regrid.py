@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from src.water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
-from src.water_column_sonar_processing.geometry.geometry_manager import GeometryManager
-from src.water_column_sonar_processing.model.zarr_manager import ZarrManager
+from water_column_sonar_processing.aws import DynamoDBManager
+from water_column_sonar_processing.geometry import GeometryManager
+from water_column_sonar_processing.model import ZarrManager
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)

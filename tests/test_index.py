@@ -2,8 +2,8 @@ import pytest
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 
-from src.water_column_sonar_processing.aws import S3Manager
-from src.water_column_sonar_processing.index.index_manager import IndexManager
+from water_column_sonar_processing.aws import S3Manager
+from water_column_sonar_processing.index import IndexManager
 
 
 #######################################################

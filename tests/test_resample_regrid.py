@@ -2,7 +2,7 @@ import pytest
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 
-from src.water_column_sonar_processing.cruise.resample_regrid import ResampleRegrid
+from water_column_sonar_processing.cruise import ResampleRegrid
 
 
 #######################################################

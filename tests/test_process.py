@@ -5,11 +5,11 @@ import numpy as np
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 
-from src.water_column_sonar_processing.aws.dynamodb_manager import DynamoDBManager
-from src.water_column_sonar_processing.aws.s3_manager import S3Manager
-from src.water_column_sonar_processing.aws.sns_manager import SNSManager
-from src.water_column_sonar_processing.aws.sqs_manager import SQSManager
-from src.water_column_sonar_processing.process import Process
+from water_column_sonar_processing.aws import DynamoDBManager
+from water_column_sonar_processing.aws import S3Manager
+from water_column_sonar_processing.aws import SNSManager
+from water_column_sonar_processing.aws import SQSManager
+from water_column_sonar_processing.process import Process
 
 
 #######################################################

@@ -4,7 +4,7 @@ import echopype as ep
 import numpy as np
 from numcodecs import Blosc
 
-from src.water_column_sonar_processing.utility import Cleaner
+from water_column_sonar_processing.utility import Cleaner
 
 TEMPDIR = "/tmp"
 
