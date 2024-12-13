@@ -154,6 +154,11 @@ class RawToZarr:
         geometry_manager = GeometryManager()
         cleaner = Cleaner()
         cleaner.delete_local_files(file_types=["*.zarr", "*.json"]) # TODO: include bot and raw?
+
+        #s3_manager = S3Manager()
+        #s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
+        #s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
+
         try:
             gc.collect()
             print('Opening raw file with echopype.')
@@ -169,7 +174,12 @@ class RawToZarr:
             )
             print('Compute volume backscattering strength (Sv) from raw data.')
             ds_sv = ep.calibrate.compute_Sv(echodata)
-            print('Done computing volume backscattering strength (Sv) from raw data.')
+            print('Done computing volume backscatter strength (Sv) from raw data.')
+            # Note: detected_seafloor_depth is located at echodata.vendor.detected_seafloor_depth
+            # but is not written out with ds_sv
+            if "detected_seafloor_depth" in list(echodata.vendor.variables):
+                ds_sv["detected_seafloor_depth"] = echodata.vendor.detected_seafloor_depth
+            #
             frequencies = echodata.environment.frequency_nominal.values
             #################################################################
             # Get GPS coordinates
@@ -188,12 +198,9 @@ class RawToZarr:
             # TODO: this var name is supposed to represent minimum resolution of depth measurements
             # TODO revert this so that smaller diffs can be used
             # The most minimum the resolution can be is as small as 0.25 meters
-            min_echo_range = np.maximum(
-                0.25,
-                np.nanmin(np.diff(ds_sv.echo_range.values))
-            )
+            min_echo_range = np.round(np.nanmin(np.diff(ds_sv.echo_range.values)), 2)
             max_echo_range = float(np.nanmax(ds_sv.echo_range))
-            #
+            # This is the number of missing values found throughout the lat/lon
             num_ping_time_dropna = lat[~np.isnan(lat)].shape[0]  # symmetric to lon
             #
             start_time = np.datetime_as_string(ds_sv.ping_time.values[0], unit='ms') + "Z"

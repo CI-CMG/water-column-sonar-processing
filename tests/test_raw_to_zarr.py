@@ -136,7 +136,7 @@ def test_raw_to_zarr(raw_to_zarr_test_path):
     # TODO: test if zarr store is accessible in the s3 bucket
     number_of_files = s3_manager.list_objects(bucket_name=output_bucket_name, prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/")
     # Ensure that all the files were uploaded properly
-    assert len(number_of_files) == 69
+    assert len(number_of_files) == 72
 
     # TODO: check the dynamodb dataframe to see if info is updated there
     # ---Verify Data is Populated in Table--- #
