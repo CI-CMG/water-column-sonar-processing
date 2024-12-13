@@ -86,8 +86,6 @@ class ZarrManager:
             data=np.repeat(0.0, width),
             shape=width,
             chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
-                # Constants.TILE_SIZE.value,
-            #),  # TODO: the chunking scheme doesn't seem to be working here
             dtype=np.dtype(Coordinates.TIME_DTYPE.value),
             compressor=self.__compressor,
             fill_value=np.nan,  # TODO: do i want nan's?
@@ -125,14 +123,16 @@ class ZarrManager:
 
         root.depth.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.DEPTH.value]
 
-        root.depth.attrs["long_name"] = Coordinates.DEPTH_LONG_NAME.value
         root.depth.attrs["units"] = Coordinates.DEPTH_UNITS.value
+        root.depth.attrs["long_name"] = Coordinates.DEPTH_LONG_NAME.value
+        root.depth.attrs["standard_name"] = Coordinates.DEPTH_STANDARD_NAME.value
 
         #####################################################################
         # --- Coordinate: Latitude --- #
         root.create_dataset(
             name=Coordinates.LATITUDE.value,
-            # data=np.repeat(0.0, width),
+            # data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
+            data=np.repeat(np.nan, width),
             shape=width,
             chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
             dtype=np.dtype(Coordinates.LATITUDE_DTYPE.value),
@@ -144,14 +144,16 @@ class ZarrManager:
         # Note: LATITUDE is indexed by TIME
         root.latitude.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
 
-        root.latitude.attrs["long_name"] = Coordinates.LATITUDE_LONG_NAME.value
         root.latitude.attrs["units"] = Coordinates.LATITUDE_UNITS.value
+        root.latitude.attrs["long_name"] = Coordinates.LATITUDE_LONG_NAME.value
+        root.latitude.attrs["standard_name"] = Coordinates.LATITUDE_STANDARD_NAME.value
 
         #####################################################################
         # --- Coordinate: Longitude --- #
         root.create_dataset(
             name=Coordinates.LONGITUDE.value,
             # data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
+            data=np.repeat(np.nan, width),
             shape=width,
             chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
             dtype=np.dtype(Coordinates.LONGITUDE_DTYPE.value),
@@ -163,8 +165,9 @@ class ZarrManager:
         # Note: LONGITUDE is indexed by TIME
         root.longitude.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
 
-        root.longitude.attrs["long_name"] = Coordinates.LONGITUDE_LONG_NAME.value
         root.longitude.attrs["units"] = Coordinates.LONGITUDE_UNITS.value
+        root.longitude.attrs["long_name"] = Coordinates.LONGITUDE_LONG_NAME.value
+        root.longitude.attrs["standard_name"] = Coordinates.LONGITUDE_STANDARD_NAME.value
 
         #####################################################################
         # TODO: verify adding this variable for where the bottom was detected
@@ -183,8 +186,9 @@ class ZarrManager:
         # BOTTOM is indexed by TIME
         root.bottom.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
 
-        root.bottom.attrs["long_name"] = Coordinates.BOTTOM_LONG_NAME.value
         root.bottom.attrs["units"] = Coordinates.BOTTOM_UNITS.value
+        root.bottom.attrs["long_name"] = Coordinates.BOTTOM_LONG_NAME.value
+        root.bottom.attrs["standard_name"] = Coordinates.BOTTOM_STANDARD_NAME.value
 
         #####################################################################
         # --- Coordinate: Frequency --- #
@@ -204,11 +208,11 @@ class ZarrManager:
             Coordinates.FREQUENCY.value
         ]  # TODO: is this correct
 
+        root.frequency.attrs["units"] = Coordinates.FREQUENCY_UNITS.value
         root.frequency.attrs["long_name"] = Coordinates.FREQUENCY_LONG_NAME.value
         root.frequency.attrs["standard_name"] = (
             Coordinates.FREQUENCY_STANDARD_NAME.value
         )
-        root.frequency.attrs["units"] = Coordinates.FREQUENCY_UNITS.value
 
         #####################################################################
         # --- Sv Data --- #
@@ -230,8 +234,8 @@ class ZarrManager:
             Coordinates.FREQUENCY.value,
         ]
 
-        root.Sv.attrs["long_name"] = Coordinates.SV_LONG_NAME.value
         root.Sv.attrs["units"] = Coordinates.SV_UNITS.value
+        root.Sv.attrs["long_name"] = Coordinates.SV_LONG_NAME.value
         root.Sv.attrs["tile_size"] = Constants.TILE_SIZE.value
 
         #####################################################################
@@ -242,7 +246,7 @@ class ZarrManager:
         #
         root.attrs["processing_software_name"] = Coordinates.PROJECT_NAME.value
         root.attrs["processing_software_version"] = (
-            "0.0.6"  # TODO: get programmatically
+            "0.0.9"  # TODO: get programmatically, echopype>utils>prov.py
         )
         root.attrs["processing_software_time"] = Timestamp.get_timestamp()
         #

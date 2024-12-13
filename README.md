@@ -78,6 +78,7 @@ python -m twine upload --repository pypi dist/*
 ```
 
 # Pre Commit Hook
+see here for installation: https://pre-commit.com/
 https://dev.to/rafaelherik/using-trufflehog-and-pre-commit-hook-to-prevent-secret-exposure-edo
 ```
 pre-commit install --allow-missing-config
@@ -96,3 +97,8 @@ https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scroll
 20241125
 5 failed, 35 passed, 3 skipped, 1 warning in 9.71s
 3 failed, 38 passed, 3 skipped, 1 warning in 7.24s
+
+
+# TODO:
+add https://pypi.org/project/setuptools-scm/
+for extracting the version
