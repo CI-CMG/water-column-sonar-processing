@@ -47,7 +47,7 @@ class CreateEmptyZarrStore:
         ):
             for file in files:
                 local_path = os.path.join(subdir, file)
-                # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.model/.zattrs'
+                # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.model/..zattrs'
                 s3_key = f'{object_prefix}/{cruise_name}.model{local_path.split(f"{cruise_name}.model")[-1]}'
                 all_files.append([local_path, s3_key])
         #

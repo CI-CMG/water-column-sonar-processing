@@ -3,6 +3,8 @@ import os
 import boto3
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import botocore
 from boto3.s3.transfer import TransferConfig
 from botocore.config import Config
 from botocore.exceptions import ClientError
@@ -14,7 +16,10 @@ GB = 1024**3
 
 
 #########################################################################
-def chunked(ll: list, n: int) -> Generator:
+def chunked(
+    ll: list,
+    n: int
+) -> Generator:
     # Yields successively n-sized chunks from ll.
     for i in range(0, len(ll), n):
         yield ll[i : i + n]
@@ -24,16 +29,9 @@ class S3Manager:
     #####################################################################
     def __init__(
         self,
-        # input_endpoint_url: str,
-        # output_endpoint_url: str,
-        # endpoint_url
-        # TODO: Need to allow passing in of credentials when writing to protected bucket
     ):
         self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
         self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
-        # self.endpoint_url = endpoint_url
-        # self.input_endpoint_url = input_endpoint_url
-        # self.output_endpoint_url = output_endpoint_url
         self.s3_region = os.environ.get("AWS_REGION", default="us-east-1")
         self.s3_client_config = Config(max_pool_connections=MAX_POOL_CONNECTIONS)
         self.s3_transfer_config = TransferConfig(
@@ -51,14 +49,12 @@ class S3Manager:
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
-            # endpoint_url=endpoint_url, # TODO: temporary
         )
         self.s3_resource = boto3.resource(
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
         )
-        # self.paginator = self.s3_client.get_paginator(operation_name='list_objects_v2')
         self.s3_session_noaa_wcsd_zarr_pds = boto3.Session(
             aws_access_key_id=os.environ.get("OUTPUT_BUCKET_ACCESS_KEY"),
             aws_secret_access_key=os.environ.get("OUTPUT_BUCKET_SECRET_ACCESS_KEY"),
@@ -68,7 +64,6 @@ class S3Manager:
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
-            # endpoint_url=endpoint_url, # TODO: temporary
         )
         self.s3_resource_noaa_wcsd_zarr_pds = self.s3_session_noaa_wcsd_zarr_pds.resource(
             service_name="s3",
@@ -78,12 +73,12 @@ class S3Manager:
         self.paginator = self.s3_client.get_paginator('list_objects_v2')
         self.paginator_noaa_wcsd_zarr_pds = self.s3_client_noaa_wcsd_zarr_pds.get_paginator('list_objects_v2')
 
-    def get_client(self): # TODO: do i need this?
-        return self.s3_session.client(
-            service_name="s3",
-            config=self.s3_client_config,
-            region_name=self.s3_region,
-        )
+    # def get_client(self): # TODO: do i need this?
+    #     return self.s3_session.client(
+    #         service_name="s3",
+    #         config=self.s3_client_config,
+    #         region_name=self.s3_region,
+    #     )
 
     #####################################################################
     def create_bucket(
@@ -146,18 +141,6 @@ class S3Manager:
         return all_uploads
 
     #####################################################################
-    # def upload_nodd_file2(
-    #         self,
-    #         body: str,
-    #         bucket: str,
-    #         key: str,
-    # ):
-    #     self.s3_client_noaa_wcsd_zarr_pds.put_object(
-    #         Body=body,
-    #         Bucket=bucket,
-    #         Key=key,
-    #     )
-
     # TODO: this uses resource, try to use client
     def upload_file(
             self,
@@ -190,10 +173,35 @@ class S3Manager:
                 all_files.append([local_path, s3_key])
 
         all_uploads = self.upload_files_with_thread_pool_executor(
+            output_bucket_name=self.output_bucket_name,
             all_files=all_files,
         )
         print("Done uploading files to output bucket.")
         return all_uploads
+
+    #####################################################################
+    def check_if_object_exists(
+            self,
+            bucket_name,
+            key_name
+    ) -> bool:
+        s3_manager2 = S3Manager()
+        s3_manager2.list_objects(bucket_name=bucket_name, prefix=key_name)
+        s3_client_noaa_wcsd_zarr_pds = self.s3_client_noaa_wcsd_zarr_pds
+        try:
+            # response = s3_resource_noaa_wcsd_zarr_pds.Object(bucket_name, key_name).load()
+            s3_client_noaa_wcsd_zarr_pds.head_object(Bucket=bucket_name, Key=key_name)
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == "404":
+                # The object does not exist.
+                return False
+            elif e.response['Error']['Code'] == 403:
+                # Unauthorized, including invalid bucket
+                return False
+            else:
+                # Something else has gone wrong.
+                raise
+        return True
 
     #####################################################################
     # used: raw-to-zarr
@@ -202,6 +210,7 @@ class S3Manager:
         bucket_name,
         prefix
     ):
+        # TODO: this isn't working for geojson detecting objects!!!!!!!
         # analog to "find_children_objects"
         # Returns a list of key strings for each object in bucket defined by prefix
         # s3_client = self.s3_client
@@ -227,7 +236,11 @@ class S3Manager:
 
     #####################################################################
     # TODO: change name to "directory"
-    def folder_exists_and_not_empty(self, bucket_name: str, path: str) -> bool:
+    def folder_exists_and_not_empty(
+        self,
+        bucket_name: str,
+        path: str
+    ) -> bool:
         if not path.endswith("/"):
             path = path + "/"
         s3_client = self.s3_client
@@ -319,23 +332,15 @@ class S3Manager:
         print("downloaded file")
 
     #####################################################################
-    # not used
-    # def delete_nodd_object(  # noaa-wcsd-model-pds
-    #         self,
-    #         bucket_name,
-    #         key
-    # ):  # -> dict:
-    #     #return self.__s3_client.delete_object(Bucket=bucket_name, Key=key)
-    #     self.s3_client.delete_object(Bucket=bucket_name, Key=key)
-
-    #####################################################################
+    # TODO: need to test this!!!
     def delete_nodd_objects(  # nodd-bucket
         self,
+        bucket_name,
         objects: list,
     ):
         try:
             print(
-                f"Deleting {len(objects)} objects in {self.output_bucket_name} in batches."
+                f"Deleting {len(objects)} objects in {bucket_name} in batches."
             )
             objects_to_delete = []
             for obj in objects:
@@ -343,9 +348,25 @@ class S3Manager:
             # Note: request can contain a list of up to 1000 keys
             for batch in chunked(ll=objects_to_delete, n=1000):
                 self.s3_client_noaa_wcsd_zarr_pds.delete_objects(
-                    Bucket=self.output_bucket_name, Delete={"Objects": batch}
+                    Bucket=bucket_name, Delete={"Objects": batch}
                 )
             print(f"Deleted files.")
+        except Exception as err:
+            print(f"Problem was encountered while deleting objects: {err}")
+
+    #####################################################################
+    # TODO: need to test this!!!
+    def delete_nodd_object(
+            self,
+            bucket_name,
+            key_name,
+    ):
+        try:
+            print(
+                f"Deleting {key_name} objects in {bucket_name}."
+            )
+            self.s3_client_noaa_wcsd_zarr_pds.delete_object(Bucket=bucket_name, Key=key_name)
+            print(f"Deleted file.")
         except Exception as err:
             print(f"Problem was encountered while deleting objects: {err}")
 

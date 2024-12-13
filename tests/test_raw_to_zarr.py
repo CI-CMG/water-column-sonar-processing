@@ -83,11 +83,28 @@ def test_raw_to_zarr(raw_to_zarr_test_path):
     assert len(s3_manager.list_objects(bucket_name=input_bucket_name, prefix="")) == 2
 
     # TODO: put stale geojson & zarr store to test deleting
-    s3_manager.create_bucket(bucket_name="test_output_bucket")
+    s3_manager.create_bucket(bucket_name=output_bucket_name)
+    s3_manager.upload_file(
+        filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.json"),
+        bucket_name=output_bucket_name,
+        key="spatial/geojson/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.json"
+    )
+    # TODO: put zarr store there to delete beforehand # TODO: Test if zarr store already exists
+    s3_manager.upload_file(
+        filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.zarr/.zmetadata"),
+        bucket_name=output_bucket_name,
+        key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zmetadata"
+    )
+    s3_manager.upload_file(
+        filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.zarr/.zattrs"),
+        bucket_name=output_bucket_name,
+        key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zattrs"
+    )
+    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 1
+
     assert len(s3_manager.list_buckets()["Buckets"]) == 2
 
-    # s3fs = S3FileSystem(endpoint_url=endpoint_url)
-    dynamo_db_manager = DynamoDBManager()# endpoint_url=endpoint_url)
+    dynamo_db_manager = DynamoDBManager()
 
     # ---Create Empty Table--- #
     dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
@@ -100,15 +117,13 @@ def test_raw_to_zarr(raw_to_zarr_test_path):
     raw_file_name = "D20070724-T042400.raw"  # 1 MB use this for testing
     bottom_file_name = f"{Path(raw_file_name).stem}.bot"
 
-    # TODO: Test if zarr store already exists
-
     # TODO: move this into the raw_to_zarr function
     s3_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
     s3_bottom_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
     s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
     s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
 
-    raw_to_zarr = RawToZarr()  # endpoint_url=endpoint_url)
+    raw_to_zarr = RawToZarr()
     raw_to_zarr.raw_to_zarr(
         table_name=table_name,
         output_bucket_name=output_bucket_name,

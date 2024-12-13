@@ -138,15 +138,13 @@ class GeometryManager:
 
                 print("Checking s3 and deleting any existing GeoJSON file.")
                 s3_manager = S3Manager()
-                s3_objects = s3_manager.list_objects(
+                geojson_object_exists = s3_manager.check_if_object_exists(
                     bucket_name=output_bucket_name,
-                    prefix=f"{geo_json_prefix}/{geo_json_name}"
+                    key_name=f"{geo_json_prefix}/{geo_json_name}"
                 )
-                if len(s3_objects) > 0:
-                    print(
-                        "GeoJSON already exists in s3, deleting existing and continuing."
-                    )
-                    s3_manager.delete_nodd_objects(objects=s3_objects)
+                if geojson_object_exists:
+                    print("GeoJSON already exists in s3, deleting existing and continuing.")
+                    s3_manager.delete_nodd_object(bucket_name=output_bucket_name, key_name=f"{geo_json_prefix}/{geo_json_name}")
 
                 print("Upload GeoJSON to s3.")
                 s3_manager.upload_nodd_file(

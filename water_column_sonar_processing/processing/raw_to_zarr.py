@@ -149,10 +149,14 @@ class RawToZarr:
             sensor_name,
             raw_file_name,
     ):
+        """
+        Downloads the raw files, processes them with echopype, writes geojson, and uploads files
+        to the nodd bucket.
+        """
         print(f'Opening raw: {raw_file_name} and creating zarr store.')
         geometry_manager = GeometryManager()
         cleaner = Cleaner()
-        cleaner.delete_local_files(file_types=["*.zarr", "*.json"]) # TODO: include bot and raw?ß
+        cleaner.delete_local_files(file_types=["*.zarr", "*.json"]) # TODO: include bot and raw?
         try:
             gc.collect()
             print('Opening raw file with echopype.')
@@ -204,14 +208,27 @@ class RawToZarr:
             store_name = f"{Path(raw_file_name).stem}.zarr"
             ds_sv.to_zarr(store=store_name)
             #################################################################
-            # TODO: do i still need this?
-            # print('Note: Adding GeoJSON inside Zarr store')
-            # self.__write_geojson_to_file( # Was trying to write geojson to the L1 zarr store
-            #     store_name=store_name,
-            #     data=gps_data
-            # )
-            #################################################################
             output_zarr_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"
+            #################################################################
+            # If zarr store already exists then delete
+            s3_manager = S3Manager()
+            child_objects = s3_manager.get_child_objects(
+                bucket_name=output_bucket_name,
+                sub_prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{Path(raw_file_name).stem}.zarr",
+            )
+            if len(child_objects) > 0:
+                print('Zarr store data already exists in s3, deleting existing and continuing.')
+                s3_manager.delete_nodd_objects(
+                    bucket_name=output_bucket_name,
+                    objects=child_objects,
+                )
+            #################################################################
+            self.__upload_files_to_output_bucket(
+                output_bucket_name=output_bucket_name,
+                local_directory=store_name,
+                object_prefix=output_zarr_prefix
+            )
+            #################################################################
             self.__zarr_info_to_table(
                 output_bucket_name=output_bucket_name,
                 table_name=table_name,
@@ -228,29 +245,9 @@ class RawToZarr:
                 frequencies=frequencies,
                 channels=channels
             )
-            ###################################################################
             #######################################################################
-            self.__upload_files_to_output_bucket(
-                output_bucket_name=output_bucket_name,
-                local_directory=store_name,
-                object_prefix=output_zarr_prefix
-            )
+            # TODO: verify count of objects matches, publish message, update status
             #######################################################################
-            # # TODO: verify count of objects matches
-            # s3_objects = self.__s3.list_objects(
-            #     bucket_name=self.__output_bucket,
-            #     prefix=f"{zarr_prefix}/{os.path.splitext(input_file_name)[0]}.zarr/",
-            #     access_key_id=self.__output_bucket_access_key,
-            #     secret_access_key=self.__output_bucket_secret_access_key
-            # )
-            #######################################################################
-            # self.__update_processing_status(
-            #     file_name=input_file_name,
-            #     cruise_name=cruise_name,
-            #     pipeline_status='SUCCESS_RAW_TO_ZARR'
-            # )
-            #######################################################################
-            # self.__publish_done_message(input_message)
             print('here')
         except Exception as err:
             print(f'Exception encountered creating local Zarr store with echopype: {err}')
