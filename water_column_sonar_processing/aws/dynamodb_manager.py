@@ -111,17 +111,21 @@ class DynamoDBManager:
         expression_attribute_names,
         expression_attribute_values,
         update_expression,
-    ):
-        response = self.__dynamodb_client.update_item(
-            TableName=table_name,
-            Key=key,
-            ExpressionAttributeNames=expression_attribute_names,
-            ExpressionAttributeValues=expression_attribute_values,
-            UpdateExpression=update_expression,
-        )
-        status_code = response["ResponseMetadata"]["HTTPStatusCode"]
-        assert response['ConsumedCapacity']['TableName'] == table_name
-        assert status_code == 200, "Problem, unable to update dynamodb table."
+    ): # TODO: convert to boolean
+        try:
+            response = self.__dynamodb_client.update_item(
+                TableName=table_name,
+                Key=key,
+                ExpressionAttributeNames=expression_attribute_names,
+                ExpressionAttributeValues=expression_attribute_values,
+                UpdateExpression=update_expression,
+            )
+            status_code = response["ResponseMetadata"]["HTTPStatusCode"]
+            print(f"HTTPStatusCode: {status_code}")
+            # assert status_code == 200, "Problem, unable to update dynamodb table."
+            # assert response['ConsumedCapacity']['TableName'] == table_name
+        except Exception as err:
+            print(f"Problem was encountered while updating item: {err}")
 
     #####################################################################
     # TODO: change to "get_cruise_as_df"

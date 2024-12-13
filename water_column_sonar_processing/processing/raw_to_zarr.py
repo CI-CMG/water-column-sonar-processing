@@ -53,10 +53,6 @@ class RawToZarr:
     ):
         print('Writing Zarr information to DynamoDB table.')
         dynamodb_manager = DynamoDBManager()
-
-        # The problem is that these values were never populated
-        # and so when the query looks for values that aren't there
-        # they fail
         dynamodb_manager.update_item(
             table_name=table_name,
             key={
@@ -113,6 +109,7 @@ class RawToZarr:
                 "#ZP = :zp"
             ),
         )
+        print('Done writing Zarr information to DynamoDB table.')
 
     ############################################################################
     ############################################################################
@@ -248,11 +245,12 @@ class RawToZarr:
             #######################################################################
             # TODO: verify count of objects matches, publish message, update status
             #######################################################################
-            print('here')
+            print('Finished raw-to-zarr conversion.')
         except Exception as err:
             print(f'Exception encountered creating local Zarr store with echopype: {err}')
             raise RuntimeError(f"Problem creating local Zarr store, {err}")
         finally:
+            print("Finally.")
             cleaner.delete_local_files(file_types=["*.raw", "*.bot", "*.zarr", "*.json"])
         print('Done creating local zarr store.')
 
