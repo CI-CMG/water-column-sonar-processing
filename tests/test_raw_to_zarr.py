@@ -115,17 +115,18 @@ def test_raw_to_zarr(raw_to_zarr_test_path):
     # file_name = "D20070711-T182032.raw"
     #file_name = "D20070720-T224031.raw" # 84 KB
     raw_file_name = "D20070724-T042400.raw"  # 1 MB use this for testing
-    bottom_file_name = f"{Path(raw_file_name).stem}.bot"
+    # bottom_file_name = f"{Path(raw_file_name).stem}.bot"
 
     # TODO: move this into the raw_to_zarr function
-    s3_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
-    s3_bottom_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
-    s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
-    s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
+    # s3_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
+    # s3_bottom_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
+    # s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
+    # s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
 
     raw_to_zarr = RawToZarr()
     raw_to_zarr.raw_to_zarr(
         table_name=table_name,
+        input_bucket_name=input_bucket_name,
         output_bucket_name=output_bucket_name,
         ship_name=ship_name,
         cruise_name=cruise_name,

@@ -9,7 +9,7 @@ from pathlib import Path # , PurePath
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.geometry import GeometryManager
-from water_column_sonar_processing.utility import Cleaner
+from water_column_sonar_processing.utility import Cleaner, PipelineStatus
 
 TEMPDIR = "/tmp"
 
@@ -83,7 +83,8 @@ class RawToZarr:
                 ":ma": {"N": str(np.round(max_echo_range, 4))},
                 ":mi": {"N": str(np.round(min_echo_range, 4))},
                 ":nd": {"N": str(num_ping_time_dropna)},
-                ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
+                # ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
+                ":ps": {"S": PipelineStatus.LEVEL_1_PROCESSING.name},
                 ":pt": {"S": datetime.now().isoformat(timespec="seconds") + "Z"},
                 ":se": {"S": sensor_name},
                 ":sh": {"S": ship_name},
@@ -140,6 +141,7 @@ class RawToZarr:
     def raw_to_zarr(
             self,
             table_name,
+            input_bucket_name,
             output_bucket_name,
             ship_name,
             cruise_name,
@@ -155,9 +157,12 @@ class RawToZarr:
         cleaner = Cleaner()
         cleaner.delete_local_files(file_types=["*.zarr", "*.json"]) # TODO: include bot and raw?
 
-        #s3_manager = S3Manager()
-        #s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
-        #s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
+        s3_manager = S3Manager()
+        s3_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
+        bottom_file_name = f"{Path(raw_file_name).stem}.bot"
+        s3_bottom_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
+        s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
+        s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
 
         try:
             gc.collect()
