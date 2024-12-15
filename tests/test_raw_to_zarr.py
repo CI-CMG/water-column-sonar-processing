@@ -91,14 +91,14 @@ def test_raw_to_zarr(raw_to_zarr_test_path):
     )
     # TODO: put zarr store there to delete beforehand # TODO: Test if zarr store already exists
     s3_manager.upload_file(
-        filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.zarr/.zmetadata"),
+        filename=raw_to_zarr_test_path.joinpath("HB0707.zarr/.zmetadata"),
         bucket_name=output_bucket_name,
-        key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zmetadata"
+        key="level_1/Henry_B._Bigelow/HB0706/EK60/HB0707.zarr/.zmetadata"
     )
     s3_manager.upload_file(
-        filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.zarr/.zattrs"),
+        filename=raw_to_zarr_test_path.joinpath("HB0707.zarr/.zattrs"),
         bucket_name=output_bucket_name,
-        key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zattrs"
+        key="level_1/Henry_B._Bigelow/HB0706/EK60/HB0707.zarr/.zattrs"
     )
     assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 1
 

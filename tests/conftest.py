@@ -20,4 +20,5 @@ def test_path():
         'INDEX_TEST_PATH': TEST_DATA_FOLDER / "index",
         'ZARR_MANAGER_TEST_PATH': TEST_DATA_FOLDER / "zarr_manager",
         'PMTILE_GENERATION_TEST_PATH': TEST_DATA_FOLDER / "pmtile",
+        'CREATE_EMPTY_ZARR_TEST_PATH': TEST_DATA_FOLDER / "create_empty_zarr",
     }

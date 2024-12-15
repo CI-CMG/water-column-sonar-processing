@@ -24,14 +24,15 @@ class CreateEmptyZarrStore:
         self,
     ):
         self.__overwrite = True
-        self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
-        self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
+        # self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
+        # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 
     #######################################################
 
     # TODO: move this to the s3_manager
     def upload_zarr_store_to_s3(
         self,
+        output_bucket_name: str,
         local_directory: str,
         object_prefix: str,
         cruise_name: str,
@@ -43,7 +44,7 @@ class CreateEmptyZarrStore:
         # # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
         all_files = []
         for subdir, dirs, files in os.walk(
-            f"{local_directory}/{cruise_name}.zarr_manager"
+            f"{local_directory}/{cruise_name}.zarr"
         ):
             for file in files:
                 local_path = os.path.join(subdir, file)
@@ -53,14 +54,18 @@ class CreateEmptyZarrStore:
         #
         # print(all_files)
         s3_manager.upload_files_with_thread_pool_executor(
+            output_bucket_name=output_bucket_name,
             all_files=all_files,
         )
         print("Done uploading with thread pool executor.")
         # TODO: move to common place
 
     #######################################################
+    # @classmethod
     def create_cruise_level_zarr_store(
         self,
+        input_bucket_name: str,
+        output_bucket_name: str,
         ship_name: str,
         cruise_name: str,
         sensor_name: str,
@@ -122,11 +127,12 @@ class CreateEmptyZarrStore:
             # Delete existing model store if it exists
             zarr_prefix = os.path.join("level_2", ship_name, cruise_name, sensor_name)
             child_objects = s3_manager.get_child_objects(
-                bucket_name=self.output_bucket_name,
+                bucket_name=output_bucket_name,
                 sub_prefix=zarr_prefix,
             )
             if len(child_objects) > 0:
                 s3_manager.delete_nodd_objects(
+                    bucket_name=output_bucket_name,
                     objects=child_objects,
                 )
             ################################################################
@@ -153,6 +159,7 @@ class CreateEmptyZarrStore:
             )
             #################################################################
             self.upload_zarr_store_to_s3(
+                output_bucket_name=output_bucket_name,
                 local_directory=tempdir,
                 object_prefix=zarr_prefix,
                 cruise_name=cruise_name,
@@ -174,6 +181,7 @@ class CreateEmptyZarrStore:
             #################################################################
             # Success
             # TODO: update enum in dynamodb
+            print("Done creating cruise level zarr store.")
             #################################################################
         except Exception as err:
             print(f"Problem trying to create new cruise model store: {err}")

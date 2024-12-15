@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pytest
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 
@@ -25,9 +26,13 @@ def teardown_module():
     print("teardown")
 
 
+@pytest.fixture
+def create_empty_zarr_test_path(test_path):
+    return test_path["CREATE_EMPTY_ZARR_TEST_PATH"]
+
 #######################################################
 @mock_aws
-def test_create_empty_zarr_store():  # PASSING, needs modification at end
+def test_create_empty_zarr_store(create_empty_zarr_test_path):  # PASSING, needs modification at end
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager()
 
@@ -39,12 +44,27 @@ def test_create_empty_zarr_store():  # PASSING, needs modification at end
 
     # TODO:
     # [0] create bucket with test files
-    input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
-    output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
+    #input_bucket_name = "test_input_bucket" # os.environ.get("INPUT_BUCKET_NAME")
+    #output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
+    input_bucket_name = "test_input_bucket"
+    output_bucket_name = "test_output_bucket"
 
     s3_manager.create_bucket(bucket_name=input_bucket_name)
     s3_manager.create_bucket(bucket_name=output_bucket_name)
     print(s3_manager.list_buckets())
+
+    # TODO: put zarr store there to delete beforehand # TODO: Test if zarr store already exists
+    s3_manager.upload_file(
+        filename=create_empty_zarr_test_path.joinpath("HB0707.zarr/.zmetadata"),
+        bucket_name=output_bucket_name,
+        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata"
+    )
+    s3_manager.upload_file(
+        filename=create_empty_zarr_test_path.joinpath("HB0707.zarr/.zattrs"),
+        bucket_name=output_bucket_name,
+        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zattrs"
+    )
+    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 1
 
     # TODO: put at the path where it needs to be deleted
     s3_manager.put(bucket_name=input_bucket_name, key="the_key", body="the_body")
@@ -208,6 +228,8 @@ def test_create_empty_zarr_store():  # PASSING, needs modification at end
     # [3] create new zarr store and upload
     create_empty_zarr_store = CreateEmptyZarrStore()
     create_empty_zarr_store.create_cruise_level_zarr_store(
+        input_bucket_name=input_bucket_name,
+        output_bucket_name=output_bucket_name,
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
@@ -215,8 +237,9 @@ def test_create_empty_zarr_store():  # PASSING, needs modification at end
         tempdir="/tmp",
     )
 
-    assert os.path.exists(f"/tmp/{cruise_name}.zarr") # TODO: create better tmp directory for testing
+    # assert os.path.exists(f"/tmp/{cruise_name}.zarr") # TODO: create better tmp directory for testing
     # TODO: should actually assert in the bucket
+    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/")) > 1
     # mount and verify:
     # shape
     # variables
