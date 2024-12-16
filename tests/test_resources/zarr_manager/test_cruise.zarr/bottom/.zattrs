@@ -1,0 +1,8 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "time"
+    ],
+    "long_name": "Detected sea floor depth",
+    "standard_name": "bottom",
+    "units": "m"
+}

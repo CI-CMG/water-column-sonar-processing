@@ -1,0 +1,220 @@
+{
+    "metadata": {
+        ".zattrs": {
+            "calibration_status": true,
+            "cruise_name": "test_cruise",
+            "processing_software_name": "echofish",
+            "processing_software_time": "2024-12-16T19:59:02.567Z",
+            "processing_software_version": "0.0.9",
+            "sensor_name": "test_sensor",
+            "ship_name": "test_ship"
+        },
+        ".zgroup": {
+            "zarr_format": 2
+        },
+        "Sv/.zarray": {
+            "chunks": [
+                2048,
+                2048,
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 2,
+                "cname": "zstd",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f4",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                501,
+                1201,
+                4
+            ],
+            "zarr_format": 2
+        },
+        "Sv/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "depth",
+                "time",
+                "frequency"
+            ],
+            "long_name": "Volume backscattering strength (Sv re 1 m-1)",
+            "tile_size": 2048,
+            "units": "dB"
+        },
+        "bottom/.zarray": {
+            "chunks": [
+                100000
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 2,
+                "cname": "zstd",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f4",
+            "fill_value": 0.0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                1201
+            ],
+            "zarr_format": 2
+        },
+        "bottom/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "time"
+            ],
+            "long_name": "Detected sea floor depth",
+            "standard_name": "bottom",
+            "units": "m"
+        },
+        "depth/.zarray": {
+            "chunks": [
+                100000
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 2,
+                "cname": "zstd",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f4",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                501
+            ],
+            "zarr_format": 2
+        },
+        "depth/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "depth"
+            ],
+            "long_name": "Depth below surface",
+            "standard_name": "depth",
+            "units": "m"
+        },
+        "frequency/.zarray": {
+            "chunks": [
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 2,
+                "cname": "zstd",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<u8",
+            "fill_value": 0,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4
+            ],
+            "zarr_format": 2
+        },
+        "frequency/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "frequency"
+            ],
+            "long_name": "Transducer frequency",
+            "standard_name": "sound_frequency",
+            "units": "Hz"
+        },
+        "latitude/.zarray": {
+            "chunks": [
+                100000
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 2,
+                "cname": "zstd",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f4",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                1201
+            ],
+            "zarr_format": 2
+        },
+        "latitude/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "time"
+            ],
+            "long_name": "Latitude",
+            "standard_name": "latitude",
+            "units": "degrees_north"
+        },
+        "longitude/.zarray": {
+            "chunks": [
+                100000
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 2,
+                "cname": "zstd",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f4",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                1201
+            ],
+            "zarr_format": 2
+        },
+        "longitude/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "time"
+            ],
+            "long_name": "Longitude",
+            "standard_name": "longitude",
+            "units": "degrees_east"
+        },
+        "time/.zarray": {
+            "chunks": [
+                100000
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 2,
+                "cname": "zstd",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                1201
+            ],
+            "zarr_format": 2
+        },
+        "time/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "time"
+            ],
+            "calendar": "proleptic_gregorian",
+            "long_name": "Timestamp of each ping",
+            "standard_name": "time",
+            "units": "seconds since 1970-01-01 00:00:00"
+        }
+    },
+    "zarr_consolidated_format": 1
+}

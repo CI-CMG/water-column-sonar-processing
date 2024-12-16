@@ -1,7 +1,3 @@
-#tests/*.zarr
-#tests/*.bot
-#tests/*.raw
-#tests/*.json
 *.geojson
 
 # Byte-compiled / optimized / DLL files
@@ -172,12 +168,12 @@ __pycache__
 .DS_Store
 
 *.env-prod*
-*.zarr
+#*.zarr
 *.csv
 
-*.raw
-*.bot
-*.idx
+#*.raw
+#*.bot
+#*.idx
 
 .idea
 .pytest_cache
