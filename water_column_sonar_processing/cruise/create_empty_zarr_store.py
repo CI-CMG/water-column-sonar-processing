@@ -28,7 +28,6 @@ class CreateEmptyZarrStore:
         # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 
     #######################################################
-
     # TODO: move this to the s3_manager
     def upload_zarr_store_to_s3(
         self,
@@ -48,8 +47,9 @@ class CreateEmptyZarrStore:
         ):
             for file in files:
                 local_path = os.path.join(subdir, file)
-                # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.model/..zattrs'
-                s3_key = f'{object_prefix}/{cruise_name}.model{local_path.split(f"{cruise_name}.model")[-1]}'
+                # TODO: find a better method for splitting strings here:
+                # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.zarr/.zattrs'
+                s3_key = f'{object_prefix}/{cruise_name}.zarr{local_path.split(f"{cruise_name}.zarr")[-1]}'
                 all_files.append([local_path, s3_key])
         #
         # print(all_files)
@@ -64,7 +64,6 @@ class CreateEmptyZarrStore:
     # @classmethod
     def create_cruise_level_zarr_store(
         self,
-        input_bucket_name: str,
         output_bucket_name: str,
         ship_name: str,
         cruise_name: str,
@@ -121,7 +120,7 @@ class CreateEmptyZarrStore:
             new_width = int(consolidated_zarr_width)
             print(f"new_width: {new_width}")
             #################################################################
-            store_name = f"{cruise_name}.model"
+            store_name = f"{cruise_name}.zarr"
             print(store_name)
             ################################################################
             # Delete existing model store if it exists

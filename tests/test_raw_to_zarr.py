@@ -91,16 +91,16 @@ def test_raw_to_zarr(raw_to_zarr_test_path):
     )
     # TODO: put zarr store there to delete beforehand # TODO: Test if zarr store already exists
     s3_manager.upload_file(
-        filename=raw_to_zarr_test_path.joinpath("HB0707.zarr/.zmetadata"),
+        filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.zarr/.zmetadata"),
         bucket_name=output_bucket_name,
-        key="level_1/Henry_B._Bigelow/HB0706/EK60/HB0707.zarr/.zmetadata"
+        key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zmetadata"
     )
     s3_manager.upload_file(
-        filename=raw_to_zarr_test_path.joinpath("HB0707.zarr/.zattrs"),
+        filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.zarr/.zattrs"),
         bucket_name=output_bucket_name,
-        key="level_1/Henry_B._Bigelow/HB0706/EK60/HB0707.zarr/.zattrs"
+        key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zattrs"
     )
-    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 1
+    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 1 # TODO: ==3
 
     assert len(s3_manager.list_buckets()["Buckets"]) == 2
 
@@ -122,6 +122,9 @@ def test_raw_to_zarr(raw_to_zarr_test_path):
     # s3_bottom_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
     # s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
     # s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
+
+    number_of_files_before = s3_manager.list_objects(bucket_name=output_bucket_name, prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/")
+    print(number_of_files_before)
 
     raw_to_zarr = RawToZarr()
     raw_to_zarr.raw_to_zarr(

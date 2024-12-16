@@ -228,7 +228,6 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path):  # PASSING, needs
     # [3] create new zarr store and upload
     create_empty_zarr_store = CreateEmptyZarrStore()
     create_empty_zarr_store.create_cruise_level_zarr_store(
-        input_bucket_name=input_bucket_name,
         output_bucket_name=output_bucket_name,
         ship_name=ship_name,
         cruise_name=cruise_name,
@@ -241,10 +240,10 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path):  # PASSING, needs
     # TODO: should actually assert in the bucket
     # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
     assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/")) > 1
+    assert "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata" in s3_manager.list_objects(bucket_name=output_bucket_name, prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/")
     # mount and verify:
     # shape
     # variables
-    #
 
 
 #######################################################

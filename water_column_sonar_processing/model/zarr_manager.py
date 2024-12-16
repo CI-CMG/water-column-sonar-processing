@@ -54,7 +54,7 @@ class ZarrManager:
     #######################################################
     def create_zarr_store(
         self,
-        path: str,
+        path: str, # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
         ship_name: str,
         cruise_name: str,
         sensor_name: str,
