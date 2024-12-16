@@ -239,6 +239,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path):  # PASSING, needs
 
     # assert os.path.exists(f"/tmp/{cruise_name}.zarr") # TODO: create better tmp directory for testing
     # TODO: should actually assert in the bucket
+    # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
     assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/")) > 1
     # mount and verify:
     # shape
