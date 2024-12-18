@@ -66,3 +66,25 @@ class S3FSManager:
     # ):
     #     s3_file_system = self.s3fs
     #     return
+
+
+
+
+class S3FSManager:
+    #####################################################################
+    def __init__(
+        self,
+    ):
+        self.__s3_region = os.environ.get("AWS_REGION", default="us-east-1")
+        self.s3fs = s3fs.S3FileSystem(
+            key=os.environ.get("OUTPUT_BUCKET_ACCESS_KEY"),
+            secret=os.environ.get("OUTPUT_BUCKET_SECRET_ACCESS_KEY"),
+        )
+
+    def s3_map(
+        self,
+        s3_zarr_store_path,  # f's3://{bucket}/{input_zarr_path}'
+    ):
+        return s3fs.S3Map(
+            root=s3_zarr_store_path, s3=self.s3fs
+        )

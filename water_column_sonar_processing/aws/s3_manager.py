@@ -29,7 +29,9 @@ class S3Manager:
     #####################################################################
     def __init__(
         self,
+
     ):
+        self.endpoint_url
         self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
         self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
         self.s3_region = os.environ.get("AWS_REGION", default="us-east-1")
@@ -49,6 +51,7 @@ class S3Manager:
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
+            endpoint_url=self.endpoint_url,
         )
         self.s3_resource = boto3.resource(
             service_name="s3",

@@ -1,15 +1,14 @@
-import os
 import numpy as np
 import pytest
+import s3fs
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
+import xarray as xr
+from moto.server import ThreadedMotoServer
+
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.cruise import CreateEmptyZarrStore
-
-
-# from water_column_sonar_processing import DynamoDBManager, S3Manager
-# from water_column_sonar_processing import CreateEmptyZarrStore
 
 
 # TEMPDIR = "/tmp"
@@ -21,14 +20,36 @@ def setup_module():
     # env_file = find_dotenv('.env-prod')
     load_dotenv(dotenv_path=env_file, override=True)
 
+    # server = ThreadedMotoServer(ip_address="127.0.0.1", port=5555)
+    # server.start()
+
 
 def teardown_module():
     print("teardown")
+    # server.stop()
 
+@pytest.fixture(scope="module")
+def moto_server():
+    """Fixture to run a mocked AWS server for testing."""
+    # Note: pass `port=0` to get a random free port.
+    server = ThreadedMotoServer(port=0)
+    server.start()
+    host, port = server.get_host_and_port()
+    yield f"http://{host}:{port}"
+    server.stop()
 
 @pytest.fixture
 def create_empty_zarr_test_path(test_path):
     return test_path["CREATE_EMPTY_ZARR_TEST_PATH"]
+
+def foo():
+    output_bucket_name = "test_output_bucket"
+    # s3_path = f"s3://{output_bucket_name}/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/"
+    # yield fsspec.get_mapper(s3_path, anon=True)
+    s3 = s3fs.S3FileSystem(anon=True, client_kwargs=dict(region_name='us-east-1'))
+    s3_path = f"{output_bucket_name}/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr"
+    yield s3fs.S3Map(root=s3_path, s3=s3, check=False)
+
 
 #######################################################
 @mock_aws
@@ -40,12 +61,8 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path):  # PASSING, needs
     cruise_name = "HB0707"  # HB0706 (53 files), HB0707 (12 files)
     sensor_name = "EK60"
     table_name = "water-column-sonar-table"
-    # table_name = "ru-dev-echofish2-EchoFish-File-Info"
 
-    # TODO:
     # [0] create bucket with test files
-    #input_bucket_name = "test_input_bucket" # os.environ.get("INPUT_BUCKET_NAME")
-    #output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
     input_bucket_name = "test_input_bucket"
     output_bucket_name = "test_output_bucket"
 
@@ -53,7 +70,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path):  # PASSING, needs
     s3_manager.create_bucket(bucket_name=output_bucket_name)
     print(s3_manager.list_buckets())
 
-    # TODO: put zarr store there to delete beforehand # TODO: Test if zarr store already exists
+    # Put dummy zarr store there to delete beforehand to test delete
     s3_manager.upload_file(
         filename=create_empty_zarr_test_path.joinpath("HB0707.zarr/.zmetadata"),
         bucket_name=output_bucket_name,
@@ -65,9 +82,6 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path):  # PASSING, needs
         key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zattrs"
     )
     assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 1
-
-    # TODO: put at the path where it needs to be deleted
-    s3_manager.put(bucket_name=input_bucket_name, key="the_key", body="the_body")
 
     # [1] create dynamodb table
     dynamo_db_manager.create_water_column_sonar_table(
@@ -237,12 +251,32 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path):  # PASSING, needs
     )
 
     # assert os.path.exists(f"/tmp/{cruise_name}.zarr") # TODO: create better tmp directory for testing
-    # TODO: should actually assert in the bucket
+    # Assert data is in the bucket
     # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
     assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/")) > 1
     assert "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata" in s3_manager.list_objects(bucket_name=output_bucket_name, prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/")
     # mount and verify:
-    # shape
+    s3_fs = s3fs.S3FileSystem(
+        anon=True,
+        client_kwargs={
+            "endpoint_url": "http://127.0.0.1:5555/",
+            "region_name": "us-east-1",
+        },
+    )
+    #s3 = s3fs.S3FileSystem(anon=True, client_kwargs=dict(region_name='us-east-1'))
+    s3_path = f"{output_bucket_name}/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr"
+    zarr_store = s3fs.S3Map(root=s3_path, s3=s3_fs, check=False)
+    ds = xr.open_zarr(store=zarr_store, consolidated=None)
+    print(ds)
+    #s3_path = f"s3://{output_bucket_name}/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/"
+    # boo = foo()
+    #ds = xr.open_dataset(zarr_store, engine="zarr", mode="r")
+    #print(ds)
+    # "https://noaa-wcsd-zarr-pds.s3.amazonaws.com/level_1/Henry_B._Bigelow/HB0707/EK60/D20070711-T182032.zarr/"
+    # foo = da.from_zarr(s3_path)
+    # print(foo)
+    # root = zarr.open_array(store=zarr_store, mode="r", path="/")
+    # print(root)
     # variables
 
 

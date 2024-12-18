@@ -1,18 +1,11 @@
 # Water Column Sonar Processing
 Processing tool for converting L0 data to L1 and L2 as well as generating geospatial information
 
-<div>
-  <a href="https://raw.githubusercontent.com/CI-CMG/water-column-sonar-processing/master/LICENSE">
-    <img alt="GitHub License" src="https://img.shields.io/github/license/CI-CMG/water-column-sonar-processing">
-  </a>
-  <a href="https://github.com/CI-CMG/water-column-sonar-processing/actions/workflows/build.yaml">
-    <img src="https://github.com/CI-CMG/water-column-sonar-processing/actions/workflows/test_action.yaml/badge.svg"/>
-  </a>
+![GitHub License](https://img.shields.io/github/license/CI-CMG/water-column-sonar-processing) ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CI-CMG/water-column-sonar-processing/test_action.yaml)
 
-  <a href="https://pypi.org/project/water-column-sonar-processing/">
-    <img src="https://img.shields.io/pypi/v/water-column-sonar-processing.svg"/>
-  </a>
-</div>
+![PyPI - Downloads](https://img.shields.io/pypi/dd/water-column-sonar-processing) ![PyPI - Implementation](https://img.shields.io/pypi/v/water-column-sonar-processing?color=black)
+
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/CI-CMG/water-column-sonar-processing) ![GitHub repo size](https://img.shields.io/github/repo-size/CI-CMG/water-column-sonar-processing)
 
 # Setting up the Python Environment
 > Python 3.10.12

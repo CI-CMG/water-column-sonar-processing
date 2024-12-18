@@ -1,7 +1,6 @@
 import pytest
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
-from pathlib import Path
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.processing import RawToZarr
