@@ -18,8 +18,8 @@ pandas==2.2.3
 pyarrow==18.1.0
 python-dotenv==1.0.1
 requests==2.32.3
-s3fs==2024.10.0 # this version creates problems
-#s3fs==2023.12.1
+#s3fs==2024.10.0 # this version creates problems
+s3fs==2023.12.1
 scipy==1.14.1
 #setuptools==75.6.0
 setuptools

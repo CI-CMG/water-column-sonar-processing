@@ -1,6 +1,7 @@
 import json
 import os
 import boto3
+from typing import Optional
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -29,9 +30,9 @@ class S3Manager:
     #####################################################################
     def __init__(
         self,
-
+        endpoint_url: Optional[str] = None,
     ):
-        self.endpoint_url
+        self.endpoint_url = endpoint_url
         self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
         self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
         self.s3_region = os.environ.get("AWS_REGION", default="us-east-1")
@@ -67,6 +68,7 @@ class S3Manager:
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
+            endpoint_url=self.endpoint_url,
         )
         self.s3_resource_noaa_wcsd_zarr_pds = self.s3_session_noaa_wcsd_zarr_pds.resource(
             service_name="s3",
@@ -88,13 +90,31 @@ class S3Manager:
         self,
         bucket_name: str,
     ):
-        self.s3_client.create_bucket(
+        # https://github.com/aodn/aodn_cloud_optimised/blob/e5035495e782783cc8b9e58711d63ed466420350/test_aodn_cloud_optimised/test_schema.py#L7
+        public_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": "*",
+                    "Action": "s3:GetObject",
+                    "Resource": f"arn:aws:s3:::{bucket_name}/*",
+                }
+            ],
+        }
+        response1 = self.s3_client.create_bucket(
             Bucket=bucket_name,
+            ACL='public-read'
             # Required when region is different then us-east-1
             #
             # TODO: if region is us-east-1, don't include this line somehow
             # CreateBucketConfiguration={'LocationConstraint': self.__s3_region}
         )
+        print(response1)
+        response = self.s3_client.put_bucket_policy(
+            Bucket=bucket_name, Policy=json.dumps(public_policy)
+        )
+        print(response)
 
     #####################################################################
     def list_buckets(self):
