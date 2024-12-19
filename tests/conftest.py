@@ -23,4 +23,5 @@ def test_path():
         'CREATE_EMPTY_ZARR_TEST_PATH': TEST_DATA_FOLDER / "create_empty_zarr",
         'RESAMPLE_REGRID_TEST_PATH': TEST_DATA_FOLDER / "resample_regrid",
         'S3FS_MANAGER_TEST_PATH': TEST_DATA_FOLDER / "s3fs_manager",
+        'S3_MANAGER_TEST_PATH': TEST_DATA_FOLDER / "s3_manager",
     }

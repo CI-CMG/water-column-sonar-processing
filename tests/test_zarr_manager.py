@@ -28,6 +28,28 @@ def zarr_manager_tmp_path(test_path):
     return test_path["ZARR_MANAGER_TEST_PATH"]
 
 #######################################################
+@pytest.mark.skip(reason="no way of currently testing this")
+@mock_aws
+def test_create_zarr_store(zarr_manager_tmp_path):
+    pass
+
+@pytest.mark.skip(reason="no way of currently testing this")
+@mock_aws
+def test_open_s3_zarr_store_with_zarr(zarr_manager_tmp_path):
+    pass
+
+@pytest.mark.skip(reason="no way of currently testing this")
+@mock_aws
+def test_open_s3_zarr_store_with_xarray(zarr_manager_tmp_path):
+    pass
+
+@pytest.mark.skip(reason="no way of currently testing this")
+@mock_aws
+def test_create_zarr_store(zarr_manager_tmp_path):
+    pass
+
+
+
 @mock_aws
 def test_zarr_manager(zarr_manager_tmp_path):
     # Tests creating model store and opening with both xarray and
@@ -216,10 +238,9 @@ def test_open_zarr_with_xarray():
 # def test_write_zarr_with_synchronizer(tmp_path):
 #     pass
 
-
 #######################################################
 ### Test 1 of 5 for depth values ###
-def test__get_depth_values_shallow_and_small_epsilon():
+def test_get_depth_values_shallow_and_small_epsilon():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
         min_echo_range=0.17,
@@ -229,9 +250,8 @@ def test__get_depth_values_shallow_and_small_epsilon():
     assert depths[0] == 0.17
     assert depths[-1] == 101
 
-
 ### Test 2 of 5 for depth values ###
-def test__get_depth_values_shallow_and_large_epsilon():
+def test_get_depth_values_shallow_and_large_epsilon():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
         min_echo_range=1.31,
@@ -241,9 +261,8 @@ def test__get_depth_values_shallow_and_large_epsilon():
     assert depths[0] == 1.31
     assert depths[-1] == 24
 
-
 ### Test 3 of 5 for depth values ###
-def test__get_depth_values_deep_and_small_epsilon():
+def test_get_depth_values_deep_and_small_epsilon():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
         min_echo_range=0.11,
@@ -253,9 +272,8 @@ def test__get_depth_values_deep_and_small_epsilon():
     assert depths[0] == 0.11
     assert depths[-1] == 221.1  # TODO: do we want this to be np.ceil(x)
 
-
 ### Test 4 of 5 for depth values ###
-def test__get_depth_values_deep_and_large_epsilon():
+def test_get_depth_values_deep_and_large_epsilon():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
         min_echo_range=1.31,
@@ -266,9 +284,8 @@ def test__get_depth_values_deep_and_large_epsilon():
     # TODO: would it be better to have whole numbers?
     assert depths[-1] == 222.2
 
-
 ### Test 5 of 5 for depth values ###
-def test__get_depth_values_half_meter():
+def test_get_depth_values_half_meter():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
         min_echo_range=0.50,
@@ -277,7 +294,6 @@ def test__get_depth_values_half_meter():
     assert len(depths) == 501
     assert depths[0] == 0.50
     assert depths[-1] == 250
-
 
 #######################################################
 #######################################################

@@ -1,4 +1,7 @@
 import os
+from pathlib import Path
+
+import pytest
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 
@@ -19,6 +22,10 @@ def setup_module():
 
 def teardown_module():
     print("teardown")
+
+@pytest.fixture
+def s3_manager_test_path(test_path):
+    return test_path["S3_MANAGER_TEST_PATH"]
 
 
 #######################################################
@@ -93,47 +100,175 @@ def test_create_bucket():
 
 @mock_aws
 def test_list_buckets():
-    pass
+    s3_manager = S3Manager()
+    s3_manager.create_bucket(bucket_name="test_bucket_123")
+    s3_manager.create_bucket(bucket_name="test_bucket_456")
+
+    assert "test_bucket_123" in [
+        i["Name"] for i in s3_manager.list_buckets()["Buckets"]
+    ]
+    assert "test_bucket_456" in [
+        i["Name"] for i in s3_manager.list_buckets()["Buckets"]
+    ]
 
 
+@pytest.mark.skip(reason="TODO: implement this")
 @mock_aws
 def test_upload_files_with_thread_pool_executor():
     pass
 
 
 @mock_aws
-def test_list_objects():
-    pass
+def test_list_objects(s3_manager_test_path):
+    s3_manager = S3Manager()
+
+    test_bucket_name = "test_bucket"
+
+    s3_manager.create_bucket(bucket_name=test_bucket_name)
+    print(s3_manager.list_buckets())
+
+    s3_manager.upload_file(
+        filename=s3_manager_test_path.joinpath("HB0707.zarr/.zmetadata"),
+        bucket_name=test_bucket_name,
+        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata"
+    )
+    s3_manager.upload_file(
+        filename=s3_manager_test_path.joinpath("HB0707.zarr/.zattrs"),
+        bucket_name=test_bucket_name,
+        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zattrs"
+    )
+
+    assert len(s3_manager.list_objects(bucket_name=test_bucket_name, prefix="")) == 2
+
+    list_of_found_objects = s3_manager.list_objects(
+        bucket_name=test_bucket_name,
+        prefix="level_2/Henry_B._Bigelow/HB0707/",
+    )
+
+    assert len(list_of_found_objects) == 2
+    assert 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zattrs' in list_of_found_objects
+    assert 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata' in list_of_found_objects
+
 
 
 @mock_aws
-def test_get_child_objects():
-    pass
+def test_get_child_objects(s3_manager_test_path):
+    s3_manager = S3Manager()
+
+    test_bucket_name = "test_bucket"
+
+    s3_manager.create_bucket(bucket_name=test_bucket_name)
+    print(s3_manager.list_buckets())
+
+    s3_manager.upload_file(
+        filename=s3_manager_test_path.joinpath("HB0707.zarr/.zmetadata"),
+        bucket_name=test_bucket_name,
+        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata"
+    )
+    s3_manager.upload_file(
+        filename=s3_manager_test_path.joinpath("HB0707.zarr/.zattrs"),
+        bucket_name=test_bucket_name,
+        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zattrs"
+    )
+
+    assert len(s3_manager.list_objects(bucket_name=test_bucket_name, prefix="")) == 2
+
+    found_objects = s3_manager.get_child_objects(
+        bucket_name=test_bucket_name,
+        sub_prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr",
+        # file_suffix: str = None,
+    )
+
+    assert len(found_objects) > 0
 
 
 @mock_aws
-def test_download_file():
-    pass
+def test_download_file(s3_manager_test_path, tmp_path):
+    s3_manager = S3Manager()
+
+    test_bucket_name = "test_bucket"
+
+    s3_manager.create_bucket(bucket_name=test_bucket_name)
+    print(s3_manager.list_buckets())
+
+    body = open(s3_manager_test_path.joinpath("HB0707.zarr/.zmetadata"), 'r').read()
+    s3_manager.put(
+        bucket_name=test_bucket_name,
+        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata",
+        body=body
+    )
+
+    assert len(s3_manager.list_objects(bucket_name=test_bucket_name, prefix="")) == 1
+
+    s3_manager.download_file(
+        bucket_name=test_bucket_name,
+        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata",
+        file_name=tmp_path / ".zmetadata",
+    )
+
+    assert Path(tmp_path / ".zmetadata").exists()
 
 
+
+@pytest.mark.skip(reason="TODO: implement this")
 @mock_aws
 def test_delete_object():
     pass
 
 
+@pytest.mark.skip(reason="TODO: implement this")
 @mock_aws
 def test_delete_objects():
     pass
 
 
 @mock_aws
-def test_put():
-    pass
+def test_put(s3_manager_test_path):
+    s3_manager = S3Manager()
+
+    # [0] create bucket with test files
+    test_bucket_name = "test_bucket"
+
+    s3_manager.create_bucket(bucket_name=test_bucket_name)
+    print(s3_manager.list_buckets())
+
+    body = open(s3_manager_test_path.joinpath("HB0707.zarr/.zmetadata"), 'r').read()
+    s3_manager.put(
+        bucket_name=test_bucket_name,
+        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata",
+        body=body
+    )
+
+    assert len(s3_manager.list_objects(bucket_name=test_bucket_name, prefix="")) == 1
 
 
 @mock_aws
-def test_get():
-    pass
+def test_get(s3_manager_test_path):
+    s3_manager = S3Manager()
+
+    test_bucket_name = "test_bucket"
+
+    s3_manager.create_bucket(bucket_name=test_bucket_name)
+
+    print(s3_manager.list_buckets())
+
+    body = open(s3_manager_test_path.joinpath("HB0707.zarr/foo"), 'r').read()
+    s3_manager.put(
+        bucket_name=test_bucket_name,
+        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/foo",
+        body=body
+    )
+
+    assert len(s3_manager.list_objects(bucket_name=test_bucket_name, prefix="")) == 1
+
+    metadata = s3_manager.get_object(
+        bucket_name=test_bucket_name,
+        key_name="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/foo"
+    )
+
+    metadata_body = metadata["Body"].read().decode("utf-8")
+
+    assert metadata_body == '123'
 
 
 #######################################################

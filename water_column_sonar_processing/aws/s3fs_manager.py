@@ -12,8 +12,8 @@ class S3FSManager:
         endpoint_url: Optional[str] = None,
     ):
         self.endpoint_url = endpoint_url
-        self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
-        self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
+        # self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
+        # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
         self.s3_region = os.environ.get("AWS_REGION", default="us-east-1")
         self.s3fs = s3fs.S3FileSystem(
             endpoint_url=endpoint_url,
@@ -21,6 +21,13 @@ class S3FSManager:
             secret=os.environ.get("OUTPUT_BUCKET_SECRET_ACCESS_KEY"),
         )
 
+    # s3_fs = s3fs.S3FileSystem( # TODO: use s3fs_manager?
+    #     anon=True,
+    #     client_kwargs={
+    #         "endpoint_url": moto_server,
+    #         "region_name": "us-east-1",
+    #     },
+    # )
     #####################################################################
     def s3_map(
         self,

@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
-import s3fs
 import zarr
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 import xarray as xr
 from moto.server import ThreadedMotoServer
 
+from water_column_sonar_processing.aws import S3FSManager
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.cruise import CreateEmptyZarrStore
 
@@ -36,7 +36,7 @@ def create_empty_zarr_test_path(test_path):
 
 #######################################################
 @mock_aws()
-def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):  # PASSING, needs modification at end
+def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager(endpoint_url=moto_server)
 
@@ -67,9 +67,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):  # P
     assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 1
 
     # [1] create dynamodb table
-    dynamo_db_manager.create_water_column_sonar_table(
-        table_name="water-column-sonar-table"
-    )
+    dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
 
     # [2] bootstrap w/ test data
     test_channels = [
@@ -239,19 +237,13 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):  # P
     assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/")) > 1
     assert "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata" in s3_manager.list_objects(bucket_name=output_bucket_name, prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/")
     # mount and verify:
-    s3_fs = s3fs.S3FileSystem(
-        anon=True,
-        client_kwargs={
-            "endpoint_url": moto_server,
-            "region_name": "us-east-1",
-        },
-    )
+    s3fs_manager = S3FSManager(endpoint_url=moto_server)
     s3_path = f"{output_bucket_name}/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr"
-    zarr_store = s3fs.S3Map(root=s3_path, s3=s3_fs, check=False)
+    zarr_store = s3fs_manager.s3_map(s3_path)
 
     # --- Open with Zarr --- #
     root = zarr.open(store=zarr_store, mode="r")
-    print(root)
+    print(root.info)
     assert root.Sv.shape == (3999, 89911, 4)
 
     # --- Open with Xarray --- #

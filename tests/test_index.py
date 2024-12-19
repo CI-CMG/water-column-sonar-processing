@@ -70,6 +70,7 @@ def test_get_calibration_information(index_test_path): # good
 # TODO: mock this, right now it is generating csvs for all ek60 cruises
 @pytest.mark.skip(reason="no way of currently testing this")
 def test_get_all_cruise_raw_files(tmp_path):
+    # TODO: scan bucket to find a set of the smallest files
     input_bucket_name = "noaa-wcsd-pds"
     calibration_bucket = "noaa-wcsd-pds-index"
     calibration_key = "calibrated_crusies.csv"

@@ -24,6 +24,7 @@ def teardown_module():
 
 
 #######################################################
+# TODO: Delete this?
 @mock_aws
 @pytest.mark.skip(reason="no way of currently testing this")
 def test_model_happy_path():

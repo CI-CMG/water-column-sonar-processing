@@ -215,7 +215,9 @@ class RawToZarr:
             #################################################################
             # Create the zarr store
             store_name = f"{Path(raw_file_name).stem}.zarr"
-            ds_sv.to_zarr(store=store_name)
+            # Sv = ds_sv.Sv
+            # ds_sv['Sv'] = Sv.astype('int32', copy=False)
+            ds_sv.to_zarr(store=store_name) # ds_sv.Sv.sel(channel=ds_sv.channel.values[0]).shape
             #################################################################
             output_zarr_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"
             #################################################################

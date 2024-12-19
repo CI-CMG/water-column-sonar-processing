@@ -394,7 +394,6 @@ class S3Manager:
             print(f"Problem was encountered while deleting objects: {err}")
 
     #####################################################################
-    # not used TODO: remove
     def put(self, bucket_name, key, body):  # noaa-wcsd-model-pds
         self.s3_client.put_object(Bucket=bucket_name, Key=key, Body=body) # "Body" can be a file
 
