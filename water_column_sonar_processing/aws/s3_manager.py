@@ -90,6 +90,10 @@ class S3Manager:
         self,
         bucket_name: str,
     ):
+        """
+        Note: this function is only really meant to be used for creating test
+        buckets. It allows public read of all objects.
+        """
         # https://github.com/aodn/aodn_cloud_optimised/blob/e5035495e782783cc8b9e58711d63ed466420350/test_aodn_cloud_optimised/test_schema.py#L7
         public_policy = {
             "Version": "2012-10-17",
@@ -105,16 +109,12 @@ class S3Manager:
         response1 = self.s3_client.create_bucket(
             Bucket=bucket_name,
             ACL='public-read'
-            # Required when region is different then us-east-1
-            #
-            # TODO: if region is us-east-1, don't include this line somehow
-            # CreateBucketConfiguration={'LocationConstraint': self.__s3_region}
         )
         print(response1)
-        response = self.s3_client.put_bucket_policy(
-            Bucket=bucket_name, Policy=json.dumps(public_policy)
-        )
-        print(response)
+        # response = self.s3_client.put_bucket_policy(
+        #     Bucket=bucket_name, Policy=json.dumps(public_policy)
+        # )
+        # print(response)
 
     #####################################################################
     def list_buckets(self):

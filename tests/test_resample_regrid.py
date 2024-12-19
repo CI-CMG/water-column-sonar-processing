@@ -16,15 +16,23 @@ def teardown_module():
     print("teardown")
 
 
-#######################################################
+@pytest.fixture
+def resample_regrid_test_path(test_path):
+    return test_path["RESAMPLE_REGRID_TEST_PATH"]
 
+#######################################################
 
 ### Test Interpolation ###
 @mock_aws
 @pytest.mark.skip(reason="no way of currently testing resample regrid")
-def test_resample_regrid():
+def test_resample_regrid(resample_regrid_test_path):
+    # TODO:
+    #  need to create output zarr store
+    #  need to create geojson
+    #  need to populate dynamodb
+    #
+
     # Opens s3 input model store as xr and writes data to output model store
-    resample_regrid = ResampleRegrid()
 
     # HB0706 - 53 files
     # bucket_name = 'noaa-wcsd-model-pds'
@@ -38,6 +46,7 @@ def test_resample_regrid():
     # file_name_stem = Path(file_name).stem  # TODO: remove
     table_name = "r2d2-dev-echofish-EchoFish-File-Info"
 
+    resample_regrid = ResampleRegrid()
     resample_regrid.resample_regrid(
         ship_name=ship_name,
         cruise_name=cruise_name,
@@ -45,6 +54,26 @@ def test_resample_regrid():
         table_name=table_name,
     )
 
+
+@mock_aws
+@pytest.mark.skip(reason="TODO: implement this")
+def test_interpolate(resample_regrid_test_path):
+    # Get two raw files with extreme range differences between the two,
+    # generate zarr stores,
+    # get the last part of the first file and first part of the second file
+    # and write out to new single zarr store ...save in test resources
+    # read in the file here
+    """
+    Possible test files:
+        Henry_B._Bigelow HB0707 D20070712-T124906.raw
+            max_echo_range: 249.792, min_echo_range: 0.19, num_ping_time_dropna: 7706
+            raw 158 MB
+        Henry_B._Bigelow HB0707 D20070712-T152416.raw
+            max_echo_range: 999.744, min_echo_range: 0.19, num_ping_time_dropna: 4871
+            raw 200 MB
+
+    """
+    pass
 
 #######################################################
 #######################################################
