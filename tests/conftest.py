@@ -25,3 +25,13 @@ def test_path():
         'S3FS_MANAGER_TEST_PATH': TEST_DATA_FOLDER / "s3fs_manager",
         'S3_MANAGER_TEST_PATH': TEST_DATA_FOLDER / "s3_manager",
     }
+
+# Borrowed from echopype
+# @pytest.fixture(scope="session")
+# def minio_bucket():
+#     return dict(
+#         client_kwargs=dict(endpoint_url="http://localhost:9000/"),
+#         key="minioadmin",
+#         secret="minioadmin",
+#     )
+
