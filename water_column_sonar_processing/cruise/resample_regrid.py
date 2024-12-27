@@ -144,6 +144,11 @@ class ResampleRegrid:
         cruise_name,
         sensor_name,
         table_name,
+        # TODO: file_name,
+        input_bucket_name,
+        output_bucket_name,
+        override_select_files=None,
+        endpoint_url=None
     ) -> None:
         """
         The goal here is to interpolate the data against the depth values already populated
@@ -162,6 +167,8 @@ class ResampleRegrid:
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
                 # zarr_synchronizer=?  # TODO: pass in for parallelization
+                output_bucket_name=output_bucket_name,
+                endpoint_url=endpoint_url,
             )
 
             # get dynamo stuff
@@ -177,6 +184,10 @@ class ResampleRegrid:
             #########################################################
             # TODO: iterate files here
             all_file_names = cruise_df["FILE_NAME"]
+
+            if override_select_files is not None:
+                all_file_names = override_select_files
+
             for file_name in all_file_names:
                 gc.collect()
                 file_name_stem = Path(file_name).stem
@@ -200,6 +211,8 @@ class ResampleRegrid:
                     cruise_name=cruise_name,
                     sensor_name=sensor_name,
                     file_name_stem=file_name_stem,
+                    input_bucket_name=input_bucket_name,
+                    endpoint_url=endpoint_url,
                 )
                 #########################################################################
                 # [3] Get needed indices
@@ -225,11 +238,11 @@ class ResampleRegrid:
                         :, start_ping_time_index:end_ping_time_index, :
                     ].shape
                 )
-                cruise_sv_subset[:, :, :] = np.nan  # (5208, 9778, 4)
+                cruise_sv_subset[:, :, :] = np.nan  # (3999, 3208, 4) and ()
 
                 all_cruise_depth_values = zarr_manager.get_depth_values(
                     min_echo_range=min_echo_range, max_echo_range=max_echo_range
-                )
+                ) # (5262,) and
 
                 print(" ".join(list(input_xr_zarr_store.Sv.dims)))
                 if set(input_xr_zarr_store.Sv.dims) != {
@@ -239,6 +252,7 @@ class ResampleRegrid:
                 }:
                     raise Exception("Xarray dimensions are not as expected.")
 
+                # TODO: here need to get the geo_json w endpoint?
                 # get geojson
                 indices, geospatial = geo_manager.read_s3_geo_json(
                     ship_name=ship_name,
@@ -246,6 +260,8 @@ class ResampleRegrid:
                     sensor_name=sensor_name,
                     file_name_stem=file_name_stem,
                     input_xr_zarr_store=input_xr_zarr_store,
+                    endpoint_url=endpoint_url,
+                    output_bucket_name=output_bucket_name,
                 )
 
                 input_xr = input_xr_zarr_store.isel(ping_time=indices)

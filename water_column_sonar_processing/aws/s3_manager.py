@@ -33,8 +33,8 @@ class S3Manager:
         endpoint_url: Optional[str] = None,
     ):
         self.endpoint_url = endpoint_url
-        self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
-        self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
+        # self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
+        # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
         self.s3_region = os.environ.get("AWS_REGION", default="us-east-1")
         self.s3_client_config = Config(max_pool_connections=MAX_POOL_CONNECTIONS)
         self.s3_transfer_config = TransferConfig(
@@ -74,6 +74,7 @@ class S3Manager:
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
+            endpoint_url=self.endpoint_url,
         )
         self.paginator = self.s3_client.get_paginator('list_objects_v2')
         self.paginator_noaa_wcsd_zarr_pds = self.s3_client_noaa_wcsd_zarr_pds.get_paginator('list_objects_v2')
@@ -179,6 +180,7 @@ class S3Manager:
         self,
         local_directory,
         remote_directory,
+        output_bucket_name,
     ):
         # Right now this is just for uploading a model store to s3
         print("Uploading files to output bucket.")
@@ -196,7 +198,7 @@ class S3Manager:
                 all_files.append([local_path, s3_key])
 
         all_uploads = self.upload_files_with_thread_pool_executor(
-            output_bucket_name=self.output_bucket_name,
+            output_bucket_name=output_bucket_name,
             all_files=all_files,
         )
         print("Done uploading files to output bucket.")
@@ -251,8 +253,8 @@ class S3Manager:
     # ):
     #     # Returns a list of key strings for each object in bucket defined by prefix
     #     keys = []
-    #     page_iterator = self.paginator_noaa_wcsd_zarr_pds.paginate(Bucket=self.output_bucket_name, Prefix=prefix):
-    #     for page in paginator.paginate(Bucket=self.output_bucket_name, Prefix=prefix):
+    #     page_iterator = self.paginator_noaa_wcsd_zarr_pds.paginate(Bucket=output_bucket_name, Prefix=prefix):
+    #     for page in paginator.paginate(Bucket=output_bucket_name, Prefix=prefix):
     #         if "Contents" in page.keys():
     #             keys.extend([k["Key"] for k in page["Contents"]])
     #     return keys
@@ -404,10 +406,11 @@ class S3Manager:
         cruise_name,
         sensor_name,
         file_name_stem,
+        output_bucket_name,
     ) -> str:
         try:
             content_object = self.s3_resource_noaa_wcsd_zarr_pds.Object(
-                bucket_name=self.output_bucket_name,
+                bucket_name=output_bucket_name,
                 key=f"spatial/geojson/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.json",
             ).get()
             file_content = content_object["Body"].read().decode("utf-8")

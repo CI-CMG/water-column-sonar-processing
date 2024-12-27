@@ -28,8 +28,8 @@ class ZarrManager:
         self.__compressor = Blosc(cname="zstd", clevel=2)  # shuffle=Blosc.NOSHUFFLE
         self.__overwrite = True
         self.__num_threads = numcodecs.blosc.get_nthreads()
-        self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
-        self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
+        # self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
+        # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 
     #######################################################
     def get_depth_values(
@@ -283,13 +283,15 @@ class ZarrManager:
         cruise_name: str,
         sensor_name: str,
         # zarr_synchronizer: Union[str, None] = None,
+        output_bucket_name: str,
+        endpoint_url=None,
     ):
         # Mounts a Zarr store using pythons Zarr implementation. The mounted store
         #  will have read/write privileges so that store can be updated.
         print("Opening Zarr store with Zarr.")
         try:
-            s3fs_manager = S3FSManager()
-            root = f"{self.output_bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
+            s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
+            root = f"{output_bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
             store = s3fs_manager.s3_map(s3_zarr_store_path=root)
             # synchronizer = model.ProcessSynchronizer(f"/tmp/{ship_name}_{cruise_name}.sync")
             cruise_zarr = zarr.open(store=store, mode="r+")
@@ -306,11 +308,13 @@ class ZarrManager:
         cruise_name: str,
         sensor_name: str,
         file_name_stem: str,
+        input_bucket_name: str,
+        endpoint_url=None,
     ) -> xr.Dataset:
         print("Opening Zarr store in S3 as Xarray.")
         try:
-            zarr_path = f"s3://{self.output_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr"
-            s3fs_manager = S3FSManager()
+            zarr_path = f"s3://{input_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr"
+            s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
             store_s3_map = s3fs_manager.s3_map(s3_zarr_store_path=zarr_path)
             ds = xr.open_zarr(
                 store=store_s3_map, consolidated=None

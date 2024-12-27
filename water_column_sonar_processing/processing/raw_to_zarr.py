@@ -120,9 +120,10 @@ class RawToZarr:
             output_bucket_name,
             local_directory,
             object_prefix,
+            endpoint_url,
     ):
         # Note: this will be passed credentials if using NODD
-        s3_manager = S3Manager()
+        s3_manager = S3Manager(endpoint_url=endpoint_url)
         print('Uploading files using thread pool executor.')
         all_files = []
         for subdir, dirs, files in os.walk(local_directory):
@@ -147,6 +148,8 @@ class RawToZarr:
             cruise_name,
             sensor_name,
             raw_file_name,
+            endpoint_url=None,
+            include_bot=True,
     ):
         """
         Downloads the raw files, processes them with echopype, writes geojson, and uploads files
@@ -157,12 +160,14 @@ class RawToZarr:
         cleaner = Cleaner()
         cleaner.delete_local_files(file_types=["*.zarr", "*.json"]) # TODO: include bot and raw?
 
-        s3_manager = S3Manager()
+        s3_manager = S3Manager(endpoint_url=endpoint_url)
         s3_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
         bottom_file_name = f"{Path(raw_file_name).stem}.bot"
         s3_bottom_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
         s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
-        s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
+        # TODO: add the bottom file
+        if include_bot:
+            s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
 
         try:
             gc.collect()
@@ -172,13 +177,14 @@ class RawToZarr:
             echodata = ep.open_raw(
                 raw_file=raw_file_name,
                 sonar_model=sensor_name,
-                include_bot=True,
-                use_swap=True,
+                include_bot=include_bot,
+                # use_swap=True,
                 # max_chunk_size=100,
                 # storage_options={'anon': True } # 'endpoint_url': self.endpoint_url} # this was creating problems
             )
             print('Compute volume backscattering strength (Sv) from raw data.')
             ds_sv = ep.calibrate.compute_Sv(echodata)
+            gc.collect()
             print('Done computing volume backscatter strength (Sv) from raw data.')
             # Note: detected_seafloor_depth is located at echodata.vendor.detected_seafloor_depth
             # but is not written out with ds_sv
@@ -218,11 +224,12 @@ class RawToZarr:
             # Sv = ds_sv.Sv
             # ds_sv['Sv'] = Sv.astype('int32', copy=False)
             ds_sv.to_zarr(store=store_name) # ds_sv.Sv.sel(channel=ds_sv.channel.values[0]).shape
+            gc.collect()
             #################################################################
             output_zarr_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"
             #################################################################
             # If zarr store already exists then delete
-            s3_manager = S3Manager()
+            s3_manager = S3Manager(endpoint_url=endpoint_url)
             child_objects = s3_manager.get_child_objects(
                 bucket_name=output_bucket_name,
                 sub_prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{Path(raw_file_name).stem}.zarr",
@@ -237,7 +244,8 @@ class RawToZarr:
             self.__upload_files_to_output_bucket(
                 output_bucket_name=output_bucket_name,
                 local_directory=store_name,
-                object_prefix=output_zarr_prefix
+                object_prefix=output_zarr_prefix,
+                endpoint_url=endpoint_url
             )
             #################################################################
             self.__zarr_info_to_table(
@@ -264,6 +272,7 @@ class RawToZarr:
             print(f'Exception encountered creating local Zarr store with echopype: {err}')
             raise RuntimeError(f"Problem creating local Zarr store, {err}")
         finally:
+            gc.collect()
             print("Finally.")
             cleaner.delete_local_files(file_types=["*.raw", "*.bot", "*.zarr", "*.json"])
         print('Done creating local zarr store.')

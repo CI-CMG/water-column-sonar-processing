@@ -192,14 +192,18 @@ class GeometryManager:
         sensor_name,
         file_name_stem,
         input_xr_zarr_store,
+        endpoint_url,
+        output_bucket_name,
     ):
         try:
-            s3_manager = S3Manager()
+            s3_manager = S3Manager(endpoint_url=endpoint_url)
             geo_json = s3_manager.read_s3_json(
                 ship_name=ship_name,
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
                 file_name_stem=file_name_stem,
+                output_bucket_name=output_bucket_name,
+
             )
             ###
             geospatial = geopandas.GeoDataFrame.from_features(
