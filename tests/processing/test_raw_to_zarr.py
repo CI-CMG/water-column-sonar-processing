@@ -45,7 +45,7 @@ def raw_to_zarr_test_path(test_path):
 
 #######################################################
 @mock_aws
-def test_raw_to_zarr(raw_to_zarr_test_path, moto_server):
+def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     table_name = "water-column-sonar-table"
     s3_manager = S3Manager(endpoint_url=moto_server)
 
