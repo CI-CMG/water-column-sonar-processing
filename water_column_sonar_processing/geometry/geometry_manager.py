@@ -38,6 +38,7 @@ class GeometryManager:
         cruise_name,
         sensor_name,
         file_name,
+        endpoint_url=None,
         write_geojson=True,
     ) -> tuple:
         file_name_stem = Path(file_name).stem
@@ -137,7 +138,7 @@ class GeometryManager:
                 )
 
                 print("Checking s3 and deleting any existing GeoJSON file.")
-                s3_manager = S3Manager()
+                s3_manager = S3Manager(endpoint_url=endpoint_url)
                 geojson_object_exists = s3_manager.check_if_object_exists(
                     bucket_name=output_bucket_name,
                     key_name=f"{geo_json_prefix}/{geo_json_name}"

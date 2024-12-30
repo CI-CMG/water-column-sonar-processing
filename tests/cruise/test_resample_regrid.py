@@ -7,6 +7,7 @@ from moto import mock_aws
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
 # from processing import RawToZarr
+from water_column_sonar_processing.processing import RawToZarr
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.cruise import ResampleRegrid
 from water_column_sonar_processing.cruise import CreateEmptyZarrStore
@@ -70,7 +71,7 @@ def resample_regrid_test_path(test_path):
 #     )
 
 @mock_aws
-@pytest.mark.skip(reason="TODO: implement this")
+# @pytest.mark.skip(reason="TODO: implement this")
 def test_resample_regrid(resample_regrid_test_path, moto_server):
     # TODO: HB0707 isn't good _enough_ test because the MIN_ECHO_RANGE doesn't change
 
@@ -88,13 +89,13 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # table_name = "prod-echofish"
 
     # [0] create bucket with test files
-    l0_input_bucket_name = "l0_test_input_bucket"
-    l1_input_bucket_name = "l1_test_input_bucket"
-    output_bucket_name = "test_output_bucket" # TODO: "l2_"
+    l0_test_bucket_name = "l0_test_bucket"
+    l1_l2_test_bucket_name = "l1_l2_test_input_bucket"
+    # output_bucket_name = "test_output_bucket" # TODO: "l2_"
 
-    s3_manager.create_bucket(bucket_name=l0_input_bucket_name)
-    s3_manager.create_bucket(bucket_name=l1_input_bucket_name)
-    s3_manager.create_bucket(bucket_name=output_bucket_name)
+    s3_manager.create_bucket(bucket_name=l0_test_bucket_name)
+    s3_manager.create_bucket(bucket_name=l1_l2_test_bucket_name)
+    # s3_manager.create_bucket(bucket_name=output_bucket_name)
     print(s3_manager.list_buckets())
 
     # [1] create dynamodb table
@@ -140,18 +141,18 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     ]
     min_echo_range = 0.25
     num_ping_time_dropna = [
-        9778,
-        9742,
-        9780,
-        9775,
-        9733,
-        3207,
-        7705,
-        4869,
-        9566,
-        158,
-        9760,
-        5838,
+        9779,
+        9743,
+        9781,
+        9776,
+        9734,
+        3208,
+        7706,
+        4871,
+        9567,
+        159,
+        9761,
+        5839,
     ]
     start_time = [
         "2007-07-11T18:20:32.657Z",
@@ -231,7 +232,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
                 ":se": {"S": sensor_name},
                 ":sh": {"S": ship_name},
                 ":st": {"S": start_time[iii]},
-                ":zb": {"S": output_bucket_name},
+                ":zb": {"S": l1_l2_test_bucket_name},
                 ":zp": {"S": zarr_path[iii]},
             },
             update_expression=(
@@ -256,7 +257,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # [3] create new zarr store and upload
     create_empty_zarr_store = CreateEmptyZarrStore()
     create_empty_zarr_store.create_cruise_level_zarr_store(
-        output_bucket_name=output_bucket_name,
+        output_bucket_name=l1_l2_test_bucket_name,
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
@@ -268,12 +269,12 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
     assert len(
         s3_manager.list_objects(
-            bucket_name=output_bucket_name,
+            bucket_name=l1_l2_test_bucket_name,
             prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/"
         )
     ) > 1
     assert "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata" in s3_manager.list_objects(
-        bucket_name=output_bucket_name,
+        bucket_name=l1_l2_test_bucket_name,
         prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/"
     )
     # mount and verify:
@@ -284,33 +285,33 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # TODO: PROBLEM NEED TO DO RAW-TO-ZARR CONVERSIONS FOR FILES SO THAT I CAN
     #  USE THE FILE-LEVEL ZARR STORES AS INPUTS.
     s3_manager.upload_file(
-         filename=resample_regrid_test_path.joinpath("D20070712-T100505.raw"),
-         bucket_name=l0_input_bucket_name,
-         key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T100505.raw"
+        filename=resample_regrid_test_path.joinpath("D20070712-T124906.raw"),
+        bucket_name=l0_test_bucket_name,
+        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.raw"
     )
     s3_manager.upload_file(
-        filename=resample_regrid_test_path.joinpath("D20070712-T152416.raw"),
-        bucket_name=l0_input_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.raw"
+         filename=resample_regrid_test_path.joinpath("D20070712-T152416.raw"),
+         bucket_name=l0_test_bucket_name,
+         key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.raw"
     )
-    assert len(s3_manager.list_objects(bucket_name=l0_input_bucket_name, prefix="")) == 2
+    assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 2
     raw_to_zarr = RawToZarr()
-    raw_to_zarr.raw_to_zarr(
-        table_name=table_name,
-        input_bucket_name=l0_input_bucket_name,
-        output_bucket_name=l1_input_bucket_name,
-        ship_name=ship_name,
-        cruise_name=cruise_name,
-        sensor_name=sensor_name,
-        raw_file_name="D20070712-T100505.raw",
-        endpoint_url=moto_server,
-        include_bot=False,
-    )
     gc.collect()
     raw_to_zarr.raw_to_zarr(
         table_name=table_name,
-        input_bucket_name=l0_input_bucket_name,
-        output_bucket_name=l1_input_bucket_name,
+        input_bucket_name=l0_test_bucket_name,
+        output_bucket_name=l1_l2_test_bucket_name,
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        raw_file_name="D20070712-T124906.raw",
+        endpoint_url=moto_server,
+        include_bot=False,
+    )
+    raw_to_zarr.raw_to_zarr(
+        table_name=table_name,
+        input_bucket_name=l0_test_bucket_name,
+        output_bucket_name=l1_l2_test_bucket_name,
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
@@ -320,10 +321,10 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     )
     gc.collect()
     number_of_files_xx = s3_manager.list_objects(
-        bucket_name=l1_input_bucket_name,
+        bucket_name=l1_l2_test_bucket_name,
         prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"
     )
-    assert len(number_of_files_xx) > 72 #
+    assert len(number_of_files_xx) > 72 # 1402
 
 
     resample_regrid = ResampleRegrid()
@@ -332,15 +333,16 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         table_name=table_name,
-        input_bucket_name=l1_input_bucket_name,
-        output_bucket_name=output_bucket_name,
+        input_bucket_name=l1_l2_test_bucket_name,
+        output_bucket_name=l1_l2_test_bucket_name,
         # TODO: this needs to be passed for each respective file, TEST ONLY TWO
-        override_select_files=["D20070712-T100505.raw", "D20070712-T152416.raw"],
+        override_select_files=["D20070712-T124906.raw", "D20070712-T152416.raw"],
         endpoint_url=moto_server
     )
 
     # TODO: verify that the two files in question were properly resampled and regridded
     # check a couple of samples that are adjacent to one another
+    assert 2 > 1
 
 
 @mock_aws

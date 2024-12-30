@@ -26,8 +26,8 @@ class ResampleRegrid:
         self,
     ):
         self.__overwrite = True
-        self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
-        self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
+        # self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
+        # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
         self.dtype = "float32"
 
     #################################################################

@@ -179,7 +179,7 @@ class RawToZarr:
                 sonar_model=sensor_name,
                 include_bot=include_bot,
                 # use_swap=True,
-                # max_chunk_size=100,
+                # max_chunk_size=300,
                 # storage_options={'anon': True } # 'endpoint_url': self.endpoint_url} # this was creating problems
             )
             print('Compute volume backscattering strength (Sv) from raw data.')
@@ -201,6 +201,7 @@ class RawToZarr:
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
                 file_name=raw_file_name,
+                endpoint_url=endpoint_url,
                 write_geojson=True
             )
             # gps_data, lat, lon = self.__get_gps_data(echodata=echodata)

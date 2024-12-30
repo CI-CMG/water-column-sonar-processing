@@ -409,7 +409,8 @@ class S3Manager:
         output_bucket_name,
     ) -> str:
         try:
-            content_object = self.s3_resource_noaa_wcsd_zarr_pds.Object(
+            resource = self.s3_resource_noaa_wcsd_zarr_pds
+            content_object = resource.Object(
                 bucket_name=output_bucket_name,
                 key=f"spatial/geojson/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.json",
             ).get()
