@@ -94,6 +94,12 @@ https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scroll
 5 failed, 35 passed, 3 skipped, 1 warning in 9.71s
 3 failed, 38 passed, 3 skipped, 1 warning in 7.24s
 
+# Tag a Release
+```commandline
+git tag "v0.0.12" -a
+# enter description
+git push origin --tags
+```
 
 # TODO:
 add https://pypi.org/project/setuptools-scm/
