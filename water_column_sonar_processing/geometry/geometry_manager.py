@@ -62,7 +62,7 @@ class GeometryManager:
             time1 = echodata.environment.time1.values
 
             if len(nmea_times) < len(time1):
-                raise Exception(
+                raise Exception( # TODO: explore this logic further...
                     "Problem: Not enough NMEA times available to extrapolate time1."
                 )
 
@@ -181,7 +181,8 @@ class GeometryManager:
             raise
         # Note: returned lat/lon values can include np.nan because they need to be aligned with
         # the Sv data! GeoJSON needs simplification but has been filtered.
-        return gps_df.index.values, gps_df.latitude.values, gps_df.longitude.values
+        # return gps_df.index.values, gps_df.latitude.values, gps_df.longitude.values
+        return gps_df.index.values, lat, lon
         # TODO: if geojson is already returned with 0,0, the return here
         #  can include np.nan values?
 

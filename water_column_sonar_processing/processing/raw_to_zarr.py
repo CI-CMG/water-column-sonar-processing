@@ -204,6 +204,9 @@ class RawToZarr:
                 endpoint_url=endpoint_url,
                 write_geojson=True
             )
+            ds_sv = ep.consolidate.add_location(ds_sv, echodata)
+            ds_sv.latitude.values = lat # overwriting echopype gps values to include missing values
+            ds_sv.longitude.values = lon
             # gps_data, lat, lon = self.__get_gps_data(echodata=echodata)
             #################################################################
             # Technically the min_echo_range would be 0 m.

@@ -83,25 +83,20 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     s3_manager = S3Manager(endpoint_url=moto_server)
 
     ship_name = "Henry_B._Bigelow"
-    cruise_name = "HB0707"  # HB0706 (53 files), HB0707 (12 files)
+    cruise_name = "HB0707"  # HB0707 (12 files)
     sensor_name = "EK60"
     table_name = "water-column-sonar-table"
-    # table_name = "prod-echofish"
 
     # [0] create bucket with test files
     l0_test_bucket_name = "l0_test_bucket"
     l1_l2_test_bucket_name = "l1_l2_test_input_bucket"
-    # output_bucket_name = "test_output_bucket" # TODO: "l2_"
 
     s3_manager.create_bucket(bucket_name=l0_test_bucket_name)
     s3_manager.create_bucket(bucket_name=l1_l2_test_bucket_name)
-    # s3_manager.create_bucket(bucket_name=output_bucket_name)
     print(s3_manager.list_buckets())
 
     # [1] create dynamodb table
-    dynamo_db_manager.create_water_column_sonar_table(
-        table_name="water-column-sonar-table"
-    )
+    dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
 
     # [2] bootstrap w/ test data
     test_channels = [
@@ -132,7 +127,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         249.792,
         249.792,
         249.792,
-        249.792,
+        249.792,  # used for test
         999.744,  # note: different depth
         249.792,
         249.792,
@@ -147,8 +142,8 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         9776,
         9734,
         3208,
-        7706,
-        4871,
+        7705, # should be 7705
+        4869, #
         9567,
         159,
         9761,
