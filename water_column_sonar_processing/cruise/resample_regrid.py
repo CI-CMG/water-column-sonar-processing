@@ -144,9 +144,8 @@ class ResampleRegrid:
         cruise_name,
         sensor_name,
         table_name,
-        # TODO: file_name,
-        input_bucket_name,
-        output_bucket_name,
+        # TODO: file_name?,
+        bucket_name, # TODO: this is the same bucket
         override_select_files=None,
         endpoint_url=None
     ) -> None:
@@ -156,18 +155,16 @@ class ResampleRegrid:
         read/write operations. We open the file-level store with Xarray to leverage tools for
         resampling and subsetting the data.
         """
-        print("Interpolating data.")
+        print("Resample Regrid, Interpolating data.")
         try:
             zarr_manager = ZarrManager()
-            # s3_manager = S3Manager()
             geo_manager = GeometryManager()
-            # get model store
+
             output_zarr_store = zarr_manager.open_s3_zarr_store_with_zarr(
                 ship_name=ship_name,
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
-                # zarr_synchronizer=?  # TODO: pass in for parallelization
-                output_bucket_name=output_bucket_name,
+                output_bucket_name=bucket_name,
                 endpoint_url=endpoint_url,
             )
 
@@ -182,12 +179,12 @@ class ResampleRegrid:
 
             #########################################################
             #########################################################
-            # TODO: iterate files here
             all_file_names = cruise_df["FILE_NAME"]
 
             if override_select_files is not None:
                 all_file_names = override_select_files
 
+            # Iterate files
             for file_name in all_file_names:
                 gc.collect()
                 file_name_stem = Path(file_name).stem
@@ -211,7 +208,7 @@ class ResampleRegrid:
                     cruise_name=cruise_name,
                     sensor_name=sensor_name,
                     file_name_stem=file_name_stem,
-                    input_bucket_name=input_bucket_name,
+                    input_bucket_name=bucket_name,
                     endpoint_url=endpoint_url,
                 )
                 #########################################################################
@@ -238,7 +235,7 @@ class ResampleRegrid:
                         :, start_ping_time_index:end_ping_time_index, :
                     ].shape
                 )
-                cruise_sv_subset[:, :, :] = np.nan  # (3999, 3208, 4) and ()
+                cruise_sv_subset[:, :, :] = np.nan
 
                 all_cruise_depth_values = zarr_manager.get_depth_values(
                     min_echo_range=min_echo_range, max_echo_range=max_echo_range
@@ -252,8 +249,6 @@ class ResampleRegrid:
                 }:
                     raise Exception("Xarray dimensions are not as expected.")
 
-                # TODO: here need to get the geo_json w endpoint?
-                # get geojson
                 indices, geospatial = geo_manager.read_s3_geo_json(
                     ship_name=ship_name,
                     cruise_name=cruise_name,
@@ -261,7 +256,7 @@ class ResampleRegrid:
                     file_name_stem=file_name_stem,
                     input_xr_zarr_store=input_xr_zarr_store,
                     endpoint_url=endpoint_url,
-                    output_bucket_name=output_bucket_name,
+                    output_bucket_name=bucket_name,
                 )
 
                 input_xr = input_xr_zarr_store.isel(ping_time=indices)
@@ -277,22 +272,18 @@ class ResampleRegrid:
                 )
 
                 # --- UPDATING --- #
-
                 regrid_resample = self.interpolate_data(
                     input_xr=input_xr,
                     ping_times=ping_times,
                     all_cruise_depth_values=all_cruise_depth_values,
                 )
 
-                print(
-                    f"start_ping_time_index: {start_ping_time_index}, end_ping_time_index: {end_ping_time_index}"
-                )
-
+                print(f"start_ping_time_index: {start_ping_time_index}, end_ping_time_index: {end_ping_time_index}")
                 #########################################################################
                 # write Sv values to cruise-level-model-store
                 for channel in range(
                     len(input_xr.channel.values)
-                ):  # doesn't like being written in one fell swoop :(
+                ):  # does not like being written in one fell swoop :(
                     output_zarr_store.Sv[
                         :, start_ping_time_index:end_ping_time_index, channel
                     ] = regrid_resample[:, :, channel]
@@ -301,14 +292,18 @@ class ResampleRegrid:
                 # [5] write subset of latitude/longitude
                 output_zarr_store.latitude[
                     start_ping_time_index:end_ping_time_index
-                ] = geospatial.dropna()["latitude"].values
+                ] = geospatial.dropna()["latitude"].values # TODO: get from ds_sv directly, dont need geojson anymore
                 output_zarr_store.longitude[
                     start_ping_time_index:end_ping_time_index
                 ] = geospatial.dropna()["longitude"].values
         except Exception as err:
             print(f"Problem interpolating the data: {err}")
             raise err
-        print("Done interpolating data.")
+        # else:
+        #     pass
+        finally:
+            print("Done interpolating data.")
+            # TODO: read across times and verify data was written?
 
     #######################################################
 

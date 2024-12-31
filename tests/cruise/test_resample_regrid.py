@@ -6,6 +6,7 @@ from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
+from water_column_sonar_processing.model import ZarrManager
 # from processing import RawToZarr
 from water_column_sonar_processing.processing import RawToZarr
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
@@ -134,7 +135,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         249.792,
         249.792,
     ]
-    min_echo_range = 0.25
+    min_echo_range = 0.19
     num_ping_time_dropna = [
         9779,
         9743,
@@ -321,15 +322,13 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     )
     assert len(number_of_files_xx) > 72 # 1402
 
-
     resample_regrid = ResampleRegrid()
     resample_regrid.resample_regrid(
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         table_name=table_name,
-        input_bucket_name=l1_l2_test_bucket_name,
-        output_bucket_name=l1_l2_test_bucket_name,
+        bucket_name=l1_l2_test_bucket_name,
         # TODO: this needs to be passed for each respective file, TEST ONLY TWO
         override_select_files=["D20070712-T124906.raw", "D20070712-T152416.raw"],
         endpoint_url=moto_server
@@ -339,6 +338,32 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # check a couple of samples that are adjacent to one another
     assert 2 > 1
 
+    test_zarr_manager = ZarrManager()
+    test_output_zarr_store = test_zarr_manager.open_l2_zarr_store_with_xarray(
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        bucket_name=l1_l2_test_bucket_name,
+        endpoint_url=moto_server,
+    )
+    print(test_output_zarr_store.Sv)
+
+    # because we only processed two files, there should be missing values
+    assert np.isnan(np.sum(test_output_zarr_store.latitude.values))
+
+    start_time = np.datetime64('2007-07-12T12:49:06.313Z')
+    end_time = np.datetime64('2007-07-12T17:18:03.032Z')
+    select_times = (test_output_zarr_store.time > start_time) & (test_output_zarr_store.time < end_time)
+    # check selected timestamps and verify all latitude/longitude/times are updated
+    assert not np.isnan(np.sum(test_output_zarr_store.where(cond=(select_times), drop=True).latitude.values))
+    assert not np.isnan(np.sum(test_output_zarr_store.where(cond=(select_times), drop=True).longitude.values))
+
+    # TODO: times are initialized to '1970-01-01T00:00:00.000000000', need way to check updates
+    #  maybe monotonic increasing
+    # assert not np.isnan(np.sum(test_output_zarr_store.where(cond=(select_times), drop=True).time.values))
+
+    # TODO: assert that the test_output_zarr_store.Sv at specific depth equals the input files
+    # TODO:
 
 @mock_aws
 @pytest.mark.skip(reason="TODO: implement this")

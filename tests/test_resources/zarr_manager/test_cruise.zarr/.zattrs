@@ -2,7 +2,7 @@
     "calibration_status": true,
     "cruise_name": "test_cruise",
     "processing_software_name": "echofish",
-    "processing_software_time": "2024-12-27T11:45:55.405Z",
+    "processing_software_time": "2024-12-31T06:28:55.524Z",
     "processing_software_version": "0.0.9",
     "sensor_name": "test_sensor",
     "ship_name": "test_ship"

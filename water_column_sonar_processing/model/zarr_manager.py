@@ -282,7 +282,7 @@ class ZarrManager:
         ship_name: str,
         cruise_name: str,
         sensor_name: str,
-        # zarr_synchronizer: Union[str, None] = None,
+        # zarr_synchronizer: Union[str, None] = None, # TODO:
         output_bucket_name: str,
         endpoint_url=None,
     ):
@@ -311,7 +311,7 @@ class ZarrManager:
         input_bucket_name: str,
         endpoint_url=None,
     ) -> xr.Dataset:
-        print("Opening Zarr store in S3 as Xarray.")
+        print("Opening L1 Zarr store in S3 with Xarray.")
         try:
             zarr_path = f"s3://{input_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr"
             s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
@@ -325,6 +325,25 @@ class ZarrManager:
         print("Done opening Zarr store in S3 as Xarray.")
         return ds
 
+    def open_l2_zarr_store_with_xarray(
+        self,
+        ship_name: str,
+        cruise_name: str,
+        sensor_name: str,
+        bucket_name: str,
+        endpoint_url=None,
+    ) -> xr.Dataset:
+        print("Opening L2 Zarr store in S3 with Xarray.")
+        try:
+            zarr_path = f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
+            s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
+            store_s3_map = s3fs_manager.s3_map(s3_zarr_store_path=zarr_path)
+            ds = xr.open_zarr(store=store_s3_map, consolidated=None)
+        except Exception as err:
+            print("Problem opening Zarr store in S3 as Xarray.")
+            raise err
+        print("Done opening Zarr store in S3 as Xarray.")
+        return ds
     ############################################################################
 
     #######################################################

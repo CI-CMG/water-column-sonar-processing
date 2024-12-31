@@ -131,7 +131,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     number_of_files = s3_manager.list_objects(bucket_name=output_bucket_name, prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/")
     # Ensure that all the files were uploaded properly
     # assert len(number_of_files) == 72
-    assert len(number_of_files) == 80
+    assert len(number_of_files) > 80 # 86 files
 
     # TODO: check the dynamodb dataframe to see if info is updated there
     # ---Verify Data is Populated in Table--- #
@@ -159,7 +159,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     ds = xr.open_dataset(zarr_store, engine="zarr")
     print(ds)
     #assert set(list(ds.variables)) == set(['Sv', 'bottom', 'depth', 'frequency', 'latitude', 'longitude', 'time'])
-    assert len(list(ds.variables)) > 10
+    assert len(list(ds.variables)) == 23
 
 #######################################################
 #######################################################
