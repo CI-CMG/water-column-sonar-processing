@@ -1,9 +1,13 @@
 # Water Column Sonar Processing
 Processing tool for converting L0 data to L1 and L2 as well as generating geospatial information
 
-![GitHub License](https://img.shields.io/github/license/CI-CMG/water-column-sonar-processing) ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CI-CMG/water-column-sonar-processing/test_action.yaml)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CI-CMG/water-column-sonar-processing/test_action.yaml)
 
-![PyPI - Downloads](https://img.shields.io/pypi/dd/water-column-sonar-processing) ![PyPI - Implementation](https://img.shields.io/pypi/v/water-column-sonar-processing?color=black)
+![GitHub License](https://img.shields.io/github/license/CI-CMG/water-column-sonar-processing) 
+
+![PyPI - Implementation](https://img.shields.io/pypi/v/water-column-sonar-processing?color=black)
+
+![PyPI - Downloads](https://img.shields.io/pypi/dd/water-column-sonar-processing)
 
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/CI-CMG/water-column-sonar-processing) ![GitHub repo size](https://img.shields.io/github/repo-size/CI-CMG/water-column-sonar-processing)
 
@@ -62,20 +66,6 @@ or
 # Instructions
 Following this tutorial:
 https://packaging.python.org/en/latest/tutorials/packaging-projects/
-
-# To Publish To TEST
-```commandline
-python -m build
-# python -m build --sdist
-# python -m build --wheel
-python -m twine upload --repository testpypi dist/*
-pytho -m pip install --index-url https://test.pypi.org/simple/ hello-pypi-rudy-klucik
-python
-```
-```
-from water-column-sonar-processing import ZarrManager
-example.add_one(2)
-```
 
 # To Publish To PROD
 ```commandline
