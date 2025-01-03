@@ -288,7 +288,7 @@ class ZarrManager:
     ):
         # Mounts a Zarr store using pythons Zarr implementation. The mounted store
         #  will have read/write privileges so that store can be updated.
-        print("Opening Zarr store with Zarr.")
+        print("Opening L2 Zarr store with Zarr for writing.")
         try:
             s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
             root = f"{output_bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"

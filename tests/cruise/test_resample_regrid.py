@@ -252,6 +252,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
 
     # [3] create new zarr store and upload
     create_empty_zarr_store = CreateEmptyZarrStore()
+    # TODO: this is out of order, needs to happen after raw-to-zarr L0-to-L1
     create_empty_zarr_store.create_cruise_level_zarr_store(
         output_bucket_name=l1_l2_test_bucket_name,
         ship_name=ship_name,
@@ -286,11 +287,23 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.raw"
     )
     s3_manager.upload_file(
+        filename=resample_regrid_test_path.joinpath("D20070712-T124906.bot"),
+        bucket_name=l0_test_bucket_name,
+        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.bot"
+    )
+
+    s3_manager.upload_file(
          filename=resample_regrid_test_path.joinpath("D20070712-T152416.raw"),
          bucket_name=l0_test_bucket_name,
          key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.raw"
     )
-    assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 2
+    s3_manager.upload_file(
+        filename=resample_regrid_test_path.joinpath("D20070712-T152416.bot"),
+        bucket_name=l0_test_bucket_name,
+        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.bot"
+    )
+    assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 4
+
     raw_to_zarr = RawToZarr()
     gc.collect()
     raw_to_zarr.raw_to_zarr(
@@ -302,7 +315,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         sensor_name=sensor_name,
         raw_file_name="D20070712-T124906.raw",
         endpoint_url=moto_server,
-        include_bot=False,
+        include_bot=True, # added bot
     )
     raw_to_zarr.raw_to_zarr(
         table_name=table_name,
@@ -313,7 +326,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         sensor_name=sensor_name,
         raw_file_name="D20070712-T152416.raw",
         endpoint_url=moto_server,
-        include_bot=False,
+        include_bot=True, # added bot
     )
     gc.collect()
     number_of_files_xx = s3_manager.list_objects(
@@ -363,7 +376,10 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # assert not np.isnan(np.sum(test_output_zarr_store.where(cond=(select_times), drop=True).time.values))
 
     # TODO: assert that the test_output_zarr_store.Sv at specific depth equals the input files
-    # TODO:
+
+    # TODO: check the bottom values were written correctly
+    assert np.nanmax(test_output_zarr_store.bottom.values) == pytest.approx(949.5535)
+    assert np.nanmin(test_output_zarr_store.bottom.values) == pytest.approx(17.76)
 
 @mock_aws
 @pytest.mark.skip(reason="TODO: implement this")

@@ -16,13 +16,17 @@ HB0707_RAW = pooch.create(
         #https://noaa-wcsd-pds.s3.amazonaws.com/data/raw/Henry_B._Bigelow/HB0707/EK60/D20070711-T182032.raw
         # TODO: add bottom files
         "D20070712-T124906.raw": "sha256:44f9b2402a8d6d51c69235d1e33c3e4ab570fc541e9f269009924378bf4d97a2", # 250 m, 158 MB
+        "D20070712-T124906.bot": "sha256:9eebd8b85a514f3df6b7c4ba127967302dfea7c5e9fb47c22e3182ad1a93c78f",
         "D20070712-T152416.raw": "sha256:94a937eefd6ae5763c27c9ba1e4769b2b76fcc2d840e7db6c2e0edd925d6f70f", # 1000 m, 200 MB
+        "D20070712-T152416.bot": "sha256:65b16cff596502889f841e58061217660e066b07fb732ccf211f1c6e46ee8210",
     },
 )
 
 def fetch_raw_files():
     HB0707_RAW.fetch(fname="D20070712-T124906.raw", progressbar=True)
-    file_name = HB0707_RAW.fetch(fname="D20070712-T152416.raw", progressbar=True)
+    HB0707_RAW.fetch(fname="D20070712-T124906.bot", progressbar=True)
+    HB0707_RAW.fetch(fname="D20070712-T152416.raw", progressbar=True)
+    file_name = HB0707_RAW.fetch(fname="D20070712-T152416.bot", progressbar=True)
     return Path(file_name).parent #joinpath(Path(file_path).stem)
 
 @pytest.fixture(scope="session")

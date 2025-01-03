@@ -188,10 +188,10 @@ class ResampleRegrid:
             for file_name in all_file_names:
                 gc.collect()
                 file_name_stem = Path(file_name).stem
-                # file_name_stem = "D20070724-T151330"
                 print(f"Processing file: {file_name_stem}.")
-                # if f"{file_name_stem}.raw" not in list(cruise_df['FILE_NAME']):
-                #     raise Exception(f"Raw file file_stem not found in dynamodb.")
+
+                if f"{file_name_stem}.raw" not in list(cruise_df['FILE_NAME']):
+                    raise Exception(f"Raw file file_stem not found in dynamodb.")
 
                 # status = PipelineStatus['LEVEL_1_PROCESSING']
                 # TODO: filter rows by enum success, filter the dataframe just for enums >= LEVEL_1_PROCESSING
@@ -296,6 +296,26 @@ class ResampleRegrid:
                 output_zarr_store.longitude[
                     start_ping_time_index:end_ping_time_index
                 ] = geospatial.dropna()["longitude"].values
+
+                #########################################################################
+                # TODO: add the "detected_seafloor_depth/" to the
+                #  L2 cruise dataarrays
+                # TODO: make bottom optional if 'detected_seafloor_depth' in input_xr.variables:
+                # TODO: Only checking the first channel for now. Need to average across all channels
+                #  in the future. See https://github.com/CI-CMG/water-column-sonar-processing/issues/11
+                # detected_seafloor_depths = input_xr.detected_seafloor_depth.values[0, :] # note can include nans?
+                detected_seafloor_depth = input_xr.detected_seafloor_depth.values
+                detected_seafloor_depth[detected_seafloor_depth == 0.] = np.nan
+                detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)
+                detected_seafloor_depths[detected_seafloor_depths == 0.] = np.nan
+                print(f"min depth measured: {np.nanmin(detected_seafloor_depths)}")
+                print(f"max depth measured: {np.nanmax(detected_seafloor_depths)}")
+                #available_indices = np.argwhere(np.isnan(geospatial['latitude'].values))
+                output_zarr_store.bottom[
+                    start_ping_time_index:end_ping_time_index
+                ] = detected_seafloor_depths
+                #########################################################################
+                #########################################################################
         except Exception as err:
             print(f"Problem interpolating the data: {err}")
             raise err

@@ -95,9 +95,12 @@ https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scroll
 3 failed, 38 passed, 3 skipped, 1 warning in 7.24s
 
 # Tag a Release
+Step 1 --> increment the semantic version in the "metadata" & the "pyproject.toml"
 ```commandline
 git tag "v0.0.12" -a
-# enter description
+```
+Step 3 --> enter description
+```commandline
 git push origin --tags
 ```
 
