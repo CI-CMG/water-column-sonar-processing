@@ -50,6 +50,9 @@ class IndexManager:
         self,
         cruise_prefixes,
     ):
+        """
+        This returns a list of ek60 prefixed cruises.
+        """
         cruise_sensors = []  # includes all sensor types
         for cruise_prefix in cruise_prefixes:
             page_iterator = self.s3_manager.paginator.paginate(
@@ -67,10 +70,64 @@ class IndexManager:
         cruise_name,
         sensor_name,
     ):
+        # Gets all raw files for a cruise under the given prefix
         prefix = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/"  # Note no forward slash at beginning
         page_iterator = self.s3_manager.paginator.paginate(
-            Bucket=self.input_bucket_name, Prefix=prefix, Delimiter="/"
+            Bucket=self.input_bucket_name,
+            Prefix=prefix,
+            Delimiter="/"
         )
+        all_files = []
+        for page in page_iterator:
+            if "Contents" in page.keys():
+                all_files.extend([i["Key"] for i in page["Contents"]])
+        return [i for i in all_files if i.endswith(".raw")]
+
+    def get_first_raw_file(
+        self,
+        ship_name,
+        cruise_name,
+        sensor_name,
+    ):
+        # Same as above but only needs to get the first raw file
+        # because we are only interested in the first datagram of one file
+        prefix = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/"  # Note no forward slash at beginning
+        # page_iterator = self.s3_manager.paginator.paginate(
+        #     Bucket=self.input_bucket_name,
+        #     Prefix=prefix,
+        #     Delimiter="/",
+        #     PaginationConfig={ 'MaxItems': 5 }
+        # ) # TODO: this can create a problem if there is a non raw file returned first
+        ### filter with JMESPath expressions ###
+        page_iterator = self.s3_manager.paginator.paginate(
+            Bucket=self.input_bucket_name,
+            Prefix=prefix,
+            Delimiter="/",
+        )
+        # page_iterator = page_iterator.search("Contents[?Size < `2200`][]")
+        page_iterator = page_iterator.search("Contents[?contains(Key, '.raw')] ")
+        for res in page_iterator:
+            if "Key" in res:
+                return res["Key"]
+        # else raise exception?
+
+        # DSJ0604-D20060406-T050022.bot 2kB == 2152 'Size'
+
+    def get_files_under_size(
+        self,
+        ship_name,
+        cruise_name,
+        sensor_name,
+    ):
+        # just playing with jmes paths spec
+        prefix = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/"
+        ### filter with JMESPath expressions ###
+        page_iterator = self.s3_manager.paginator.paginate(
+            Bucket=self.input_bucket_name,
+            Prefix=prefix,
+            Delimiter="/",
+        )
+        page_iterator = page_iterator.search("Contents[?Size < `2200`][]")
         all_files = []
         for page in page_iterator:
             if "Contents" in page.keys():
@@ -101,6 +158,29 @@ class IndexManager:
         df = pd.DataFrame(files_list)
         df.to_csv(f"{ship_name}_{cruise_name}.csv", index=False, header=False, sep=" ")
         print("done")
+
+    def get_raw_files_list(
+        self,
+        ship_name,
+        cruise_name,
+        sensor_name,
+    ):
+        # gets all raw files in cruise and returns a list of dicts
+        raw_files = self.get_raw_files(
+            ship_name=ship_name,
+            cruise_name=cruise_name,
+            sensor_name=sensor_name
+        )
+        files_list = [
+            {
+                "ship_name": ship_name,
+                "cruise_name": cruise_name,
+                "sensor_name": sensor_name,
+                "file_name": os.path.basename(raw_file),
+            }
+            for raw_file in raw_files
+        ]
+        return files_list
 
     #################################################################
     def get_subset_ek60_prefix( # TODO: is this used?
@@ -169,7 +249,7 @@ class IndexManager:
         return first_datagram
 
     #################################################################
-    def get_subset_datagrams(
+    def get_subset_datagrams( # TODO: is this getting used
         self,
         df: pd.DataFrame
     ) -> list:

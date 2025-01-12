@@ -9,7 +9,8 @@ from water_column_sonar_processing.index import IndexManager
 #######################################################
 def setup_module():
     print("setup")
-    env_file = find_dotenv(".env-test")
+    # env_file = find_dotenv(".env-test")
+    env_file = find_dotenv(".env-prod")
     load_dotenv(dotenv_path=env_file, override=True)
 
 def teardown_module():
@@ -67,6 +68,18 @@ def test_get_calibration_information(index_test_path): # good
 #     all_ek60_data = index.index()
 #     print(all_ek60_data)
 
+# Note: this cruise has odd files where raw files aren't the first parsed
+# https://noaa-wcsd-pds.s3.amazonaws.com/index.html#data/raw/David_Starr_Jordan/DS0604/EK60/
+@pytest.mark.skip(reason="no way of currently testing this")
+def test_get_first_raw_file(tmp_path):
+    input_bucket_name = "noaa-wcsd-pds"
+    calibration_bucket = "noaa-wcsd-pds-index"
+    calibration_key = "calibrated_crusies.csv"
+    index_manager = IndexManager(input_bucket_name, calibration_bucket, calibration_key)
+    foo = index_manager.get_first_raw_file(ship_name="David_Starr_Jordan", cruise_name="DS0604", sensor_name="EK60")
+    print(foo)
+    assert foo == 'data/raw/David_Starr_Jordan/DS0604/EK60/DSJ0604-D20060406-T035914.raw'
+
 # TODO: mock this, right now it is generating csvs for all ek60 cruises
 @pytest.mark.skip(reason="no way of currently testing this")
 def test_get_all_cruise_raw_files(tmp_path):
@@ -79,39 +92,29 @@ def test_get_all_cruise_raw_files(tmp_path):
 
     ship_prefixes = index_manager.list_ships(prefix="data/raw/")
     cruise_prefixes = index_manager.list_cruises(ship_prefixes=ship_prefixes)
-    ek60_cruise_prefixes = index_manager.list_ek60_cruises(
-        cruise_prefixes=cruise_prefixes
-    )
-    print(len(ek60_cruise_prefixes))
-
-    # TODO: process all these cruises
-
-    # TODO: for each verify ek60 datagram
-    # index.get_raw_files_csv(
-    #     ship_name='Henry_B._Bigelow',
-    #     cruise_name='HB2206',
-    #     sensor_name='EK60'
-    # )
-    # for iii in bigelow_cruises:
+    ek60_cruise_prefixes = index_manager.list_ek60_cruises(cruise_prefixes=cruise_prefixes)
+    print(len(ek60_cruise_prefixes)) # 1333 cruises > 479 ek60 prefixed >
+    all_files = []
     for iii in ek60_cruise_prefixes:
         print(iii)
-        s_n = iii.split("/")[2]
-        c_n = iii.split("/")[3]
+        ship_name = iii.split("/")[2]
+        cruise_name = iii.split("/")[3]
         ### get raw file to scan datagram ###
-        select_key = index_manager.get_raw_files(
-            ship_name=s_n, cruise_name=c_n, sensor_name="EK60"
-        )[0]
+        select_key = index_manager.get_first_raw_file(ship_name=ship_name, cruise_name=cruise_name, sensor_name="EK60")
         ### check if datagram is ek60 ###
         datagram = index_manager.scan_datagram(select_key=select_key)
         if datagram == "CON0":  # if ek60
-            print(f"{c_n} is ek60")
+            print(f"{cruise_name} is ek60")
             # TODO: this is currently writing to csv, TODO: write to dynamodb
             ### create csv file with all raw file paths ###
-            index_manager.get_raw_files_csv(
-                ship_name=s_n, cruise_name=c_n, sensor_name="EK60"
-            )
+            # index_manager.get_raw_files_csv(
+            #     ship_name=ship_name, cruise_name=cruise_name, sensor_name="EK60"
+            # )
+            ### just get df ###
+            all_files = all_files + index_manager.get_raw_files_list(ship_name=ship_name, cruise_name=cruise_name, sensor_name="EK60")
         else:
-            print(f"{c_n} is not ek60")
+            print(f"First datagrame of {cruise_name} is not ek60.")
+    print(len(all_files))
     # all_raw_files = index.get_raw_files(ship_name='Bell_M._Shimada', cruise_name='SH1906', sensor_name='EK60')
     # 'data/raw/Bell_M._Shimada/SH1204/EK60/'
     # all_ek60_data = index.index()

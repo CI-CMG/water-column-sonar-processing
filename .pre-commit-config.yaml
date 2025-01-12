@@ -34,3 +34,11 @@ repos:
 #      - id: isort
 #        name: isort (python)
 #        args: ["--profile", "black", "--filter-files"]
+
+### Static Security Scan ###
+#repos:
+#- repo: https://github.com/PyCQA/bandit
+#  rev: '1.8.0' # Update me!
+#  hooks:
+#  - id: bandit
+#    args: ["-c", "pyproject.toml"]

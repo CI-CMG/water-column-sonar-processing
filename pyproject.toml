@@ -35,3 +35,6 @@ optional-dependencies = {dev = { file = ["requirements_dev.txt"] }}
 #local_scheme = "node-and-date"
 #write_to = "_water_column_sonar_processing_version.py"
 #write_to_template = 'version = "{version}"'
+
+[tool.bandit]
+exclude_dirs = ["tests"]

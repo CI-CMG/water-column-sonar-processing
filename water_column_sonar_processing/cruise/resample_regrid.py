@@ -300,20 +300,22 @@ class ResampleRegrid:
                 #########################################################################
                 # TODO: add the "detected_seafloor_depth/" to the
                 #  L2 cruise dataarrays
-                # TODO: make bottom optional if 'detected_seafloor_depth' in input_xr.variables:
+                # TODO: make bottom optional
                 # TODO: Only checking the first channel for now. Need to average across all channels
                 #  in the future. See https://github.com/CI-CMG/water-column-sonar-processing/issues/11
-                # detected_seafloor_depths = input_xr.detected_seafloor_depth.values[0, :] # note can include nans?
-                detected_seafloor_depth = input_xr.detected_seafloor_depth.values
-                detected_seafloor_depth[detected_seafloor_depth == 0.] = np.nan
-                detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)
-                detected_seafloor_depths[detected_seafloor_depths == 0.] = np.nan
-                print(f"min depth measured: {np.nanmin(detected_seafloor_depths)}")
-                print(f"max depth measured: {np.nanmax(detected_seafloor_depths)}")
-                #available_indices = np.argwhere(np.isnan(geospatial['latitude'].values))
-                output_zarr_store.bottom[
-                    start_ping_time_index:end_ping_time_index
-                ] = detected_seafloor_depths
+                if 'detected_seafloor_depth' in input_xr.variables:
+                    print('Found detected_seafloor_depth, adding data to output store.')
+                    detected_seafloor_depth = input_xr.detected_seafloor_depth.values
+                    detected_seafloor_depth[detected_seafloor_depth == 0.] = np.nan
+                    # TODO: problem here: Processing file: D20070711-T210709.
+                    detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)
+                    detected_seafloor_depths[detected_seafloor_depths == 0.] = np.nan
+                    print(f"min depth measured: {np.nanmin(detected_seafloor_depths)}")
+                    print(f"max depth measured: {np.nanmax(detected_seafloor_depths)}")
+                    #available_indices = np.argwhere(np.isnan(geospatial['latitude'].values))
+                    output_zarr_store.bottom[
+                        start_ping_time_index:end_ping_time_index
+                    ] = detected_seafloor_depths
                 #########################################################################
                 #########################################################################
         except Exception as err:

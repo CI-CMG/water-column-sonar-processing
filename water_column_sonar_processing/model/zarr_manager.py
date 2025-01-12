@@ -48,6 +48,9 @@ class ZarrManager:
             endpoint=True,
         )
 
+        if np.any(np.isnan(all_cruise_depth_values)):
+            raise Exception('Depth values returned were NaN.')
+
         print("Done getting depth values.")
         return all_cruise_depth_values.round(decimals=2)
 
@@ -118,8 +121,9 @@ class ZarrManager:
             fill_value=np.nan,
             overwrite=self.__overwrite,
         )
-        # TODO: change to exception
-        assert not np.any(np.isnan(depth_values))
+
+        if np.any(np.isnan(depth_values)):
+            raise Exception('Some depth values returned were NaN.')
 
         root.depth.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.DEPTH.value]
 
