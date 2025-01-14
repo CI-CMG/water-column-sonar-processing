@@ -7,13 +7,20 @@ from concurrent.futures import as_completed
 from water_column_sonar_processing.aws import S3Manager
 
 
+MAX_POOL_CONNECTIONS = 64
+MAX_CONCURRENCY = 64
+MAX_WORKERS = 64
+GB = 1024**3
+
+
 class IndexManager:
+    # TODO: index into dynamodb instead of csv files
 
     def __init__(self, input_bucket_name, calibration_bucket, calibration_key):
         self.input_bucket_name = input_bucket_name
         self.calibration_bucket = calibration_bucket
         self.calibration_key = calibration_key
-        self.s3_manager = S3Manager()
+        self.s3_manager = S3Manager() # TODO: make anonymous?
 
     #################################################################
     def list_ships(
@@ -105,7 +112,7 @@ class IndexManager:
             Delimiter="/",
         )
         # page_iterator = page_iterator.search("Contents[?Size < `2200`][]")
-        page_iterator = page_iterator.search("Contents[?contains(Key, '.raw')] ")
+        page_iterator = page_iterator.search(expression="Contents[?contains(Key, '.raw')] ")
         for res in page_iterator:
             if "Key" in res:
                 return res["Key"]
@@ -119,7 +126,7 @@ class IndexManager:
         cruise_name,
         sensor_name,
     ):
-        # just playing with jmes paths spec
+        # THIS isn't used, just playing with JMES paths spec
         prefix = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/"
         ### filter with JMESPath expressions ###
         page_iterator = self.s3_manager.paginator.paginate(
@@ -254,11 +261,9 @@ class IndexManager:
         df: pd.DataFrame
     ) -> list:
         print("getting subset of datagrams")
-        select_keys = list(
-            df[["KEY", "CRUISE"]].drop_duplicates(subset="CRUISE")["KEY"].values
-        )
+        select_keys = df[["KEY", "CRUISE"]].drop_duplicates(subset="CRUISE")["KEY"].values.tolist()
         all_datagrams = []
-        with ThreadPoolExecutor(max_workers=self.max_pool_connections) as executor:
+        with ThreadPoolExecutor(max_workers=MAX_POOL_CONNECTIONS) as executor:
             futures = [
                 executor.submit(self.scan_datagram, select_key)
                 for select_key in select_keys

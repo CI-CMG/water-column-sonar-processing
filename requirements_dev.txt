@@ -1,5 +1,6 @@
 -r requirements.txt
 
+bandit[toml]==1.8.0
 build
 pre-commit
 pyinstaller

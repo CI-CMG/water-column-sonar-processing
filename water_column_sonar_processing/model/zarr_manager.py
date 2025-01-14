@@ -1,4 +1,6 @@
 import os
+from tempfile import TemporaryDirectory
+
 import numcodecs
 import numpy as np
 import xarray as xr
@@ -57,7 +59,7 @@ class ZarrManager:
     #######################################################
     def create_zarr_store(
         self,
-        path: str, # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
+        path: TemporaryDirectory, # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
         ship_name: str,
         cruise_name: str,
         sensor_name: str,
@@ -70,14 +72,14 @@ class ZarrManager:
         print(
             f"Creating local zarr_manager store at {cruise_name}.zarr for ship {ship_name}"
         )
-
-        # There should be no repeated frequencies
-        assert len(frequencies) == len(set(frequencies))
-        # TODO: eventually switch coordinate to "channel"
+        # There can not currently be repeated frequencies
+        # TODO: eventually switch coordinate to "channel" because frequencies can repeat
+        if len(frequencies) != len(set(frequencies)):
+            raise Exception("Number of frequencies does not match number of channels")
 
         print(f"Debugging number of threads: {self.__num_threads}")
 
-        zarr_path = f"{path}/{cruise_name}.zarr"
+        zarr_path = f"{path.name}/{cruise_name}.zarr"
         store = zarr.DirectoryStore(path=zarr_path, normalize_keys=False)
         root = zarr.group(store=store, overwrite=self.__overwrite, cache_attrs=True)
 

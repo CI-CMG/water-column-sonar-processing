@@ -228,7 +228,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         table_name=table_name,
-        tempdir="/tmp",
+        # tempdir="/tmp",
     )
 
     # assert os.path.exists(f"/tmp/{cruise_name}.zarr") # TODO: create better tmp directory for testing
@@ -249,7 +249,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     # --- Open with Xarray --- #
     ds = xr.open_dataset(zarr_store, engine="zarr")
     print(ds)
-    assert set(list(ds.variables)) == set(['Sv', 'bottom', 'depth', 'frequency', 'latitude', 'longitude', 'time'])
+    assert set(list(ds.variables)) == {'Sv', 'bottom', 'depth', 'frequency', 'latitude', 'longitude', 'time'}
 
 #######################################################
 #######################################################

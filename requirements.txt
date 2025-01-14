@@ -27,4 +27,6 @@ setuptools
 shapely==2.0.3
 typing-extensions==4.10.0
 xarray==2024.10.0
+#  xbatcher[tensorflow]
+xbatcher==0.4.0
 zarr==2.18.3

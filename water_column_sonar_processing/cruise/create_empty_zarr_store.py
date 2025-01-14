@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 import numcodecs
 import numpy as np
@@ -11,7 +12,6 @@ from water_column_sonar_processing.utility import Cleaner
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)
 
-# TEMPDIR = "/tmp"
 # TODO: when ready switch to version 3 of model spec
 # ZARR_V3_EXPERIMENTAL_API = 1
 # creates the latlon data: foo = ep.consolidate.add_location(ds_Sv, echodata)
@@ -32,7 +32,7 @@ class CreateEmptyZarrStore:
     def upload_zarr_store_to_s3(
         self,
         output_bucket_name: str,
-        local_directory: str,
+        local_directory: tempfile.TemporaryDirectory,
         object_prefix: str,
         cruise_name: str,
     ) -> None:
@@ -43,7 +43,7 @@ class CreateEmptyZarrStore:
         # # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
         all_files = []
         for subdir, dirs, files in os.walk(
-            f"{local_directory}/{cruise_name}.zarr"
+            f"{local_directory.name}/{cruise_name}.zarr"
         ):
             for file in files:
                 local_path = os.path.join(subdir, file)
@@ -69,8 +69,9 @@ class CreateEmptyZarrStore:
         cruise_name: str,
         sensor_name: str,
         table_name: str,
-        tempdir: str,
+        # tempdir: str, # replacing with known temp directory
     ) -> None:
+        tempdir = tempfile.TemporaryDirectory()
         try:
             # HB0806 - 123, HB0903 - 220
             dynamo_db_manager = DynamoDBManager()
@@ -146,7 +147,7 @@ class CreateEmptyZarrStore:
             print(f"new_height: {new_height}")
 
             zarr_manager.create_zarr_store(
-                path=tempdir,
+                path=tempdir, # TODO: need to use .name or problem
                 ship_name=ship_name,
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
@@ -159,7 +160,7 @@ class CreateEmptyZarrStore:
             #################################################################
             self.upload_zarr_store_to_s3(
                 output_bucket_name=output_bucket_name,
-                local_directory=tempdir,
+                local_directory=tempdir, # TODO: need to use .name or problem
                 object_prefix=zarr_prefix,
                 cruise_name=cruise_name,
             )

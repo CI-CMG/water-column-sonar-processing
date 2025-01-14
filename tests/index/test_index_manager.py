@@ -1,6 +1,8 @@
 import pytest
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
+import time
+import pandas as pd
 
 from water_column_sonar_processing.aws import S3Manager
 from water_column_sonar_processing.index import IndexManager
@@ -69,20 +71,24 @@ def test_get_calibration_information(index_test_path): # good
 #     print(all_ek60_data)
 
 # Note: this cruise has odd files where raw files aren't the first parsed
+#  some sort of .ek5 files are the first ones paginated
 # https://noaa-wcsd-pds.s3.amazonaws.com/index.html#data/raw/David_Starr_Jordan/DS0604/EK60/
-@pytest.mark.skip(reason="no way of currently testing this")
+# @pytest.mark.skip(reason="no way of currently testing this")
 def test_get_first_raw_file(tmp_path):
+    # TODO: create bucket with test files, add one ek5 and one raw
+    #  Right now this is using prod credentials
     input_bucket_name = "noaa-wcsd-pds"
     calibration_bucket = "noaa-wcsd-pds-index"
     calibration_key = "calibrated_crusies.csv"
     index_manager = IndexManager(input_bucket_name, calibration_bucket, calibration_key)
     foo = index_manager.get_first_raw_file(ship_name="David_Starr_Jordan", cruise_name="DS0604", sensor_name="EK60")
-    print(foo)
     assert foo == 'data/raw/David_Starr_Jordan/DS0604/EK60/DSJ0604-D20060406-T035914.raw'
 
 # TODO: mock this, right now it is generating csvs for all ek60 cruises
+#  instead should be called in ospool
 @pytest.mark.skip(reason="no way of currently testing this")
 def test_get_all_cruise_raw_files(tmp_path):
+    start_time = time.time()
     # TODO: scan bucket to find a set of the smallest files
     input_bucket_name = "noaa-wcsd-pds"
     calibration_bucket = "noaa-wcsd-pds-index"
@@ -94,6 +100,8 @@ def test_get_all_cruise_raw_files(tmp_path):
     cruise_prefixes = index_manager.list_cruises(ship_prefixes=ship_prefixes)
     ek60_cruise_prefixes = index_manager.list_ek60_cruises(cruise_prefixes=cruise_prefixes)
     print(len(ek60_cruise_prefixes)) # 1333 cruises > 479 ek60 prefixed >
+    ek60_cruise_prefixes = [i for i in ek60_cruise_prefixes if 'Henry_B._Bigelow' in i]
+    print(len(ek60_cruise_prefixes))  # 1333 cruises > 64 henry bigelow cruises
     all_files = []
     for iii in ek60_cruise_prefixes:
         print(iii)
@@ -113,13 +121,12 @@ def test_get_all_cruise_raw_files(tmp_path):
             ### just get df ###
             all_files = all_files + index_manager.get_raw_files_list(ship_name=ship_name, cruise_name=cruise_name, sensor_name="EK60")
         else:
-            print(f"First datagrame of {cruise_name} is not ek60.")
+            print(f"First datagram of {cruise_name} is not ek60.")
     print(len(all_files))
-    # all_raw_files = index.get_raw_files(ship_name='Bell_M._Shimada', cruise_name='SH1906', sensor_name='EK60')
-    # 'data/raw/Bell_M._Shimada/SH1204/EK60/'
-    # all_ek60_data = index.index()
-    # print(all_ek60_data)
-
+    df = pd.DataFrame(all_files)
+    df.to_csv(f'{tmp_path}/Henry_B._Bigelow.csv', index=False, sep=" ", header=False)
+    print(f'{tmp_path}/Henry_B._Bigelow.csv')
+    print("--- %s seconds elapsed ---" % (time.time() - start_time)) # ~4 minutes
 
 #######################################################
 
