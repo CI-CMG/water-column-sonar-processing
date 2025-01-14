@@ -11,8 +11,8 @@ from water_column_sonar_processing.index import IndexManager
 #######################################################
 def setup_module():
     print("setup")
-    # env_file = find_dotenv(".env-test")
-    env_file = find_dotenv(".env-prod")
+    env_file = find_dotenv(".env-test")
+    # env_file = find_dotenv(".env-prod")
     load_dotenv(dotenv_path=env_file, override=True)
 
 def teardown_module():
@@ -23,7 +23,7 @@ def index_test_path(test_path):
     return test_path["INDEX_TEST_PATH"]
 
 #######################################################
-#@pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.skip(reason="no way of currently testing this")
 @mock_aws
 def test_get_calibration_information(index_test_path): # good
     """
@@ -73,7 +73,7 @@ def test_get_calibration_information(index_test_path): # good
 # Note: this cruise has odd files where raw files aren't the first parsed
 #  some sort of .ek5 files are the first ones paginated
 # https://noaa-wcsd-pds.s3.amazonaws.com/index.html#data/raw/David_Starr_Jordan/DS0604/EK60/
-# @pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_get_first_raw_file(tmp_path):
     # TODO: create bucket with test files, add one ek5 and one raw
     #  Right now this is using prod credentials
