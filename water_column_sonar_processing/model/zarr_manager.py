@@ -51,7 +51,7 @@ class ZarrManager:
         )
 
         if np.any(np.isnan(all_cruise_depth_values)):
-            raise Exception('Depth values returned were NaN.')
+            raise Exception('Problem depth values returned were NaN.')
 
         print("Done getting depth values.")
         return all_cruise_depth_values.round(decimals=2)
