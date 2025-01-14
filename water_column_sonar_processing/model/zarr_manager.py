@@ -1,4 +1,5 @@
 import os
+from os import PathLike
 from tempfile import TemporaryDirectory
 
 import numcodecs
@@ -59,7 +60,7 @@ class ZarrManager:
     #######################################################
     def create_zarr_store(
         self,
-        path: TemporaryDirectory, # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
+        path: str, # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
         ship_name: str,
         cruise_name: str,
         sensor_name: str,
@@ -79,7 +80,7 @@ class ZarrManager:
 
         print(f"Debugging number of threads: {self.__num_threads}")
 
-        zarr_path = f"{path.name}/{cruise_name}.zarr"
+        zarr_path = f"{path}/{cruise_name}.zarr"
         store = zarr.DirectoryStore(path=zarr_path, normalize_keys=False)
         root = zarr.group(store=store, overwrite=self.__overwrite, cache_attrs=True)
 

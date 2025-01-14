@@ -11,8 +11,6 @@ from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.geometry import GeometryManager
 from water_column_sonar_processing.utility import Cleaner, PipelineStatus
 
-# TEMPDIR = "/tmp"
-
 
 # This code is getting copied from echofish-aws-raw-to-zarr-lambda
 class RawToZarr:

@@ -32,7 +32,7 @@ class CreateEmptyZarrStore:
     def upload_zarr_store_to_s3(
         self,
         output_bucket_name: str,
-        local_directory: tempfile.TemporaryDirectory,
+        local_directory: str,
         object_prefix: str,
         cruise_name: str,
     ) -> None:
@@ -43,7 +43,7 @@ class CreateEmptyZarrStore:
         # # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
         all_files = []
         for subdir, dirs, files in os.walk(
-            f"{local_directory.name}/{cruise_name}.zarr"
+            f"{local_directory}/{cruise_name}.zarr"
         ):
             for file in files:
                 local_path = os.path.join(subdir, file)
@@ -61,7 +61,6 @@ class CreateEmptyZarrStore:
         # TODO: move to common place
 
     #######################################################
-    # @classmethod
     def create_cruise_level_zarr_store(
         self,
         output_bucket_name: str,
@@ -69,7 +68,6 @@ class CreateEmptyZarrStore:
         cruise_name: str,
         sensor_name: str,
         table_name: str,
-        # tempdir: str, # replacing with known temp directory
     ) -> None:
         tempdir = tempfile.TemporaryDirectory()
         try:
@@ -147,7 +145,7 @@ class CreateEmptyZarrStore:
             print(f"new_height: {new_height}")
 
             zarr_manager.create_zarr_store(
-                path=tempdir, # TODO: need to use .name or problem
+                path=tempdir.name, # TODO: need to use .name or problem
                 ship_name=ship_name,
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
@@ -160,7 +158,7 @@ class CreateEmptyZarrStore:
             #################################################################
             self.upload_zarr_store_to_s3(
                 output_bucket_name=output_bucket_name,
-                local_directory=tempdir, # TODO: need to use .name or problem
+                local_directory=tempdir.name, # TODO: need to use .name or problem
                 object_prefix=zarr_prefix,
                 cruise_name=cruise_name,
             )

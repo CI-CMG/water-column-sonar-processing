@@ -7,7 +7,6 @@ from moto import mock_aws
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
 from water_column_sonar_processing.model import ZarrManager
-# from processing import RawToZarr
 from water_column_sonar_processing.processing import RawToZarr
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.cruise import ResampleRegrid
@@ -259,7 +258,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         table_name=table_name,
-        tempdir="/tmp", # TODO: create better tmp directory for testing
+        # tempdir="/tmp", # TODO: create better tmp directory for testing
     )
 
     # Assert data is in the bucket

@@ -1,4 +1,6 @@
 import os
+import tempfile
+from tempfile import TemporaryDirectory
 
 import numcodecs
 import numpy as np
@@ -7,7 +9,6 @@ import xarray as xr
 import zarr
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
-# from src.water_column_sonar_processing.aws.s3_manager import S3Manager
 from water_column_sonar_processing.aws import S3Manager
 from water_column_sonar_processing.model import ZarrManager
 
@@ -51,7 +52,9 @@ def test_create_zarr_store(zarr_manager_tmp_path):
 
 
 @mock_aws
-def test_zarr_manager(zarr_manager_tmp_path):
+def test_zarr_manager():
+    # create in a temporary directory and then check there
+    tempdir = tempfile.TemporaryDirectory()
     # Tests creating model store and opening with both xarray and
     # model libraries
     # temporary_directory = "/tmp"  # str(tmp_path)
@@ -62,7 +65,7 @@ def test_zarr_manager(zarr_manager_tmp_path):
 
     zarr_manager = ZarrManager()
     zarr_manager.create_zarr_store(
-        path=zarr_manager_tmp_path,
+        path=tempdir.name, # This is created in test_resources/zarr_manager/test_cruise.zarr
         ship_name=ship_name,
         cruise_name=cruise_name,  # TODO: just pass stem
         sensor_name=sensor_name,
@@ -73,7 +76,7 @@ def test_zarr_manager(zarr_manager_tmp_path):
         calibration_status=True,
     )
 
-    assert os.path.exists(f"{zarr_manager_tmp_path}/{cruise_name}.zarr")
+    assert os.path.exists(f"{tempdir.name}/{cruise_name}.zarr")
 
     # TODO: copy to s3 bucket...
     numcodecs.blosc.use_threads = False
@@ -82,7 +85,7 @@ def test_zarr_manager(zarr_manager_tmp_path):
     # synchronizer = model.ProcessSynchronizer(f"/mnt/model/{ship_name}_{cruise_name}.sync")
 
     cruise_zarr = zarr.open(
-        store=f"{zarr_manager_tmp_path}/{cruise_name}.zarr", mode="r"
+        store=f"{tempdir.name}/{cruise_name}.zarr", mode="r"
     )  # synchronizer=synchronizer)
     print(cruise_zarr.info)
 
@@ -96,7 +99,7 @@ def test_zarr_manager(zarr_manager_tmp_path):
     # Open Zarr store with Xarray
     # TODO: move to separate test
     file_xr = xr.open_zarr(
-        store=f"{zarr_manager_tmp_path}/{cruise_name}.zarr", consolidated=None
+        store=f"{tempdir.name}/{cruise_name}.zarr", consolidated=None
     )  # synchronizer=SYNCHRONIZER)
     print(file_xr)
 
@@ -126,6 +129,8 @@ def test_zarr_manager(zarr_manager_tmp_path):
 
     # TODO: test depths
     # TODO: test compression
+    tempdir.cleanup()
+
 
 # @mock_aws
 # def test_whatever():
@@ -139,7 +144,8 @@ def test_zarr_manager(zarr_manager_tmp_path):
 #     assert 1
 
 @mock_aws
-def test_open_zarr_with_zarr_read_write(zarr_manager_tmp_path):
+def test_open_zarr_with_zarr_read_write():
+    tempdir = tempfile.TemporaryDirectory()
 
     # TODO: open with model python library and check format
     test_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
@@ -155,7 +161,7 @@ def test_open_zarr_with_zarr_read_write(zarr_manager_tmp_path):
 
     zarr_manager = ZarrManager()
     zarr_path = zarr_manager.create_zarr_store(
-        path=zarr_manager_tmp_path,
+        path=tempdir.name,
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
@@ -172,10 +178,11 @@ def test_open_zarr_with_zarr_read_write(zarr_manager_tmp_path):
     # TODO: open model store with model
     # pass
 
+    tempdir.cleanup()
+
 
 #######################################################
 @mock_aws
-# def test_open_zarr_with_xarray(tmp_path):
 def test_open_zarr_with_xarray():
     # TODO: open with xarray
     #  [1] check timestamps are in proper format
@@ -187,7 +194,7 @@ def test_open_zarr_with_xarray():
     sensor_name = "EK60"
     # file_name = "EX1404L2_EK60_-D20140908-T020733.raw"
 
-    temporary_directory = "/tmp"  # str(tmp_path)
+    # temporary_directory = "/tmp"  # str(tmp_path)
 
     bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 
@@ -202,14 +209,10 @@ def test_open_zarr_with_xarray():
 
     zarr_manager = ZarrManager()
 
-    height = len(
-        zarr_manager.get_depth_values(
-            min_echo_range=min_echo_range, max_echo_range=max_echo_range
-        )
-    )
+    tmp_path = TemporaryDirectory()
 
     zarr_manager.create_zarr_store(
-        path=temporary_directory,
+        path=tmp_path.name,
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
