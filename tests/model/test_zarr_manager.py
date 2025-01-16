@@ -94,7 +94,7 @@ def test_zarr_manager():
         1201,
         len(frequencies),
     )  # (depth, time, frequency)
-    assert cruise_zarr.Sv.chunks == (2048, 2048, len(frequencies))  # TODO: use enum?
+    assert cruise_zarr.Sv.chunks == (1024, 1024, len(frequencies))  # TODO: use enum?
 
     # Open Zarr store with Xarray
     # TODO: move to separate test
