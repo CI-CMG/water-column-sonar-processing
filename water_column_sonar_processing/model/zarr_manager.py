@@ -1,7 +1,3 @@
-import os
-from os import PathLike
-from tempfile import TemporaryDirectory
-
 import numcodecs
 import numpy as np
 import xarray as xr
@@ -227,6 +223,7 @@ class ZarrManager:
             name=Coordinates.SV.value,
             shape=(len(depth_values), width, len(frequencies)),
             chunks=(Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, len(frequencies)),
+            # chunks=(Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, 1), # 256x256x1 <- speed up for alex
             dtype=np.dtype(
                 Coordinates.SV_DTYPE.value
             ),  # TODO: try to experiment with 'float16'

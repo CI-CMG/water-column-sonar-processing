@@ -308,7 +308,7 @@ class ResampleRegrid:
                     detected_seafloor_depth = input_xr.detected_seafloor_depth.values
                     detected_seafloor_depth[detected_seafloor_depth == 0.] = np.nan
                     # TODO: problem here: Processing file: D20070711-T210709.
-                    detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)
+                    detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0) # RuntimeWarning: Mean of empty slice detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)
                     detected_seafloor_depths[detected_seafloor_depths == 0.] = np.nan
                     print(f"min depth measured: {np.nanmin(detected_seafloor_depths)}")
                     print(f"max depth measured: {np.nanmax(detected_seafloor_depths)}")
