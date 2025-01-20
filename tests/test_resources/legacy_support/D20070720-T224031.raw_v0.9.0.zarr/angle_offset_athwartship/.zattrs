@@ -1,0 +1,7 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "channel"
+    ],
+    "comment": "Introduced in echopype for Simrad echosounders. The athwartship angle corresponds to the major angle in SONAR-netCDF4 vers 2. ",
+    "long_name": "electrical athwartship angle offset of the transducer"
+}

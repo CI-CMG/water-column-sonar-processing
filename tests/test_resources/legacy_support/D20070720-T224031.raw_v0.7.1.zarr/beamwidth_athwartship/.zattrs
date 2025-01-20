@@ -1,0 +1,13 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "channel",
+        "ping_time"
+    ],
+    "comment": "Introduced in echopype for Simrad echosounders to avoid potential confusion with convention definitions. The athwartship angle corresponds to the major angle in SONAR-netCDF4 vers 2. The convention defines one-way transmit or receive beamwidth (beamwidth_receive_major and beamwidth_transmit_major), but Simrad echosounders record two-way beamwidth in the data.",
+    "long_name": "Half power two-way beam width along athwartship axis of beam",
+    "units": "arc_degree",
+    "valid_range": [
+        0.0,
+        360.0
+    ]
+}

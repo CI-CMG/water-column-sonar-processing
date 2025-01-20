@@ -1,0 +1,581 @@
+{
+    "metadata": {
+        ".zattrs": {
+            "processing_function": "calibrate.compute_Sv",
+            "processing_software_name": "echopype",
+            "processing_software_version": "0.8.0",
+            "processing_time": "2025-01-20T00:43:11Z"
+        },
+        ".zgroup": {
+            "zarr_format": 2
+        },
+        "Sv/.zarray": {
+            "chunks": [
+                4,
+                4,
+                1279
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4,
+                4,
+                1279
+            ],
+            "zarr_format": 2
+        },
+        "Sv/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel",
+                "ping_time",
+                "range_sample"
+            ],
+            "actual_range": [
+                -140.85,
+                12.59
+            ],
+            "long_name": "Volume backscattering strength (Sv re 1 m-1)",
+            "units": "dB"
+        },
+        "angle_offset_alongship/.zarray": {
+            "chunks": [
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4
+            ],
+            "zarr_format": 2
+        },
+        "angle_offset_alongship/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel"
+            ],
+            "comment": "Introduced in echopype for Simrad echosounders. The alongship angle corresponds to the minor angle in SONAR-netCDF4 vers 2. ",
+            "long_name": "electrical alongship angle offset of the transducer"
+        },
+        "angle_offset_athwartship/.zarray": {
+            "chunks": [
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4
+            ],
+            "zarr_format": 2
+        },
+        "angle_offset_athwartship/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel"
+            ],
+            "comment": "Introduced in echopype for Simrad echosounders. The athwartship angle corresponds to the major angle in SONAR-netCDF4 vers 2. ",
+            "long_name": "electrical athwartship angle offset of the transducer"
+        },
+        "angle_sensitivity_alongship/.zarray": {
+            "chunks": [
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4
+            ],
+            "zarr_format": 2
+        },
+        "angle_sensitivity_alongship/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel"
+            ],
+            "comment": "Introduced in echopype for Simrad echosounders. The alongship angle corresponds to the minor angle in SONAR-netCDF4 vers 2. ",
+            "long_name": "alongship angle sensitivity of the transducer"
+        },
+        "angle_sensitivity_athwartship/.zarray": {
+            "chunks": [
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4
+            ],
+            "zarr_format": 2
+        },
+        "angle_sensitivity_athwartship/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel"
+            ],
+            "comment": "Introduced in echopype for Simrad echosounders. The athwartship angle corresponds to the major angle in SONAR-netCDF4 vers 2. ",
+            "long_name": "athwartship angle sensitivity of the transducer"
+        },
+        "beamwidth_alongship/.zarray": {
+            "chunks": [
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4
+            ],
+            "zarr_format": 2
+        },
+        "beamwidth_alongship/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel"
+            ],
+            "comment": "Introduced in echopype for Simrad echosounders to avoid potential confusion with convention definitions. The alongship angle corresponds to the minor angle in SONAR-netCDF4 vers 2. The convention defines one-way transmit or receive beamwidth (beamwidth_receive_minor and beamwidth_transmit_minor), but Simrad echosounders record two-way beamwidth in the data.",
+            "long_name": "Half power two-way beam width along alongship axis of beam",
+            "units": "arc_degree",
+            "valid_range": [
+                0.0,
+                360.0
+            ]
+        },
+        "beamwidth_athwartship/.zarray": {
+            "chunks": [
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4
+            ],
+            "zarr_format": 2
+        },
+        "beamwidth_athwartship/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel"
+            ],
+            "comment": "Introduced in echopype for Simrad echosounders to avoid potential confusion with convention definitions. The athwartship angle corresponds to the major angle in SONAR-netCDF4 vers 2. The convention defines one-way transmit or receive beamwidth (beamwidth_receive_major and beamwidth_transmit_major), but Simrad echosounders record two-way beamwidth in the data.",
+            "long_name": "Half power two-way beam width along athwartship axis of beam",
+            "units": "arc_degree",
+            "valid_range": [
+                0.0,
+                360.0
+            ]
+        },
+        "channel/.zarray": {
+            "chunks": [
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<U35",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4
+            ],
+            "zarr_format": 2
+        },
+        "channel/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel"
+            ],
+            "long_name": "Vendor channel ID"
+        },
+        "echo_range/.zarray": {
+            "chunks": [
+                4,
+                4,
+                1279
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4,
+                4,
+                1279
+            ],
+            "zarr_format": 2
+        },
+        "echo_range/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel",
+                "ping_time",
+                "range_sample"
+            ],
+            "long_name": "Range distance",
+            "units": "m"
+        },
+        "equivalent_beam_angle/.zarray": {
+            "chunks": [
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4
+            ],
+            "zarr_format": 2
+        },
+        "equivalent_beam_angle/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel"
+            ],
+            "long_name": "Equivalent beam angle",
+            "units": "sr",
+            "valid_range": [
+                0.0,
+                12.566370614359172
+            ]
+        },
+        "filenames/.zarray": {
+            "chunks": [
+                1
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<i8",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                1
+            ],
+            "zarr_format": 2
+        },
+        "filenames/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "filenames"
+            ],
+            "long_name": "Index for data and metadata source filenames"
+        },
+        "frequency_nominal/.zarray": {
+            "chunks": [
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4
+            ],
+            "zarr_format": 2
+        },
+        "frequency_nominal/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel"
+            ],
+            "long_name": "Transducer frequency",
+            "standard_name": "sound_frequency",
+            "units": "Hz",
+            "valid_min": 0.0
+        },
+        "gain_correction/.zarray": {
+            "chunks": [
+                4,
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4,
+                4
+            ],
+            "zarr_format": 2
+        },
+        "gain_correction/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "ping_time",
+                "channel"
+            ]
+        },
+        "ping_time/.zarray": {
+            "chunks": [
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<i8",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4
+            ],
+            "zarr_format": 2
+        },
+        "ping_time/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "ping_time"
+            ],
+            "calendar": "proleptic_gregorian",
+            "units": "nanoseconds since 2007-07-20 22:40:31.970074112"
+        },
+        "range_sample/.zarray": {
+            "chunks": [
+                1279
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<i8",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                1279
+            ],
+            "zarr_format": 2
+        },
+        "range_sample/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "range_sample"
+            ],
+            "long_name": "Along-range sample number, base 0"
+        },
+        "sa_correction/.zarray": {
+            "chunks": [
+                4,
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4,
+                4
+            ],
+            "zarr_format": 2
+        },
+        "sa_correction/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "ping_time",
+                "channel"
+            ]
+        },
+        "sound_absorption/.zarray": {
+            "chunks": [
+                4,
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4,
+                4
+            ],
+            "zarr_format": 2
+        },
+        "sound_absorption/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel",
+                "ping_time"
+            ],
+            "long_name": "Indicative acoustic absorption",
+            "units": "dB/m",
+            "valid_min": 0.0
+        },
+        "sound_speed/.zarray": {
+            "chunks": [
+                4,
+                4
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                4,
+                4
+            ],
+            "zarr_format": 2
+        },
+        "sound_speed/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "channel",
+                "ping_time"
+            ],
+            "long_name": "Indicative sound speed",
+            "standard_name": "speed_of_sound_in_sea_water",
+            "units": "m/s",
+            "valid_min": 0.0
+        },
+        "source_filenames/.zarray": {
+            "chunks": [
+                1
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<U21",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                1
+            ],
+            "zarr_format": 2
+        },
+        "source_filenames/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "filenames"
+            ],
+            "long_name": "Source filenames"
+        },
+        "water_level/.zarray": {
+            "chunks": [],
+            "compressor": null,
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [],
+            "zarr_format": 2
+        },
+        "water_level/.zattrs": {
+            "_ARRAY_DIMENSIONS": [],
+            "long_name": "Distance from the platform coordinate system origin to the nominal water level along the z-axis",
+            "units": "m"
+        }
+    },
+    "zarr_consolidated_format": 1
+}

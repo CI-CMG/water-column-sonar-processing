@@ -1,0 +1,10 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "ping_time"
+    ],
+    "axis": "T",
+    "calendar": "gregorian",
+    "long_name": "Timestamp of each ping",
+    "standard_name": "time",
+    "units": "nanoseconds since 1970-01-01T00:00:00+00:00"
+}

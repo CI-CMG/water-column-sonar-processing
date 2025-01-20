@@ -1,0 +1,11 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "time3"
+    ],
+    "axis": "T",
+    "calendar": "gregorian",
+    "comment": "Time coordinate corresponding to platform-related sampling environment.",
+    "long_name": "Timestamps for platform-related sampling environment",
+    "standard_name": "time",
+    "units": "seconds since 1900-01-01T00:00:00+00:00"
+}

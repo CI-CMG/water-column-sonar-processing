@@ -1,0 +1,9 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "channel",
+        "ping_time",
+        "range_sample"
+    ],
+    "long_name": "Volume backscattering strength (Sv re 1 m-1)",
+    "units": "dB"
+}

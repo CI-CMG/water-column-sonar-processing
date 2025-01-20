@@ -1,0 +1,8 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "channel",
+        "ping_time"
+    ],
+    "comment": "Introduced in echopype for Simrad echosounders. The alongship angle corresponds to the minor angle in SONAR-netCDF4 vers 2. ",
+    "long_name": "electrical alongship angle offset of the transducer"
+}
