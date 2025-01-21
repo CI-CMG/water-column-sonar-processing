@@ -21,7 +21,7 @@ def teardown_module():
     print("teardown")
 
 @pytest.fixture(scope="module")
-def moto_server():
+def moto_server(): # TODO: add "async"
     """Fixture to run a mocked AWS server for testing."""
     # Note: pass `port=0` to get a random free port.
     server = ThreadedMotoServer(port=0)
@@ -150,16 +150,16 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     s3_path = f"{output_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_stem}.zarr"
     zarr_store = s3fs_manager.s3_map(s3_path)
 
+    # --- Open with Xarray --- #
+    ds = xr.open_zarr(zarr_store, consolidated=False)
+    print(ds)
+    # assert set(list(ds.variables)) == set(['Sv', 'bottom', 'depth', 'frequency', 'latitude', 'longitude', 'time'])
+    assert len(list(ds.variables)) == 23
+
     # --- Open with Zarr --- #
-    root = zarr.open(store=zarr_store, mode="r")
+    root = zarr.open(store=zarr_store, mode="r") #, storage_options={'anon': True})
     print(root)
     assert root.Sv.shape == (4, 36, 2604)
-
-    # --- Open with Xarray --- #
-    ds = xr.open_dataset(zarr_store, engine="zarr")
-    print(ds)
-    #assert set(list(ds.variables)) == set(['Sv', 'bottom', 'depth', 'frequency', 'latitude', 'longitude', 'time'])
-    assert len(list(ds.variables)) == 23
 
 #######################################################
 #######################################################
