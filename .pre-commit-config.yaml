@@ -1,4 +1,5 @@
 repos:
+  ### Security Scan for AWS Secrets ###
   - repo: local
     hooks:
       - id: trufflehog
