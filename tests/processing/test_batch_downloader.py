@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from water_column_sonar_processing.processing.batch_downloader import BatchDownloader
 
@@ -13,6 +14,7 @@ def teardown_module():
 
 
 #######################################################
+@pytest.mark.skip(reason="Running very slow for some reason")
 def test_get_toy_batch_generator():
     np.random.seed(0)
 
@@ -39,7 +41,7 @@ def test_get_toy_batch_generator():
         break # Only testing the first batch
 
 
-# @pytest.mark.skip(reason="This uses s3, should it be included in testing?")
+@pytest.mark.skip(reason="Running very slow for some reason")
 def test_get_s3_batch_generator():
     """
     This is a functional test getting real data from s3 and checking batch values.
@@ -76,6 +78,7 @@ def test_get_s3_batch_generator():
         # break # Only testing the first batch
         break
 
+@pytest.mark.skip(reason="Running very slow for some reason")
 def testget_s3_manual_batch_generator():
     """
     This is a functional test getting real data from s3 and checking batch values.

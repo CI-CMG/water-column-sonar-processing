@@ -28,6 +28,15 @@ https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/Ima
 """
 import json
 import requests
+from collections.abc import Generator
+
+def chunked(
+    ll: list,
+    n: int
+) -> Generator:
+    # Yields successively n-sized chunks from ll.
+    for i in range(0, len(ll), n):
+        yield ll[i : i + n]
 
 
 class ElevationManager:
@@ -41,34 +50,30 @@ class ElevationManager:
     #######################################################
     def get_arcgis_elevation(
             self,
-            lngs,
-            lats,
+            lngs: list,
+            lats: list,
+            chunk_size: int=500, # I think this is the api limit
     ) -> int:
         # Reference: https://developers.arcgis.com/rest/services-reference/enterprise/map-to-image/
         # Info: https://www.arcgis.com/home/item.html?id=c876e3c96a8642ab8557646a3b4fa0ff
         ### 'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/ImageServer/identify?geometry={"points":[[-31.70235,13.03332],[-32.70235,14.03332]]}&geometryType=esriGeometryMultipoint&returnGeometry=false&returnCatalogItems=false&f=json'
         geometryType = "esriGeometryMultipoint" # TODO: allow single point?
 
-        # TODO: break up into requests of 500
+        depths = []
 
-        # TODO: convert lists to zipped lists to strings
         list_of_points = [list(elem) for elem in list(zip(lngs, lats))]
-        print(list_of_points)
+        for chunk in chunked(list_of_points, chunk_size):
+            # order: (lng, lat)
+            geometry = f'{{"points":{str(chunk)}}}'
+            url=f'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/ImageServer/identify?geometry={geometry}&geometryType={geometryType}&returnGeometry=false&returnCatalogItems=false&f=json'
+            result = requests.get(url, timeout=self.TIMOUT_SECONDS)
+            res = json.loads(result.content.decode('utf8'))
+            if 'results' in res:
+                for element in res['results']:
+                    depths.append(float(element['value']))
+            elif 'value' in res:
+                depths.append(float(res['value']))
 
-        # lng = -31.70235
-        # lat = 13.03332
-        # lng, lat
-        geometry = f'{{"points":{str(list_of_points)}}}'
-        url=f'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/ImageServer/identify?geometry={geometry}&geometryType={geometryType}&returnGeometry=false&returnCatalogItems=false&f=json'
-        result = requests.get(url, timeout=self.TIMOUT_SECONDS)
-        foo = json.loads(result.content.decode('utf8'))
-        depths=[]
-        for element in foo['results']:
-            depths.append(float(element['value']))
-
-        print(depths)
-        # TODO: combine smaller lists
-        # needs to be broken down into blocks of 500
         return depths
 
     # def get_gebco_bathymetry_elevation(self) -> int:
