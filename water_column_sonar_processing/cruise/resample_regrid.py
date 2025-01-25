@@ -281,12 +281,7 @@ class ResampleRegrid:
                 print(f"start_ping_time_index: {start_ping_time_index}, end_ping_time_index: {end_ping_time_index}")
                 #########################################################################
                 # write Sv values to cruise-level-model-store
-                for channel in range(
-                    len(input_xr.channel.values)
-                ):  # does not like being written in one fell swoop :(
-                    output_zarr_store.Sv[
-                        :, start_ping_time_index:end_ping_time_index, channel
-                    ] = regrid_resample[:, :, channel]
+                output_zarr_store.Sv[:, start_ping_time_index:end_ping_time_index, :] = regrid_resample.values
 
                 #########################################################################
                 # [5] write subset of latitude/longitude
@@ -321,8 +316,6 @@ class ResampleRegrid:
         except Exception as err:
             print(f"Problem interpolating the data: {err}")
             raise err
-        # else:
-        #     pass
         finally:
             print("Done interpolating data.")
             # TODO: read across times and verify data was written?

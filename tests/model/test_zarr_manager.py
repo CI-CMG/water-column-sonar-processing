@@ -29,21 +29,20 @@ def zarr_manager_tmp_path(test_path):
     return test_path["ZARR_MANAGER_TEST_PATH"]
 
 #######################################################
-@pytest.mark.skip(reason="no way of currently testing this")
-@mock_aws
-def test_create_zarr_store(zarr_manager_tmp_path):
-    pass
-
-@pytest.mark.skip(reason="no way of currently testing this")
-@mock_aws
-def test_open_s3_zarr_store_with_zarr(zarr_manager_tmp_path):
-    pass
-
-@pytest.mark.skip(reason="no way of currently testing this")
-@mock_aws
-def test_open_s3_zarr_store_with_xarray(zarr_manager_tmp_path):
-    pass
-
+# @pytest.mark.skip(reason="no way of currently testing this")
+# @mock_aws
+# def test_create_zarr_store(zarr_manager_tmp_path):
+#     pass
+#
+# @pytest.mark.skip(reason="no way of currently testing this")
+# @mock_aws
+# def test_open_s3_zarr_store_with_zarr(zarr_manager_tmp_path):
+#     pass
+#
+# @pytest.mark.skip(reason="no way of currently testing this")
+# @mock_aws
+# def test_open_s3_zarr_store_with_xarray(zarr_manager_tmp_path):
+#     pass
 
 @mock_aws
 def test_zarr_manager():
@@ -88,7 +87,7 @@ def test_zarr_manager():
         1201,
         len(frequencies),
     )  # (depth, time, frequency)
-    assert cruise_zarr.Sv.chunks == (256, 256, 4)  # TODO: use enum?
+    assert cruise_zarr.Sv.chunks == (256, 256, 1)  # TODO: use enum?
 
     # Open Zarr store with Xarray
     # TODO: move to separate test

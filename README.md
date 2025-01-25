@@ -102,3 +102,10 @@ for extracting the version
 
 # Security scanning
 > bandit -r water_column_sonar_processing/
+
+# Data Debugging
+Experimental Plotting in Xarray (hvPlot):
+https://colab.research.google.com/drive/18vrI9LAip4xRGEX6EvnuVFp35RAiVYwU#scrollTo=q9_j9p2yXsLV
+
+HB0707 Cruise zoomable:
+https://hb0707.s3.us-east-1.amazonaws.com/index.html

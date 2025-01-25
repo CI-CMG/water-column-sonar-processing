@@ -222,8 +222,8 @@ class ZarrManager:
         root.create_dataset(
             name=Coordinates.SV.value,
             shape=(len(depth_values), width, len(frequencies)),
-            chunks=(Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, len(frequencies)),
-            # chunks=(Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, 1), # 256x256x1 <- speed up for alex
+            # chunks=(Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, len(frequencies)),
+            chunks=(Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, 1), # 256x256x1 <- speed up for alex
             dtype=np.dtype(
                 Coordinates.SV_DTYPE.value
             ),  # TODO: try to experiment with 'float16'
@@ -255,6 +255,7 @@ class ZarrManager:
         root.attrs["processing_software_time"] = Timestamp.get_timestamp()
         #
         root.attrs["calibration_status"] = calibration_status
+        root.attrs["tile_size"] = Constants.TILE_SIZE.value
 
         zarr.consolidate_metadata(store)
         #####################################################################

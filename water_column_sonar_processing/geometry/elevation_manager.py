@@ -27,6 +27,8 @@ https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/Ima
 }
 """
 import json
+import time
+
 import requests
 from collections.abc import Generator
 
@@ -57,12 +59,16 @@ class ElevationManager:
         # Reference: https://developers.arcgis.com/rest/services-reference/enterprise/map-to-image/
         # Info: https://www.arcgis.com/home/item.html?id=c876e3c96a8642ab8557646a3b4fa0ff
         ### 'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/ImageServer/identify?geometry={"points":[[-31.70235,13.03332],[-32.70235,14.03332]]}&geometryType=esriGeometryMultipoint&returnGeometry=false&returnCatalogItems=false&f=json'
+        if len(lngs) != len(lats):
+            raise ValueError("lngs and lats must have same length")
+
         geometryType = "esriGeometryMultipoint" # TODO: allow single point?
 
         depths = []
 
         list_of_points = [list(elem) for elem in list(zip(lngs, lats))]
         for chunk in chunked(list_of_points, chunk_size):
+            time.sleep(0.1)
             # order: (lng, lat)
             geometry = f'{{"points":{str(chunk)}}}'
             url=f'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/ImageServer/identify?geometry={geometry}&geometryType={geometryType}&returnGeometry=false&returnCatalogItems=false&f=json'
