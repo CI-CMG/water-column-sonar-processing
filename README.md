@@ -59,12 +59,6 @@ or
 Following this tutorial:
 https://packaging.python.org/en/latest/tutorials/packaging-projects/
 
-# To Publish To PROD
-```commandline
-python -m build
-python -m twine upload --repository pypi dist/*
-```
-
 # Pre Commit Hook
 see here for installation: https://pre-commit.com/
 https://dev.to/rafaelherik/using-trufflehog-and-pre-commit-hook-to-prevent-secret-exposure-edo
@@ -89,11 +83,17 @@ https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scroll
 # Tag a Release
 Step 1 --> increment the semantic version in the zarr_manager.py "metadata" & the "pyproject.toml"
 ```commandline
-git tag "v0.0.13" -a
+git tag -a v25.01.01 -m "Releasing version v25.01.01"
 ```
-Step 3 --> enter description
+
 ```commandline
 git push origin --tags
+```
+
+# To Publish To PROD
+```commandline
+python -m build
+python -m twine upload --repository pypi dist/*
 ```
 
 # TODO:
