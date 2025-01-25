@@ -250,7 +250,7 @@ class ZarrManager:
         #
         root.attrs["processing_software_name"] = Coordinates.PROJECT_NAME.value
         root.attrs["processing_software_version"] = (
-            "0.0.13"  # TODO: get programmatically, echopype>utils>prov.py
+            "0.0.14"  # TODO: get programmatically, echopype>utils>prov.py
         )
         root.attrs["processing_software_time"] = Timestamp.get_timestamp()
         #

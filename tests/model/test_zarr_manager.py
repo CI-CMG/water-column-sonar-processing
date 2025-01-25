@@ -112,6 +112,8 @@ def test_zarr_manager():
     assert file_xr.attrs["cruise_name"] == "test_cruise"
     assert file_xr.attrs["sensor_name"] == "EK60"
 
+    # TODO: test version release number is set properly
+
     assert file_xr.Sv.dtype == "float32"
     assert file_xr.latitude.dtype == "float32"
     assert file_xr.longitude.dtype == "float32"
