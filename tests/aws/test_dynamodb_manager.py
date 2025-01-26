@@ -9,7 +9,7 @@ from water_column_sonar_processing.utility import PipelineStatus
 #######################################################
 def setup_module():
     print("setup")
-    env_file = find_dotenv(".env-test")
+    env_file = find_dotenv(".env-dev")
     load_dotenv(dotenv_path=env_file, override=True)
 
 
@@ -135,7 +135,7 @@ def test_dynamodb_manager(): # PASSING
     # ---Read From Table--- #
     response = dynamo_db_manager.get_table_item(
         table_name=table_name,
-        key={"FILE_NAME": "DSJ0604-D20060419-T184612.raw", "CRUISE_NAME": "DS0604"},
+        key={ "FILE_NAME": "DSJ0604-D20060419-T184612.raw", "CRUISE_NAME": "DS0604" },
     )
     assert (
         response["Item"]["PIPELINE_STATUS"]
@@ -373,4 +373,17 @@ def test_delete_item(): # PASSING
     # assert df.shape[1] == 16
     # TODO: check fields
 
+# TODO: test with smaller paging, and with multiple cruises
+
 #######################################################
+
+### FOR FUNCTIONAL TEST W PROD ###
+# def test_get_henry_bigelow():
+#     dynamo_db_manager = DynamoDBManager()
+#     df1 = dynamo_db_manager.get_table_as_df(
+#         ship_name="Henry_B._Bigelow",
+#         cruise_name="HB0707",
+#         sensor_name="EK60",
+#         table_name="prod-echofish",
+#     )
+#     print(df1)

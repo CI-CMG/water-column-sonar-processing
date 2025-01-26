@@ -13,16 +13,16 @@ class DynamoDBManager:
             # endpoint_url
     ):
         # self.endpoint_url = endpoint_url
-        self.__dynamodb_session = boto3.Session(
+        self.dynamodb_session = boto3.Session(
             aws_access_key_id=os.environ.get("ACCESS_KEY_ID"),
             aws_secret_access_key=os.environ.get("SECRET_ACCESS_KEY"),
             region_name=os.environ.get("AWS_REGION", default="us-east-1"),
         )
-        self.__dynamodb_resource = self.__dynamodb_session.resource(
+        self.dynamodb_resource = self.dynamodb_session.resource(
             service_name="dynamodb",
             # endpoint_url=self.endpoint_url
         )
-        self.__dynamodb_client = self.__dynamodb_session.client(
+        self.dynamodb_client = self.dynamodb_session.client(
             service_name="dynamodb",
             # endpoint_url=self.endpoint_url
         )
@@ -46,7 +46,7 @@ class DynamoDBManager:
         self,
         table_name,
     ):
-        self.__dynamodb_client.create_table(
+        self.dynamodb_client.create_table(
             TableName=table_name,
             KeySchema=[
                 {
@@ -69,7 +69,7 @@ class DynamoDBManager:
             # }
         )
         # TODO: after creating status is 'CREATING', wait until 'ACTIVE'
-        response = self.__dynamodb_client.describe_table(TableName=table_name)
+        response = self.dynamodb_client.describe_table(TableName=table_name)
         print(response) # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/client/describe_table.html
         # sleep then response['Table']['TableStatus'] == 'ACTIVE'
 
@@ -80,7 +80,7 @@ class DynamoDBManager:
     #         table_name,
     #         key
     # ):
-    #     response = self.__dynamodb_client.get_item(TableName=table_name, Key=key)
+    #     response = self.dynamodb_client.get_item(TableName=table_name, Key=key)
     #     item = None
     #     if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
     #         if "Item" in response:
@@ -96,7 +96,7 @@ class DynamoDBManager:
         """
         Gets a single row from the db.
         """
-        table = self.__dynamodb_resource.Table(table_name)
+        table = self.dynamodb_resource.Table(table_name)
         response = table.get_item(Key=key)
         # TODO:
         # if response["ResponseMetadata"]["HTTPStatusCode"] != 200:
@@ -113,7 +113,7 @@ class DynamoDBManager:
         update_expression,
     ): # TODO: convert to boolean
         try:
-            response = self.__dynamodb_client.update_item(
+            response = self.dynamodb_client.update_item(
                 TableName=table_name,
                 Key=key,
                 ExpressionAttributeNames=expression_attribute_names,
@@ -145,28 +145,57 @@ class DynamoDBManager:
             ":se": {"S": sensor_name},
             ":sh": {"S": ship_name},
         }
-
         filter_expression = (
             "CRUISE_NAME = :cr and SENSOR_NAME = :se and SHIP_NAME = :sh"
         )
-        response = self.__dynamodb_client.scan(
+        # filter_expression = "CRUISE_NAME = :cr"
+        response = self.dynamodb_client.scan(
             TableName=table_name,
-            Select="ALL_ATTRIBUTES",
-            ExpressionAttributeValues=expression_attribute_values,
-            FilterExpression=filter_expression,
+            # Limit=1000,
+            Select='ALL_ATTRIBUTES', # or 'SPECIFIC_ATTRIBUTES',
+            # ExclusiveStartKey=where to pick up
+            #ReturnConsumedCapacity='INDEXES' | 'TOTAL' | 'NONE', ...not sure
+            # ProjectionExpression='#SH, #CR, #FN', # what to specifically return — from expression_attribute_names
+            FilterExpression='CRUISE_NAME = :cr',#
+            # ExpressionAttributeNames={
+            #     '#SH': 'SHIP_NAME',
+            #     '#CR': 'CRUISE_NAME',
+            #     '#FN': 'FILE_NAME',
+            # },
+            ExpressionAttributeValues={ # criteria
+                ':cr': {
+                    'S': cruise_name,
+                },
+            },
+            ConsistentRead=True
+            # ExclusiveStartKey=response["LastEvaluatedKey"],
         )
+        print(response)
         # Note: table.scan() has 1 MB limit on results so pagination is used
-        if len(response["Items"]) == 0:
+
+        if len(response["Items"]) == 0 and "LastEvaluatedKey" not in response:
             return pd.DataFrame() # If no results, return empty dataframe
 
         data = response["Items"]
 
-        while "LastEvaluatedKey" in response:
-            response = self.__dynamodb_client.scan(
+        while response.get('LastEvaluatedKey'): #"LastEvaluatedKey" in response:
+            response = self.dynamodb_client.scan(
                 TableName=table_name,
-                Select="ALL_ATTRIBUTES",
-                ExpressionAttributeValues=expression_attribute_values,
-                FilterExpression=filter_expression,
+                ### Either 'Select' or 'ExpressionAttributeNames'/'ProjectionExpression'
+                Select='ALL_ATTRIBUTES', # or 'SPECIFIC_ATTRIBUTES',
+                FilterExpression='CRUISE_NAME = :cr',  #
+                #ProjectionExpression='#SH, #CR, #FN',  # what to specifically return — from expression_attribute_names
+                # ExpressionAttributeNames={ # would need to specify all cols in df
+                #     '#SH': 'SHIP_NAME',
+                #     '#CR': 'CRUISE_NAME',
+                #     '#FN': 'FILE_NAME',
+                # },
+                ExpressionAttributeValues={  # criteria
+                    ':cr': {
+                        'S': cruise_name,
+                    },
+                },
+                ConsistentRead=True,
                 ExclusiveStartKey=response["LastEvaluatedKey"],
             )
             data.extend(response["Items"])
@@ -187,7 +216,7 @@ class DynamoDBManager:
         """
         Finds all rows associated with a cruise and deletes them.
         """
-        response = self.__dynamodb_client.delete_item(
+        response = self.dynamodb_client.delete_item(
             Key={
                 "CRUISE_NAME": {
                     "S": cruise_name
@@ -212,7 +241,7 @@ class DynamoDBManager:
         """
         Get a description of the table. Used to verify that records were added/removed.
         """
-        response = self.__dynamodb_client.describe_table(TableName=table_name)
+        response = self.dynamodb_client.describe_table(TableName=table_name)
         print(response)
         return response
 
@@ -230,7 +259,7 @@ class DynamoDBManager:
     #     print(f"Updating processing status to {pipeline_status}.")
     #     if error_message:
     #         print(f"Error message: {error_message}")
-    #         self.__dynamo.update_item(
+    #         self.dynamo.update_item(
     #             table_name=self.__table_name,
     #             key={
     #                 'FILE_NAME': {'S': file_name},  # Partition Key
@@ -255,7 +284,7 @@ class DynamoDBManager:
     #             }
     #         )
     #     else:
-    #         self.__dynamo.update_item(
+    #         self.dynamo.update_item(
     #             table_name=self.__table_name,
     #             key={
     #                 'FILE_NAME': {'S': file_name},  # Partition Key
