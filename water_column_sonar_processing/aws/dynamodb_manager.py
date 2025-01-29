@@ -140,15 +140,7 @@ class DynamoDBManager:
         To be used to initialize a cruise, deletes all entries associated with that cruise
         in the database.
         """
-        expression_attribute_values = {
-            ":cr": {"S": cruise_name},
-            ":se": {"S": sensor_name},
-            ":sh": {"S": ship_name},
-        }
-        filter_expression = (
-            "CRUISE_NAME = :cr and SENSOR_NAME = :se and SHIP_NAME = :sh"
-        )
-        # filter_expression = "CRUISE_NAME = :cr"
+        filter_expression = "CRUISE_NAME = :cr"
         response = self.dynamodb_client.scan(
             TableName=table_name,
             # Limit=1000,
@@ -156,7 +148,7 @@ class DynamoDBManager:
             # ExclusiveStartKey=where to pick up
             #ReturnConsumedCapacity='INDEXES' | 'TOTAL' | 'NONE', ...not sure
             # ProjectionExpression='#SH, #CR, #FN', # what to specifically return — from expression_attribute_names
-            FilterExpression='CRUISE_NAME = :cr',#
+            FilterExpression=filter_expression,
             # ExpressionAttributeNames={
             #     '#SH': 'SHIP_NAME',
             #     '#CR': 'CRUISE_NAME',
@@ -170,7 +162,6 @@ class DynamoDBManager:
             ConsistentRead=True
             # ExclusiveStartKey=response["LastEvaluatedKey"],
         )
-        print(response)
         # Note: table.scan() has 1 MB limit on results so pagination is used
 
         if len(response["Items"]) == 0 and "LastEvaluatedKey" not in response:
@@ -183,7 +174,7 @@ class DynamoDBManager:
                 TableName=table_name,
                 ### Either 'Select' or 'ExpressionAttributeNames'/'ProjectionExpression'
                 Select='ALL_ATTRIBUTES', # or 'SPECIFIC_ATTRIBUTES',
-                FilterExpression='CRUISE_NAME = :cr',  #
+                FilterExpression=filter_expression,
                 #ProjectionExpression='#SH, #CR, #FN',  # what to specifically return — from expression_attribute_names
                 # ExpressionAttributeNames={ # would need to specify all cols in df
                 #     '#SH': 'SHIP_NAME',
@@ -204,6 +195,66 @@ class DynamoDBManager:
         df = pd.DataFrame([deserializer.deserialize({"M": i}) for i in data])
 
         return df.sort_values(by="START_TIME", ignore_index=True)
+
+    #####################################################################
+    # def get_cruise_list(
+    #     self,
+    #     table_name,
+    # ) -> list:
+    #     """
+    #     Experimental, gets all cruise names as list
+    #     """
+    #     filter_expression = "CRUISE_NAME = :cr"
+    #     response = self.dynamodb_client.scan(
+    #         TableName=table_name,
+    #         Select='SPECIFIC_ATTRIBUTES',
+    #         #ReturnConsumedCapacity='INDEXES' | 'TOTAL' | 'NONE', ...not sure
+    #         # ProjectionExpression='#SH, #CR, #FN', # what to specifically return — from expression_attribute_names
+    #         FilterExpression=filter_expression,
+    #         # ExpressionAttributeNames={
+    #         #     '#SH': 'SHIP_NAME',
+    #         #     '#CR': 'CRUISE_NAME',
+    #         #     '#FN': 'FILE_NAME',
+    #         # },
+    #         # ExpressionAttributeValues={ # criteria
+    #         #     ':cr': {
+    #         #         'S': cruise_name,
+    #         #     },
+    #         # },
+    #     )
+    #     # Note: table.scan() has 1 MB limit on results so pagination is used
+    #
+    #     if len(response["Items"]) == 0 and "LastEvaluatedKey" not in response:
+    #         return pd.DataFrame() # If no results, return empty dataframe
+    #
+    #     data = response["Items"]
+    #
+    #     while response.get('LastEvaluatedKey'): #"LastEvaluatedKey" in response:
+    #         response = self.dynamodb_client.scan(
+    #             TableName=table_name,
+    #             ### Either 'Select' or 'ExpressionAttributeNames'/'ProjectionExpression'
+    #             Select='ALL_ATTRIBUTES', # or 'SPECIFIC_ATTRIBUTES',
+    #             FilterExpression=filter_expression,
+    #             #ProjectionExpression='#SH, #CR, #FN',  # what to specifically return — from expression_attribute_names
+    #             # ExpressionAttributeNames={ # would need to specify all cols in df
+    #             #     '#SH': 'SHIP_NAME',
+    #             #     '#CR': 'CRUISE_NAME',
+    #             #     '#FN': 'FILE_NAME',
+    #             # },
+    #             ExpressionAttributeValues={  # criteria
+    #                 ':cr': {
+    #                     'S': cruise_name,
+    #                 },
+    #             },
+    #             ConsistentRead=True,
+    #             ExclusiveStartKey=response["LastEvaluatedKey"],
+    #         )
+    #         data.extend(response["Items"])
+    #
+    #     deserializer = self.type_deserializer
+    #     df = pd.DataFrame([deserializer.deserialize({"M": i}) for i in data])
+    #
+    #     return df.sort_values(by="START_TIME", ignore_index=True)
 
     #####################################################################
     # TODO: WIP

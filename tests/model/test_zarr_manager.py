@@ -11,6 +11,7 @@ from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 from water_column_sonar_processing.aws import S3Manager
 from water_column_sonar_processing.model import ZarrManager
+from water_column_sonar_processing.utility import Constants
 
 
 #######################################################
@@ -87,7 +88,7 @@ def test_zarr_manager():
         1201,
         len(frequencies),
     )  # (depth, time, frequency)
-    assert cruise_zarr.Sv.chunks == (256, 256, 1)  # TODO: use enum?
+    assert cruise_zarr.Sv.chunks == (Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, 1)  # TODO: use enum?
 
     # Open Zarr store with Xarray
     # TODO: move to separate test

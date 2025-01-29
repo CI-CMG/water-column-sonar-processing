@@ -1,5 +1,4 @@
 import gc
-import os
 from pathlib import Path
 
 import numcodecs
@@ -311,6 +310,12 @@ class ResampleRegrid:
                     output_zarr_store.bottom[
                         start_ping_time_index:end_ping_time_index
                     ] = detected_seafloor_depths
+                #
+                #
+                #
+                # TODO: write the time variable last so that I can parse that as check
+                #
+                #
                 #########################################################################
                 #########################################################################
         except Exception as err:
