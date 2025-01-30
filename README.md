@@ -45,7 +45,7 @@ Processing tool for converting L0 data to L1 and L2 as well as generating geospa
 # Installing Dependencies
 
   1. Add dependencies with versions to requirements.txt
-  2. ```pip install --upgrade pip && pip install -r requirements_dev.txt```
+  2. ```uv pip install --upgrade pip && uv pip install -r requirements_dev.txt```
 
 
 # Pytest
