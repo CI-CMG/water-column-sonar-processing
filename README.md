@@ -52,7 +52,8 @@ uv pip install -r pyproject.toml --extra dev
 
 # Pytest
 ```commandline
-pytest --disable-warnings
+uv run pytest tests
+#pytest --disable-warnings
 ```
 or
 > pytest --cache-clear --cov=src tests/ --cov-report=xml

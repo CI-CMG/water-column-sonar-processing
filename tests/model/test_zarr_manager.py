@@ -1,7 +1,7 @@
 import os
 import tempfile
 from tempfile import TemporaryDirectory
-
+import importlib.metadata
 import numcodecs
 import numpy as np
 import pytest
@@ -112,8 +112,8 @@ def test_zarr_manager():
     assert file_xr.attrs["ship_name"] == "test_ship"
     assert file_xr.attrs["cruise_name"] == "test_cruise"
     assert file_xr.attrs["sensor_name"] == "EK60"
-
-    # TODO: test version release number is set properly
+    current_project_version = importlib.metadata.version('water_column_sonar_processing')
+    assert file_xr.attrs["processing_software_version"] == current_project_version
 
     assert file_xr.Sv.dtype == "float32"
     assert file_xr.latitude.dtype == "float32"

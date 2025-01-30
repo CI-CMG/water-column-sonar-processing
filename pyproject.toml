@@ -1,7 +1,6 @@
 [build-system]
 requires = [
     "setuptools>=61.0",
-    #"setuptools_scm[toml] >= 4, <6",
     "wheel >= 0.29.0",
 ]
 build-backend = "setuptools.build_meta"
@@ -12,7 +11,7 @@ version = "25.1.4"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
-description = "A processing tool for water column sonar data."
+description = "Processing tool for water column sonar data."
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
@@ -20,7 +19,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-#dynamic = ["dependencies"]
+
 dependencies = [
     "aiobotocore==2.19.0",
     "boto3==1.36.3",
@@ -57,7 +56,6 @@ dev = [
     "flake8==7.1.1",
     "pooch==1.8.2",
     "pytest~=8.3.3",
-    "pytest-cov==6.0.0",
     "tqdm",
     "bandit"
 ]
@@ -68,16 +66,6 @@ test = [
 [project.urls]
 Homepage = "https://github.com/CI-CMG/water-column-sonar-processing"
 Issues = "https://github.com/CI-CMG/water-column-sonar-processing/issues"
-
-#[tool.setuptools.dynamic]
-#dependencies = {file = ["requirements.txt"]}
-#optional-dependencies = {dev = { file = ["requirements_dev.txt"] }}
-
-#[tool.setuptools_scm]
-#fallback_version = "unknown"
-#local_scheme = "node-and-date"
-#write_to = "_water_column_sonar_processing_version.py"
-#write_to_template = 'version = "{version}"'
 
 [tool.bandit]
 exclude_dirs = ["tests"]

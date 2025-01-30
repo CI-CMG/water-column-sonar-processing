@@ -2,6 +2,7 @@ import numcodecs
 import numpy as np
 import xarray as xr
 import zarr
+import importlib.metadata
 from numcodecs import Blosc
 
 from water_column_sonar_processing.aws import S3FSManager
@@ -249,9 +250,9 @@ class ZarrManager:
         root.attrs["sensor_name"] = sensor_name
         #
         root.attrs["processing_software_name"] = Coordinates.PROJECT_NAME.value
-        root.attrs["processing_software_version"] = (
-            "25.1.3"  # TODO: get programmatically, echopype>utils>prov.py
-        )
+
+        current_project_version = importlib.metadata.version('water_column_sonar_processing')
+        root.attrs["processing_software_version"] = current_project_version
         root.attrs["processing_software_time"] = Timestamp.get_timestamp()
         #
         root.attrs["calibration_status"] = calibration_status
