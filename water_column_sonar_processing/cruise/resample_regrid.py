@@ -197,9 +197,9 @@ class ResampleRegrid:
                 #  df[df['PIPELINE_STATUS'] < PipelineStatus.LEVEL_1_PROCESSING] = np.nan
 
                 # Get index from all cruise files. Note: should be based on which are included in cruise.
-                index = cruise_df.index[
+                index = int(cruise_df.index[
                     cruise_df["FILE_NAME"] == f"{file_name_stem}.raw"
-                ][0]
+                ][0])
 
                 # get input store
                 input_xr_zarr_store = zarr_manager.open_s3_zarr_store_with_xarray(
@@ -281,16 +281,6 @@ class ResampleRegrid:
                 #########################################################################
                 # write Sv values to cruise-level-model-store
                 output_zarr_store.Sv[:, start_ping_time_index:end_ping_time_index, :] = regrid_resample.values
-
-                #########################################################################
-                # [5] write subset of latitude/longitude
-                output_zarr_store.latitude[
-                    start_ping_time_index:end_ping_time_index
-                ] = geospatial.dropna()["latitude"].values # TODO: get from ds_sv directly, dont need geojson anymore
-                output_zarr_store.longitude[
-                    start_ping_time_index:end_ping_time_index
-                ] = geospatial.dropna()["longitude"].values
-
                 #########################################################################
                 # TODO: add the "detected_seafloor_depth/" to the
                 #  L2 cruise dataarrays
@@ -311,11 +301,14 @@ class ResampleRegrid:
                         start_ping_time_index:end_ping_time_index
                     ] = detected_seafloor_depths
                 #
-                #
-                #
-                # TODO: write the time variable last so that I can parse that as check
-                #
-                #
+                #########################################################################
+                # [5] write subset of latitude/longitude
+                output_zarr_store.latitude[
+                    start_ping_time_index:end_ping_time_index
+                ] = geospatial.dropna()["latitude"].values # TODO: get from ds_sv directly, dont need geojson anymore
+                output_zarr_store.longitude[
+                    start_ping_time_index:end_ping_time_index
+                ] = geospatial.dropna()["longitude"].values
                 #########################################################################
                 #########################################################################
         except Exception as err:

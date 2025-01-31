@@ -317,18 +317,21 @@ class ZarrManager:
         input_bucket_name: str,
         endpoint_url=None,
     ) -> xr.Dataset:
-        print("Opening L1 Zarr store in S3 with Xarray.")
+        print("Opening L1 Zarr store in S3 with Xarray.") # TODO: Is this only used for reading from?
         try:
             zarr_path = f"s3://{input_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr"
             s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
             store_s3_map = s3fs_manager.s3_map(s3_zarr_store_path=zarr_path)
-            ds = xr.open_zarr(
-                store=store_s3_map, consolidated=None
-            )  # synchronizer=SYNCHRONIZER
+            ds = xr.open_dataset(
+                filename_or_obj=store_s3_map,
+                engine="zarr",
+                chunks={}
+            )
         except Exception as err:
             print("Problem opening Zarr store in S3 as Xarray.")
             raise err
-        print("Done opening Zarr store in S3 as Xarray.")
+        finally:
+            print("Exiting opening Zarr store in S3 as Xarray.")
         return ds
 
     def open_l2_zarr_store_with_xarray(

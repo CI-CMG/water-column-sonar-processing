@@ -363,12 +363,13 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # because we only processed two files, there should be missing values
     assert np.isnan(np.sum(test_output_zarr_store.latitude.values))
 
-    start_time = np.datetime64('2007-07-12T12:49:06.313Z')
-    end_time = np.datetime64('2007-07-12T17:18:03.032Z')
+    start_time = np.datetime64('2007-07-12T12:49:06.313')
+    end_time = np.datetime64('2007-07-12T17:18:03.032')
     select_times = (test_output_zarr_store.time > start_time) & (test_output_zarr_store.time < end_time)
     # check selected timestamps and verify all latitude/longitude/times are updated
-    assert not np.isnan(np.sum(test_output_zarr_store.where(cond=(select_times), drop=True).latitude.values))
-    assert not np.isnan(np.sum(test_output_zarr_store.where(cond=(select_times), drop=True).longitude.values))
+    # test_output_zarr_store.latitude.sel(time=slice('2007-07-12T12:49:06.313Z', '2007-07-12T17:18:03.032Z')).values
+    assert not np.isnan(np.sum(test_output_zarr_store.where(cond=select_times, drop=True).latitude.values))
+    assert not np.isnan(np.sum(test_output_zarr_store.where(cond=select_times, drop=True).longitude.values))
 
     # TODO: times are initialized to '1970-01-01T00:00:00.000000000', need way to check updates
     #  maybe monotonic increasing

@@ -3317,7 +3317,6 @@ dev = [
     { name = "pre-commit" },
     { name = "pyinstaller" },
     { name = "pytest" },
-    { name = "pytest-cov" },
     { name = "tqdm" },
     { name = "twine" },
 ]
@@ -3348,7 +3347,6 @@ requires-dist = [
     { name = "pyarrow", specifier = "==18.1.0" },
     { name = "pyinstaller", marker = "extra == 'dev'" },
     { name = "pytest", marker = "extra == 'dev'", specifier = "~=8.3.3" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = "==6.0.0" },
     { name = "pytest-cov", marker = "extra == 'test'" },
     { name = "python-dotenv", specifier = "==1.0.1" },
     { name = "requests", specifier = "==2.32.3" },
