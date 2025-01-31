@@ -308,10 +308,10 @@ class ResampleRegrid:
                 #########################################################################
                 #########################################################################
         except Exception as err:
-            print(f"Problem interpolating the data: {err}")
+            print(f"Problem with resample_regrid: {err}")
             raise err
         finally:
-            print("Done interpolating data.")
+            print("Exiting resample_regrid.")
             # TODO: read across times and verify data was written?
 
     #######################################################
