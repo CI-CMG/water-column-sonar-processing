@@ -8,7 +8,8 @@ class Constants(Flag):
     # Average https://noaa-wcsd-zarr-pds.s3.us-east-1.amazonaws.com/level_2/Henry_B._Bigelow/HB0902/EK60/HB0902.zarr/time/927
     # chunk size is ~1.3 kB, HB0902 cruise takes ~30 seconds to load all time/lat/lon data
     # NOTE: larger value here will speed up the TurfJS download of data in the UI
-    SPATIOTEMPORAL_CHUNK_SIZE = int(2**16) # 2**17
+    # Problem interpolating the data: cannot reshape array of size 65536 into shape...
+    SPATIOTEMPORAL_CHUNK_SIZE = 16384 # e.g. int(2**14)
 
 
 class Coordinates(Enum):
