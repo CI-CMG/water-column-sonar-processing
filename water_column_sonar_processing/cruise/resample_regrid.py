@@ -282,7 +282,9 @@ class ResampleRegrid:
                 print(f"start_ping_time_index: {start_ping_time_index}, end_ping_time_index: {end_ping_time_index}")
                 #########################################################################
                 # write Sv values to cruise-level-model-store
-                output_zarr_store.Sv[:, start_ping_time_index:end_ping_time_index, :] = regrid_resample.values
+
+                for fff in range(regrid_resample.shape[-1]):
+                    output_zarr_store.Sv[:, start_ping_time_index:end_ping_time_index, fff] = regrid_resample.values[:, :, fff]
                 #########################################################################
                 # TODO: add the "detected_seafloor_depth/" to the
                 #  L2 cruise dataarrays
