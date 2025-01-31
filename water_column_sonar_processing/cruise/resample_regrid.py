@@ -226,18 +226,20 @@ class ResampleRegrid:
                 min_echo_range = np.nanmin(np.float32(cruise_df["MIN_ECHO_RANGE"]))
                 max_echo_range = np.nanmax(np.float32(cruise_df["MAX_ECHO_RANGE"]))
 
-                print(
-                    "Creating empty ndarray for Sv data."
-                )  # Note: cruise_zarr dimensions are (depth, time, frequency)
+                print("Creating empty ndarray for Sv data.")  # Note: cruise dims (depth, time, frequency)
+                output_zarr_store_shape = output_zarr_store.Sv.shape
+                end_ping_time_index - start_ping_time_index
+                output_zarr_store_height = output_zarr_store_shape[0]
+                output_zarr_store_width = end_ping_time_index - start_ping_time_index
+                output_zarr_store_depth = output_zarr_store_shape[2]
                 cruise_sv_subset = np.empty(
-                    shape=output_zarr_store.Sv[
-                        :, start_ping_time_index:end_ping_time_index, :
-                    ].shape
+                    shape=(output_zarr_store_height, output_zarr_store_width, output_zarr_store_depth)
                 )
                 cruise_sv_subset[:, :, :] = np.nan
 
                 all_cruise_depth_values = zarr_manager.get_depth_values(
-                    min_echo_range=min_echo_range, max_echo_range=max_echo_range
+                    min_echo_range=min_echo_range,
+                    max_echo_range=max_echo_range
                 ) # (5262,) and
 
                 print(" ".join(list(input_xr_zarr_store.Sv.dims)))

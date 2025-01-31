@@ -291,7 +291,7 @@ class ZarrManager:
         # zarr_synchronizer: Union[str, None] = None, # TODO:
         output_bucket_name: str,
         endpoint_url=None,
-    ):
+    ) -> zarr.hierarchy.Group:
         # Mounts a Zarr store using pythons Zarr implementation. The mounted store
         #  will have read/write privileges so that store can be updated.
         print("Opening L2 Zarr store with Zarr for writing.")
