@@ -63,6 +63,7 @@ class ResampleRegrid:
             for channel in range(
                 len(channels)
             ):  # TODO: leaving off here, need to subset for just indices in time axis
+                gc.collect()
                 print(
                     np.nanmax(
                         input_xr.echo_range.sel(
@@ -88,6 +89,7 @@ class ResampleRegrid:
                 )  # removes nan's
                 # iterate through partitions of data with similar depths and resample
                 for select_max_depth in set_of_max_depths:
+                    gc.collect()
                     # TODO: for nan just skip and leave all nan's
                     select_indices = [
                         i
@@ -134,7 +136,7 @@ class ResampleRegrid:
             print(f"Problem finding the dynamodb table: {err}")
             raise err
         print("Done interpolating data.")
-        return regrid_resample
+        return regrid_resample.values.copy()
 
     #################################################################
     def resample_regrid(
@@ -226,21 +228,11 @@ class ResampleRegrid:
                 min_echo_range = np.nanmin(np.float32(cruise_df["MIN_ECHO_RANGE"]))
                 max_echo_range = np.nanmax(np.float32(cruise_df["MAX_ECHO_RANGE"]))
 
-                print("Creating empty ndarray for Sv data.")  # Note: cruise dims (depth, time, frequency)
-                output_zarr_store_shape = output_zarr_store.Sv.shape
-                end_ping_time_index - start_ping_time_index
-                output_zarr_store_height = output_zarr_store_shape[0]
-                output_zarr_store_width = end_ping_time_index - start_ping_time_index
-                output_zarr_store_depth = output_zarr_store_shape[2]
-                cruise_sv_subset = np.empty(
-                    shape=(output_zarr_store_height, output_zarr_store_width, output_zarr_store_depth)
-                )
-                cruise_sv_subset[:, :, :] = np.nan
-
+                # Note: cruise dims (depth, time, frequency)
                 all_cruise_depth_values = zarr_manager.get_depth_values(
                     min_echo_range=min_echo_range,
                     max_echo_range=max_echo_range
-                ) # (5262,) and
+                )
 
                 print(" ".join(list(input_xr_zarr_store.Sv.dims)))
                 if set(input_xr_zarr_store.Sv.dims) != {
@@ -284,7 +276,7 @@ class ResampleRegrid:
                 # write Sv values to cruise-level-model-store
 
                 for fff in range(regrid_resample.shape[-1]):
-                    output_zarr_store.Sv[:, start_ping_time_index:end_ping_time_index, fff] = regrid_resample.values[:, :, fff]
+                    output_zarr_store.Sv[:, start_ping_time_index:end_ping_time_index, fff] = regrid_resample[:, :, fff]
                 #########################################################################
                 # TODO: add the "detected_seafloor_depth/" to the
                 #  L2 cruise dataarrays

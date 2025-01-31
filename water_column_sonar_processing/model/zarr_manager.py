@@ -91,7 +91,7 @@ class ZarrManager:
             chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
             dtype=np.dtype(Coordinates.TIME_DTYPE.value),
             compressor=self.__compressor,
-            fill_value=np.nan,  # TODO: do i want nan's?
+            fill_value=np.nan,
             overwrite=self.__overwrite,
         )
 
