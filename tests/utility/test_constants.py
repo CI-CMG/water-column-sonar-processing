@@ -2,7 +2,6 @@ from dotenv import find_dotenv, load_dotenv
 from water_column_sonar_processing.utility import Constants
 
 
-
 #######################################################
 def setup_module():
     print("setup")

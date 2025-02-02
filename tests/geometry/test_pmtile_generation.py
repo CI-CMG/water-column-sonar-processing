@@ -4,12 +4,6 @@ from dotenv import find_dotenv, load_dotenv
 from water_column_sonar_processing.geometry import PMTileGeneration
 
 
-# from src.water_column_sonar_processing.aws import S3Manager
-
-# @pytest.fixture
-# def pmtile_generation_test_path(test_path):
-#     return test_path["PMTILE_GENERATION_TEST_PATH"]
-
 #######################################################
 def setup_module():
     print("setup")
@@ -19,27 +13,6 @@ def setup_module():
 
 def teardown_module():
     print("teardown")
-
-# @pytest.fixture(scope="session")
-# def zarr_store_base():
-#     # path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr"
-#     # s3 = s3fs.S3FileSystem(anon=True)
-#     # zarr_store = s3fs.S3Map(root=path_to_zarr_store, s3=s3)
-#     # return zarr_store
-#     path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr"
-#     s3fs.S3FileSystem(anon=True)
-#     yield
-
-# def get_zarr():
-#     print("test")
-#     s3_fs = s3fs.S3FileSystem(anon=True)
-#     path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr"
-#     zarr_store = s3fs.S3Map(root=path_to_zarr_store, s3=s3_fs)
-#     foo = xr.open_zarr(store=zarr_store)
-#     foo.Sv.shape
-#     return foo
-
-
 
 # def test_async_s3(pmtile_generation_test_path):
 #     s3_fs = s3fs.S3FileSystem(anon=True)
@@ -51,12 +24,13 @@ def teardown_module():
 
 @pytest.mark.skip(reason="This test uses actual data in s3 buckets")
 def test_get_geospatial_info_from_zarr_store():
+    # This is creating a dataframe and writing to a file?!
     ship_name = "Henry_B._Bigelow"
     cruise_name = "HB0706"
     pmtile_generation = PMTileGeneration()
     processed_cruise = pmtile_generation.get_geospatial_info_from_zarr_store(ship_name, cruise_name)
 
-    assert processed_cruise
+    assert processed_cruise == 'HB0706'
 
 @pytest.mark.skip(reason="This test uses actual data in s3 buckets")
 def test_open_zarr_stores_with_thread_pool_executor():
@@ -64,7 +38,7 @@ def test_open_zarr_stores_with_thread_pool_executor():
         "HB0706",
         "HB0707",
         "HB0710",
-        # #"HB0802", # problem
+        "HB0802", # problem
         "HB0803",
         "HB0805",
         "HB0806",
@@ -77,13 +51,12 @@ def test_open_zarr_stores_with_thread_pool_executor():
         "HB1002",
         "HB1006",
         "HB1102",
-        #"HB1103", # shapely.errors.GEOSException: IllegalArgumentException: Non-finite envelope bounds passed to index insert
-        #  ^ has nans
+        "HB1103", # shapely.errors.GEOSException: IllegalArgumentException: Non-finite envelope bounds passed to index insert
         "HB1105",
         "HB1201",
         "HB1206",
         "HB1301",
-        #"HB1303", # HB1303 missing lat/lon
+        "HB1303", # HB1303 missing lat/lon
         "HB1304",
         "HB1401",
         "HB1402",
@@ -92,9 +65,9 @@ def test_open_zarr_stores_with_thread_pool_executor():
         "HB1501",
         "HB1502",
         "HB1503",
-        #"HB1506", # missing lat/lon
+        "HB1506", # missing lat/lon
         "HB1507",
-        #"HB1601", # problem, botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "https://noaa-wcsd-zarr-pds.s3.amazonaws.com/level_2/Henry_B._Bigelow/HB1601/EK60/HB1601.zarr/longitude/907"
+        "HB1601", # problem, botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "https://noaa-wcsd-zarr-pds.s3.amazonaws.com/level_2/Henry_B._Bigelow/HB1601/EK60/HB1601.zarr/longitude/907"
         #"HB1603", # HB1603 missing lat/lon
         #"HB1604", # missing lat/lon
         "HB1701",

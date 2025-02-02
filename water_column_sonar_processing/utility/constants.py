@@ -9,7 +9,12 @@ class Constants(Flag):
     # chunk size is ~1.3 kB, HB0902 cruise takes ~30 seconds to load all time/lat/lon data
     # NOTE: larger value here will speed up the TurfJS download of data in the UI
     # Problem interpolating the data: cannot reshape array of size 65536 into shape...
-    SPATIOTEMPORAL_CHUNK_SIZE = 16384 # e.g. int(2**14)
+    SPATIOTEMPORAL_CHUNK_SIZE = int(2**16) - 1024 # e.g. int(2**14)
+
+    LEVEL_0 = "raw"
+    LEVEL_1 = "level_1"
+    LEVEL_2 = "level_2"
+    LEVEL_3 = "level_3"
 
 
 class Coordinates(Enum):

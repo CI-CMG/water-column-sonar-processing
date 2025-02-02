@@ -19,6 +19,15 @@ GB = 1024**3
 
 
 class PMTileGeneration(object):
+    """
+    TODO: need to
+     - iterate through the zarr stores for all cruises
+     - generate geojson in geopandas df
+     - consolidate into singular df, one cruise per row
+     - export as _shape?_ file
+     - document next steps creating pmtiles with linux commands
+     - upload to s3
+    """
     #######################################################
     def __init__(
         self,
@@ -85,12 +94,19 @@ class PMTileGeneration(object):
         ship_name,
         cruise_names,
     ):
+        # TODO: NOT USED ANYWHERE
         total_size = 0
-        s3_fs = s3fs.S3FileSystem(anon=True)
+        # s3_fs = s3fs.S3FileSystem(anon=True)
         for cruise_name in cruise_names:
-            path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
-            zarr_store = s3fs.S3Map(root=path_to_zarr_store, s3=s3_fs)
-            xr_store = xr.open_zarr(store=zarr_store, consolidated=None)
+            s3_path = f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
+            # zarr_store = s3fs.S3Map(root=s3_path, s3=s3_fs)
+            xr_store = xr.open_dataset(
+                filename_or_obj=s3_path,
+                engine="zarr",
+                storage_options={'anon': True},
+                chunks = {},  # this allows the engine to define the chunk scheme
+                cache = True,
+            )
             print(f'Cruise: {cruise_name}, shape: {xr_store.time.shape[0]}')
             total_size = total_size + xr_store.time.shape[0]
 
@@ -102,21 +118,22 @@ class PMTileGeneration(object):
         """
         Open Zarr store, create geometry, write to geojson, return name
         """
-        s3_fs = s3fs.S3FileSystem(anon=True)
+        # s3_fs = s3fs.S3FileSystem(anon=True)
         gps_gdf = geopandas.GeoDataFrame(
             columns=["id", "ship", "cruise", "sensor", "geometry"],
             geometry="geometry",
             crs="EPSG:4326"
         )
-        path_to_zarr_store = f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
-        # file_name = os.path.normpath(path_to_zarr_store).split(os.sep)[-1]
-        # file_stem = os.path.splitext(os.path.basename(file_name))[0]
-        zarr_store = s3fs.S3Map(root=path_to_zarr_store, s3=s3_fs)
-        # ---Open Zarr Store--- #
+        s3_path = f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
         # TODO: try-except to allow failures
         print('opening store')
-        # xr_store = xr.open_zarr(store=zarr_store, consolidated=False)
-        xr_store = xr.open_zarr(store=zarr_store, consolidated=None)
+        xr_store = xr.open_dataset(
+            filename_or_obj=s3_path,
+            engine="zarr",
+            storage_options={'anon': True},
+            chunks={},  # this allows the engine to define the chunk scheme
+            cache=True,
+        )
         print(xr_store.Sv.shape)
         # ---Read Zarr Store Time/Latitude/Longitude--- #
         latitude = xr_store.latitude.values
@@ -259,4 +276,4 @@ TODO:
 
 
 
-total = [246847, 89911, 169763, 658047, 887640, 708771, 187099, 3672813, 4095002, 763268, 162727, 189454, 1925270, 3575857, 1031920, 1167590, 3737415, 4099957, 3990725, 3619996, 3573052, 2973090, 55851, 143192, 1550164, 3692819, 668400, 489735, 393260, 1311234, 242989, 4515760, 1303091, 704663, 270645, 3886437, 4204381, 1062090, 428639, 541455, 4206506, 298561, 1279329, 137416, 139836, 228947, 517949]
+#total = [246847, 89911, 169763, 658047, 887640, 708771, 187099, 3672813, 4095002, 763268, 162727, 189454, 1925270, 3575857, 1031920, 1167590, 3737415, 4099957, 3990725, 3619996, 3573052, 2973090, 55851, 143192, 1550164, 3692819, 668400, 489735, 393260, 1311234, 242989, 4515760, 1303091, 704663, 270645, 3886437, 4204381, 1062090, 428639, 541455, 4206506, 298561, 1279329, 137416, 139836, 228947, 517949]
