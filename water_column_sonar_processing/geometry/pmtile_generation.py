@@ -1,15 +1,14 @@
 import glob
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+
 import fiona
-import s3fs
+import geopandas
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import xarray as xr
-import geopandas
-import geopandas as gpd
-import pyogrio
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from shapely.geometry import LineString
 
 MAX_POOL_CONNECTIONS = 64
@@ -28,6 +27,7 @@ class PMTileGeneration(object):
      - document next steps creating pmtiles with linux commands
      - upload to s3
     """
+
     #######################################################
     def __init__(
         self,
@@ -64,9 +64,7 @@ class PMTileGeneration(object):
         df = pd.DataFrame(pieces)
         print(df)
         gps_gdf = gpd.GeoDataFrame(
-            data=df[
-                ["ship_name", "cruise_name", "file_stem"]
-            ],  # try again with file_stem
+            data=df[["ship_name", "cruise_name", "file_stem"]],  # try again with file_stem
             geometry=df["geom"],
             crs="EPSG:4326",
         )
@@ -98,16 +96,18 @@ class PMTileGeneration(object):
         total_size = 0
         # s3_fs = s3fs.S3FileSystem(anon=True)
         for cruise_name in cruise_names:
-            s3_path = f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
+            s3_path = (
+                f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
+            )
             # zarr_store = s3fs.S3Map(root=s3_path, s3=s3_fs)
             xr_store = xr.open_dataset(
                 filename_or_obj=s3_path,
                 engine="zarr",
-                storage_options={'anon': True},
-                chunks = {},  # this allows the engine to define the chunk scheme
-                cache = True,
+                storage_options={"anon": True},
+                chunks={},  # this allows the engine to define the chunk scheme
+                cache=True,
             )
-            print(f'Cruise: {cruise_name}, shape: {xr_store.time.shape[0]}')
+            print(f"Cruise: {cruise_name}, shape: {xr_store.time.shape[0]}")
             total_size = total_size + xr_store.time.shape[0]
 
     def get_geospatial_info_from_zarr_store(
@@ -122,15 +122,17 @@ class PMTileGeneration(object):
         gps_gdf = geopandas.GeoDataFrame(
             columns=["id", "ship", "cruise", "sensor", "geometry"],
             geometry="geometry",
-            crs="EPSG:4326"
+            crs="EPSG:4326",
         )
-        s3_path = f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
+        s3_path = (
+            f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
+        )
         # TODO: try-except to allow failures
-        print('opening store')
+        print("opening store")
         xr_store = xr.open_dataset(
             filename_or_obj=s3_path,
             engine="zarr",
-            storage_options={'anon': True},
+            storage_options={"anon": True},
             chunks={},  # this allows the engine to define the chunk scheme
             cache=True,
         )
@@ -139,20 +141,28 @@ class PMTileGeneration(object):
         latitude = xr_store.latitude.values
         longitude = xr_store.longitude.values
         if np.isnan(latitude).any() or np.isnan(longitude).any():
-            print(f'there was missing lat-lon data for {cruise_name}')
+            print(f"there was missing lat-lon data for {cruise_name}")
             return None
         # ---Add To GeoPandas Dataframe--- #
         # TODO: experiment with tolerance "0.001"
-        geom = LineString(list(zip(longitude, latitude))).simplify(tolerance=0.001, preserve_topology=True)
-        gps_gdf.loc[0] = (0, "Henry_B._Bigelow", cruise_name, "EK60", geom)  # (ship, cruise, sensor, geometry)
-        gps_gdf.set_index('id', inplace=True)
-        gps_gdf.to_file(f"dataframe_{cruise_name}.geojson", driver="GeoJSON") #, engine="pyogrio")
+        geom = LineString(list(zip(longitude, latitude))).simplify(
+            tolerance=0.001, preserve_topology=True
+        )
+        gps_gdf.loc[0] = (
+            0,
+            "Henry_B._Bigelow",
+            cruise_name,
+            "EK60",
+            geom,
+        )  # (ship, cruise, sensor, geometry)
+        gps_gdf.set_index("id", inplace=True)
+        gps_gdf.to_file(f"dataframe_{cruise_name}.geojson", driver="GeoJSON")  # , engine="pyogrio")
         return cruise_name
 
     #######################################################
     def open_zarr_stores_with_thread_pool_executor(
-            self,
-            cruises: list,
+        self,
+        cruises: list,
     ):
         # 'cruises' is a list of cruises to process
         completed_cruises = []
@@ -173,37 +183,46 @@ class PMTileGeneration(object):
         except Exception as err:
             print(err)
         print("Done opening zarr stores using thread pool.")
-        return completed_cruises # Took ~12 minutes
+        return completed_cruises  # Took ~12 minutes
 
     #######################################################
     # https://docs.protomaps.com/pmtiles/create
-    def aggregate_geojson_into_dataframe(
-        self
-    ):
+    def aggregate_geojson_into_dataframe(self):
         """
         iterate through cruises, threadpoolexecute geojson creation, aggregate geojson files into df,
         """
         gps_gdf = geopandas.GeoDataFrame(
             columns=["id", "ship", "cruise", "sensor", "geometry"],
             geometry="geometry",
-            crs="EPSG:4326"
+            crs="EPSG:4326",
         )
 
-        file_type = 'dataframe_*.geojson'
+        file_type = "dataframe_*.geojson"
         geojson_files = glob.glob(file_type)
         for jjj in range(len(geojson_files)):
             print(jjj)
             geom = geopandas.read_file(geojson_files[jjj])
-            gps_gdf.loc[jjj] = (jjj, geom.ship[0], geom.cruise[0], geom.sensor[0], geom.geometry[0])
-            #gps_gdf.loc[0] = (0, "Henry_B._Bigelow", cruise_name, "EK60", geom)  # (ship, cruise, sensor, geometry)
+            gps_gdf.loc[jjj] = (
+                jjj,
+                geom.ship[0],
+                geom.cruise[0],
+                geom.sensor[0],
+                geom.geometry[0],
+            )
+            # gps_gdf.loc[0] = (0, "Henry_B._Bigelow", cruise_name, "EK60", geom)  # (ship, cruise, sensor, geometry)
         print(gps_gdf)
-        gps_gdf.set_index('id', inplace=True)
-        gps_gdf.to_file(f"data.geojson", driver="GeoJSON", engine="pyogrio", layer_options={"ID_GENERATE": "YES"})
+        gps_gdf.set_index("id", inplace=True)
+        gps_gdf.to_file(
+            f"data.geojson",
+            driver="GeoJSON",
+            engine="pyogrio",
+            layer_options={"ID_GENERATE": "YES"},
+        )
         return list(gps_gdf.cruise)
 
         # gps_gdf.loc[iii] = (iii, "Henry_B._Bigelow", cruise_name, "EK60", geom)  # (ship, cruise, sensor, geometry)
-        #print('writing to file')
-        #print(gps_gdf)
+        # print('writing to file')
+        # print(gps_gdf)
         # gps_gdf.set_index('id', inplace=True)
         # gps_gdf.to_file(f"dataframe_{cruise_name}.geojson", driver="GeoJSON", engine="pyogrio", layer_options={"ID_GENERATE": "YES"})
         # https://gdal.org/en/latest/drivers/vector/jsonfg.html
@@ -215,25 +234,25 @@ class PMTileGeneration(object):
         # )
         # gps_gdf.to_file(f"dataframe_{cruise_name}.geojson", driver="GeoJSON", engine="pyogrio", id_generate=True)
 
+
 # print(fiona.supported_drivers) # {'DXF': 'rw', 'CSV': 'raw', 'OpenFileGDB': 'raw', 'ESRIJSON': 'r', 'ESRI Shapefile': 'raw', 'FlatGeobuf': 'raw', 'GeoJSON': 'raw', 'GeoJSONSeq': 'raw', 'GPKG': 'raw', 'GML': 'rw', 'OGR_GMT': 'rw', 'GPX': 'rw', 'MapInfo File': 'raw', 'DGN': 'raw', 'S57': 'r', 'SQLite': 'raw', 'TopoJSON': 'r'}
-#gps_gdf.to_file('dataframe.shp', crs="EPSG:4326", engine="fiona")
+# gps_gdf.to_file('dataframe.shp', crs="EPSG:4326", engine="fiona")
 # Convert geojson feature collection to pmtiles
-#gps_gdf.to_file("dataframe.geojson", driver="GeoJSON", crs="EPSG:4326", engine="fiona")
-#print("done")
+# gps_gdf.to_file("dataframe.geojson", driver="GeoJSON", crs="EPSG:4326", engine="fiona")
+# print("done")
 # ---Export Shapefile--- #
 
 
-
-#gps_gdf.set_geometry(col='geometry', inplace=True)
-#gps_gdf.__geo_interface__
-#gps_gdf.set_index('id', inplace=True)
-#gps_gdf.to_file(f"dataframe3.geojson", driver="GeoJSON", crs="EPSG:4326", engine="fiona", index=True)
+# gps_gdf.set_geometry(col='geometry', inplace=True)
+# gps_gdf.__geo_interface__
+# gps_gdf.set_index('id', inplace=True)
+# gps_gdf.to_file(f"dataframe3.geojson", driver="GeoJSON", crs="EPSG:4326", engine="fiona", index=True)
 
 ### this gives the right layer id values
-#gps_gdf.to_file(f"dataframe6.geojson", driver="GeoJSON", engine="pyogrio", layer_options={"ID_GENERATE": "YES"})
+# gps_gdf.to_file(f"dataframe6.geojson", driver="GeoJSON", engine="pyogrio", layer_options={"ID_GENERATE": "YES"})
 # jq '{"type": "FeatureCollection", "features": [.[] | .features[]]}' --slurp input*.geojson > output.geojson
-#tippecanoe -zg --projection=EPSG:4326 -o water-column-sonar-id.pmtiles -l cruises output.geojson
-#tippecanoe -zg --convert-stringified-ids-to-numbers --projection=EPSG:4326 -o water-column-sonar-id.pmtiles -l cruises dataframe*.geojson
+# tippecanoe -zg --projection=EPSG:4326 -o water-column-sonar-id.pmtiles -l cruises output.geojson
+# tippecanoe -zg --convert-stringified-ids-to-numbers --projection=EPSG:4326 -o water-column-sonar-id.pmtiles -l cruises dataframe*.geojson
 # {
 # "type": "FeatureCollection",
 # "name": "dataframe5",
@@ -275,5 +294,4 @@ TODO:
 # print(ds_zarr.Sv.shape)
 
 
-
-#total = [246847, 89911, 169763, 658047, 887640, 708771, 187099, 3672813, 4095002, 763268, 162727, 189454, 1925270, 3575857, 1031920, 1167590, 3737415, 4099957, 3990725, 3619996, 3573052, 2973090, 55851, 143192, 1550164, 3692819, 668400, 489735, 393260, 1311234, 242989, 4515760, 1303091, 704663, 270645, 3886437, 4204381, 1062090, 428639, 541455, 4206506, 298561, 1279329, 137416, 139836, 228947, 517949]
+# total = [246847, 89911, 169763, 658047, 887640, 708771, 187099, 3672813, 4095002, 763268, 162727, 189454, 1925270, 3575857, 1031920, 1167590, 3737415, 4099957, 3990725, 3619996, 3573052, 2973090, 55851, 143192, 1550164, 3692819, 668400, 489735, 393260, 1311234, 242989, 4515760, 1303091, 704663, 270645, 3886437, 4204381, 1062090, 428639, 541455, 4206506, 298561, 1279329, 137416, 139836, 228947, 517949]

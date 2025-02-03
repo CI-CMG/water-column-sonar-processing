@@ -9,10 +9,10 @@ repos:
         language: system
         stages: [ "pre-commit", "pre-push" ]
 
-#  - repo: https://github.com/psf/black
-#    rev: 24.10.0
-#    hooks:
-#      - id: black
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
 
 #  - repo: https://github.com/PyCQA/flake8
 #    rev: 7.1.1
@@ -30,11 +30,11 @@ repos:
 #      - id: ruff-format
 
   - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+    rev: 6.0.0
     hooks:
       - id: isort
         name: isort (python)
-        args: ["--profile", "black", "--filter-files"]
+        args: ["--profile", "black"] # , "--filter-files"]
 
 ### Static Security Scan ###
   # To run manually you can do: "bandit -c pyproject.toml -r ."
