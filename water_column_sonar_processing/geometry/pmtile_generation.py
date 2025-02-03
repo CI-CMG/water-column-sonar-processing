@@ -64,7 +64,9 @@ class PMTileGeneration(object):
         df = pd.DataFrame(pieces)
         print(df)
         gps_gdf = gpd.GeoDataFrame(
-            data=df[["ship_name", "cruise_name", "file_stem"]],  # try again with file_stem
+            data=df[
+                ["ship_name", "cruise_name", "file_stem"]
+            ],  # try again with file_stem
             geometry=df["geom"],
             crs="EPSG:4326",
         )
@@ -96,9 +98,7 @@ class PMTileGeneration(object):
         total_size = 0
         # s3_fs = s3fs.S3FileSystem(anon=True)
         for cruise_name in cruise_names:
-            s3_path = (
-                f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
-            )
+            s3_path = f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
             # zarr_store = s3fs.S3Map(root=s3_path, s3=s3_fs)
             xr_store = xr.open_dataset(
                 filename_or_obj=s3_path,
@@ -124,9 +124,7 @@ class PMTileGeneration(object):
             geometry="geometry",
             crs="EPSG:4326",
         )
-        s3_path = (
-            f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
-        )
+        s3_path = f"s3://noaa-wcsd-zarr-pds/level_2/{ship_name}/{cruise_name}/EK60/{cruise_name}.zarr"
         # TODO: try-except to allow failures
         print("opening store")
         xr_store = xr.open_dataset(
@@ -156,7 +154,9 @@ class PMTileGeneration(object):
             geom,
         )  # (ship, cruise, sensor, geometry)
         gps_gdf.set_index("id", inplace=True)
-        gps_gdf.to_file(f"dataframe_{cruise_name}.geojson", driver="GeoJSON")  # , engine="pyogrio")
+        gps_gdf.to_file(
+            f"dataframe_{cruise_name}.geojson", driver="GeoJSON"
+        )  # , engine="pyogrio")
         return cruise_name
 
     #######################################################
@@ -213,7 +213,7 @@ class PMTileGeneration(object):
         print(gps_gdf)
         gps_gdf.set_index("id", inplace=True)
         gps_gdf.to_file(
-            f"data.geojson",
+            "data.geojson",
             driver="GeoJSON",
             engine="pyogrio",
             layer_options={"ID_GENERATE": "YES"},
@@ -262,19 +262,19 @@ class PMTileGeneration(object):
 # { "type": "Feature", "id": 2, "properties": { "id": 2, "ship": "Henry_B._Bigelow", "cruise": "HB0710", "sensor": "EK60" }, "geometry": { "type": "LineString", "coordinates": [ [ -72.489486694335938, 40.331901550292969 ], [ -72.490760803222656, 40.33099365234375 ] ] } }
 # ]
 # }
-"""
-# https://docs.protomaps.com/pmtiles/create
-#ogr2ogr -t_srs EPSG:4326 data.geojson dataframe.shp
-# Only need to do the second one here...
-tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises dataframe.geojson
-tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises --coalesce-densest-as-needed --extend-zooms-if-still-dropping dataframe*.geojson
-# used this to combine all the geojson files into single pmtile file (2024-12-03):
-tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises --coalesce-densest-as-needed --extend-zooms-if-still-dropping dataframe*.geojson
 
-TODO:
-    run each one of the cruises in a separate ospool workflow.
-    each process gets own store    
-"""
+# # https://docs.protomaps.com/pmtiles/create
+# #ogr2ogr -t_srs EPSG:4326 data.geojson dataframe.shp
+# # Only need to do the second one here...
+# tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises dataframe.geojson
+# tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises --coalesce-densest-as-needed --extend-zooms-if-still-dropping dataframe*.geojson
+# # used this to combine all the geojson files into single pmtile file (2024-12-03):
+# tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises --coalesce-densest-as-needed --extend-zooms-if-still-dropping dataframe*.geojson
+#
+# TODO:
+#     run each one of the cruises in a separate ospool workflow.
+#     each process gets own store
+
 ###########################################################
 
 # s3_manager = S3Manager()  # endpoint_url=endpoint_url)

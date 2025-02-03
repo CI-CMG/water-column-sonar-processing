@@ -1,14 +1,13 @@
+import importlib.metadata
+
 import numcodecs
 import numpy as np
 import xarray as xr
 import zarr
-import importlib.metadata
 from numcodecs import Blosc
 
 from water_column_sonar_processing.aws import S3FSManager
-from water_column_sonar_processing.utility import Constants
-from water_column_sonar_processing.utility import Timestamp
-from water_column_sonar_processing.utility import Coordinates
+from water_column_sonar_processing.utility import Constants, Coordinates, Timestamp
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)
@@ -49,7 +48,7 @@ class ZarrManager:
         )
 
         if np.any(np.isnan(all_cruise_depth_values)):
-            raise Exception('Problem depth values returned were NaN.')
+            raise Exception("Problem depth values returned were NaN.")
 
         print("Done getting depth values.")
         return all_cruise_depth_values.round(decimals=2)
@@ -57,7 +56,7 @@ class ZarrManager:
     #######################################################
     def create_zarr_store(
         self,
-        path: str, # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
+        path: str,  # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
         ship_name: str,
         cruise_name: str,
         sensor_name: str,
@@ -123,7 +122,7 @@ class ZarrManager:
         )
 
         if np.any(np.isnan(depth_values)):
-            raise Exception('Some depth values returned were NaN.')
+            raise Exception("Some depth values returned were NaN.")
 
         root.depth.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.DEPTH.value]
 
@@ -171,7 +170,9 @@ class ZarrManager:
 
         root.longitude.attrs["units"] = Coordinates.LONGITUDE_UNITS.value
         root.longitude.attrs["long_name"] = Coordinates.LONGITUDE_LONG_NAME.value
-        root.longitude.attrs["standard_name"] = Coordinates.LONGITUDE_STANDARD_NAME.value
+        root.longitude.attrs["standard_name"] = (
+            Coordinates.LONGITUDE_STANDARD_NAME.value
+        )
 
         #####################################################################
         # TODO: verify adding this variable for where the bottom was detected
@@ -224,7 +225,11 @@ class ZarrManager:
             name=Coordinates.SV.value,
             shape=(len(depth_values), width, len(frequencies)),
             # chunks=(Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, len(frequencies)),
-            chunks=(Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, 1), # 256x256x1 <- speed up for alex
+            chunks=(
+                Constants.TILE_SIZE.value,
+                Constants.TILE_SIZE.value,
+                1,
+            ),  # 256x256x1 <- speed up for alex
             dtype=np.dtype(
                 Coordinates.SV_DTYPE.value
             ),  # TODO: try to experiment with 'float16'
@@ -251,7 +256,9 @@ class ZarrManager:
         #
         root.attrs["processing_software_name"] = Coordinates.PROJECT_NAME.value
 
-        current_project_version = importlib.metadata.version('water_column_sonar_processing')
+        current_project_version = importlib.metadata.version(
+            "water_column_sonar_processing"
+        )
         root.attrs["processing_software_version"] = current_project_version
         root.attrs["processing_software_time"] = Timestamp.get_timestamp()
         #
@@ -317,16 +324,14 @@ class ZarrManager:
         input_bucket_name: str,
         endpoint_url=None,
     ) -> xr.Dataset:
-        print("Opening L1 Zarr store in S3 with Xarray.") # TODO: Is this only used for reading from?
+        print(
+            "Opening L1 Zarr store in S3 with Xarray."
+        )  # TODO: Is this only used for reading from?
         try:
             zarr_path = f"s3://{input_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr"
             s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
             store_s3_map = s3fs_manager.s3_map(s3_zarr_store_path=zarr_path)
-            ds = xr.open_dataset(
-                filename_or_obj=store_s3_map,
-                engine="zarr",
-                chunks={}
-            )
+            ds = xr.open_dataset(filename_or_obj=store_s3_map, engine="zarr", chunks={})
         except Exception as err:
             print("Problem opening Zarr store in S3 as Xarray.")
             raise err
@@ -353,6 +358,7 @@ class ZarrManager:
             raise err
         print("Done opening Zarr store in S3 as Xarray.")
         return ds
+
     ############################################################################
 
     #######################################################

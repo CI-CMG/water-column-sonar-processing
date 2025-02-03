@@ -1,21 +1,20 @@
-import os
 import numpy as np
+import pytest
 import xarray as xr
 import zarr
-import boto3
-import pytest
+from dotenv import find_dotenv, load_dotenv
+
 # from s3fs import S3FileSystem # TODO: shouldn't import this
 from moto import mock_aws
-from dotenv import find_dotenv, load_dotenv
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
-from water_column_sonar_processing.aws import S3Manager
-from water_column_sonar_processing.aws import S3FSManager
+from water_column_sonar_processing.aws import S3FSManager, S3Manager
 
 test_bucket = "test_bucket123"
 ip_address = "127.0.0.1"
 port = 5555
 endpoint_url = f"http://{ip_address}:{port}"
+
 
 #######################################################
 def setup_module():
@@ -23,8 +22,10 @@ def setup_module():
     env_file = find_dotenv(".env-test")
     load_dotenv(dotenv_path=env_file, override=True)
 
+
 def teardown_module():
     print("teardown")
+
 
 @pytest.fixture(scope="module")
 def moto_server():
@@ -36,9 +37,11 @@ def moto_server():
     yield f"http://{host}:{port}"
     server.stop()
 
+
 @pytest.fixture
 def s3fs_manager_test_path(test_path):
     return test_path["S3FS_MANAGER_TEST_PATH"]
+
 
 #####################################################################
 #####################################################################
@@ -87,7 +90,7 @@ def test_s3_map(moto_server, s3fs_manager_test_path, tmp_path):
         coords={"y": [0, 1], "x": [10, 20, 30]},
     )
     # TODO: write zarr store directly to the s3 bucket?!
-    ds.to_zarr(zarr_path) #, zarr_format=2)
+    ds.to_zarr(zarr_path)  # , zarr_format=2)
 
     # --- Upload to S3 --- #
     # TODO: just copy from a to b
@@ -114,14 +117,12 @@ def test_s3_map(moto_server, s3fs_manager_test_path, tmp_path):
 
     assert s3fs_manager.exists(f"s3://{test_bucket}/ship/cruise/sensor/example.model")
 
-    found = s3_manager.list_objects(
-        test_bucket, "ship/cruise/sensor/example.model"
-    )
+    found = s3_manager.list_objects(test_bucket, "ship/cruise/sensor/example.model")
     print(found)
     s3_object = s3_manager.get_object(
         bucket_name=test_bucket, key_name="ship/cruise/sensor/example.model/.zgroup"
     )
-    body = s3_object.get('Body').read().decode('utf-8')
+    body = s3_object.get("Body").read().decode("utf-8")
     print(body)
 
     s3_store = s3fs_manager.s3_map(
@@ -149,6 +150,7 @@ def test_s3_map(moto_server, s3fs_manager_test_path, tmp_path):
     cruise_zarr.a[0, 1] = 42
 
     assert s3_zarr_xr.a[0, 1].values == 42
+
 
 #####################################################################
 #####################################################################

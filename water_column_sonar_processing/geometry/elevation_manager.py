@@ -26,16 +26,15 @@ https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/Ima
   "status": "OK"
 }
 """
+
 import json
 import time
-
-import requests
 from collections.abc import Generator
 
-def chunked(
-    ll: list,
-    n: int
-) -> Generator:
+import requests
+
+
+def chunked(ll: list, n: int) -> Generator:
     # Yields successively n-sized chunks from ll.
     for i in range(0, len(ll), n):
         yield ll[i : i + n]
@@ -51,10 +50,10 @@ class ElevationManager:
 
     #######################################################
     def get_arcgis_elevation(
-            self,
-            lngs: list,
-            lats: list,
-            chunk_size: int=500, # I think this is the api limit
+        self,
+        lngs: list,
+        lats: list,
+        chunk_size: int = 500,  # I think this is the api limit
     ) -> int:
         # Reference: https://developers.arcgis.com/rest/services-reference/enterprise/map-to-image/
         # Info: https://www.arcgis.com/home/item.html?id=c876e3c96a8642ab8557646a3b4fa0ff
@@ -62,7 +61,7 @@ class ElevationManager:
         if len(lngs) != len(lats):
             raise ValueError("lngs and lats must have same length")
 
-        geometryType = "esriGeometryMultipoint" # TODO: allow single point?
+        geometryType = "esriGeometryMultipoint"  # TODO: allow single point?
 
         depths = []
 
@@ -71,14 +70,14 @@ class ElevationManager:
             time.sleep(0.1)
             # order: (lng, lat)
             geometry = f'{{"points":{str(chunk)}}}'
-            url=f'https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/ImageServer/identify?geometry={geometry}&geometryType={geometryType}&returnGeometry=false&returnCatalogItems=false&f=json'
+            url = f"https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/ImageServer/identify?geometry={geometry}&geometryType={geometryType}&returnGeometry=false&returnCatalogItems=false&f=json"
             result = requests.get(url, timeout=self.TIMOUT_SECONDS)
-            res = json.loads(result.content.decode('utf8'))
-            if 'results' in res:
-                for element in res['results']:
-                    depths.append(float(element['value']))
-            elif 'value' in res:
-                depths.append(float(res['value']))
+            res = json.loads(result.content.decode("utf8"))
+            if "results" in res:
+                for element in res["results"]:
+                    depths.append(float(element["value"]))
+            elif "value" in res:
+                depths.append(float(res["value"]))
 
         return depths
 

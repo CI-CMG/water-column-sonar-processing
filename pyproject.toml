@@ -49,18 +49,18 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "bandit[toml]==1.8.0",
-    "black",
+    "bandit",
+#    "black",
     "build",
-    "flake8",
+    "flake8==7.1.1",
     "isort",
+    "pooch==1.8.2",
     "pre-commit",
     "pyinstaller",
-    "twine",
-    "flake8==7.1.1",
-    "pooch==1.8.2",
     "pytest~=8.3.3",
+    "ruff",
     "tqdm",
-    "bandit"
+    "twine",
 ]
 test = [
     "pytest-cov",
@@ -76,8 +76,8 @@ exclude_dirs = ["tests"]
 [tool.pre-commit-hooks.bandit]
 exclude = ["*/tests/*"]
 
-[tool.black]
-line-length = 100
+#[tool.black]
+#line-length = 150
 
 [tool.isort]
 known_first_party = "water_column_sonar_processing"
@@ -86,4 +86,4 @@ multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
 combine_as_imports = true
-line_length = 100
+#line_length = 150

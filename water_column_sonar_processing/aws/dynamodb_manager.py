@@ -9,8 +9,8 @@ from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
 class DynamoDBManager:
     #####################################################################
     def __init__(
-            self,
-            # endpoint_url
+        self,
+        # endpoint_url
     ):
         # self.endpoint_url = endpoint_url
         self.dynamodb_session = boto3.Session(
@@ -62,7 +62,7 @@ class DynamoDBManager:
                 {"AttributeName": "FILE_NAME", "AttributeType": "S"},
                 {"AttributeName": "CRUISE_NAME", "AttributeType": "S"},
             ],
-            BillingMode="PAY_PER_REQUEST"
+            BillingMode="PAY_PER_REQUEST",
             # ProvisionedThroughput={
             #     'ReadCapacityUnits': 1_000,
             #     'WriteCapacityUnits': 1_000
@@ -70,7 +70,9 @@ class DynamoDBManager:
         )
         # TODO: after creating status is 'CREATING', wait until 'ACTIVE'
         response = self.dynamodb_client.describe_table(TableName=table_name)
-        print(response) # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/client/describe_table.html
+        print(
+            response
+        )  # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb/client/describe_table.html
         # sleep then response['Table']['TableStatus'] == 'ACTIVE'
 
     #####################################################################
@@ -111,7 +113,7 @@ class DynamoDBManager:
         expression_attribute_names,
         expression_attribute_values,
         update_expression,
-    ): # TODO: convert to boolean
+    ):  # TODO: convert to boolean
         try:
             response = self.dynamodb_client.update_item(
                 TableName=table_name,
@@ -120,7 +122,7 @@ class DynamoDBManager:
                 ExpressionAttributeValues=expression_attribute_values,
                 UpdateExpression=update_expression,
             )
-            status_code = response["ResponseMetadata"]["HTTPStatusCode"]
+            return response["ResponseMetadata"]["HTTPStatusCode"]
             # print(f"HTTPStatusCode: {status_code}")
             # assert status_code == 200, "Problem, unable to update dynamodb table."
             # assert response['ConsumedCapacity']['TableName'] == table_name
@@ -144,9 +146,9 @@ class DynamoDBManager:
         response = self.dynamodb_client.scan(
             TableName=table_name,
             # Limit=1000,
-            Select='ALL_ATTRIBUTES', # or 'SPECIFIC_ATTRIBUTES',
+            Select="ALL_ATTRIBUTES",  # or 'SPECIFIC_ATTRIBUTES',
             # ExclusiveStartKey=where to pick up
-            #ReturnConsumedCapacity='INDEXES' | 'TOTAL' | 'NONE', ...not sure
+            # ReturnConsumedCapacity='INDEXES' | 'TOTAL' | 'NONE', ...not sure
             # ProjectionExpression='#SH, #CR, #FN', # what to specifically return — from expression_attribute_names
             FilterExpression=filter_expression,
             # ExpressionAttributeNames={
@@ -154,36 +156,36 @@ class DynamoDBManager:
             #     '#CR': 'CRUISE_NAME',
             #     '#FN': 'FILE_NAME',
             # },
-            ExpressionAttributeValues={ # criteria
-                ':cr': {
-                    'S': cruise_name,
+            ExpressionAttributeValues={  # criteria
+                ":cr": {
+                    "S": cruise_name,
                 },
             },
-            ConsistentRead=True
+            ConsistentRead=True,
             # ExclusiveStartKey=response["LastEvaluatedKey"],
         )
         # Note: table.scan() has 1 MB limit on results so pagination is used
 
         if len(response["Items"]) == 0 and "LastEvaluatedKey" not in response:
-            return pd.DataFrame() # If no results, return empty dataframe
+            return pd.DataFrame()  # If no results, return empty dataframe
 
         data = response["Items"]
 
-        while response.get('LastEvaluatedKey'): #"LastEvaluatedKey" in response:
+        while response.get("LastEvaluatedKey"):  # "LastEvaluatedKey" in response:
             response = self.dynamodb_client.scan(
                 TableName=table_name,
                 ### Either 'Select' or 'ExpressionAttributeNames'/'ProjectionExpression'
-                Select='ALL_ATTRIBUTES', # or 'SPECIFIC_ATTRIBUTES',
+                Select="ALL_ATTRIBUTES",  # or 'SPECIFIC_ATTRIBUTES',
                 FilterExpression=filter_expression,
-                #ProjectionExpression='#SH, #CR, #FN',  # what to specifically return — from expression_attribute_names
+                # ProjectionExpression='#SH, #CR, #FN',  # what to specifically return — from expression_attribute_names
                 # ExpressionAttributeNames={ # would need to specify all cols in df
                 #     '#SH': 'SHIP_NAME',
                 #     '#CR': 'CRUISE_NAME',
                 #     '#FN': 'FILE_NAME',
                 # },
                 ExpressionAttributeValues={  # criteria
-                    ':cr': {
-                        'S': cruise_name,
+                    ":cr": {
+                        "S": cruise_name,
                     },
                 },
                 ConsistentRead=True,
@@ -268,14 +270,7 @@ class DynamoDBManager:
         Finds all rows associated with a cruise and deletes them.
         """
         response = self.dynamodb_client.delete_item(
-            Key={
-                "CRUISE_NAME": {
-                    "S": cruise_name
-                },
-                "FILE_NAME": {
-                    "S": file_name
-                }
-            },
+            Key={"CRUISE_NAME": {"S": cruise_name}, "FILE_NAME": {"S": file_name}},
             TableName=table_name,
             ReturnConsumedCapacity="TOTALS",
         )
@@ -286,8 +281,8 @@ class DynamoDBManager:
 
     #####################################################################
     def describe_table(
-            self,
-            table_name,
+        self,
+        table_name,
     ):
         """
         Get a description of the table. Used to verify that records were added/removed.
@@ -295,8 +290,6 @@ class DynamoDBManager:
         response = self.dynamodb_client.describe_table(TableName=table_name)
         print(response)
         return response
-
-
 
     #####################################################################
     # TODO: from test_raw_to_zarr get enum and use here
@@ -356,5 +349,6 @@ class DynamoDBManager:
     #             }
     #         )
     #     print("Done updating processing status.")
+
 
 #########################################################################

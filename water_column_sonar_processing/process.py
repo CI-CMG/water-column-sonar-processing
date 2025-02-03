@@ -3,10 +3,12 @@ import os
 
 import numpy as np
 
-from water_column_sonar_processing.aws import DynamoDBManager
-from water_column_sonar_processing.aws import S3Manager
-from water_column_sonar_processing.aws import S3FSManager
-from water_column_sonar_processing.aws import SNSManager
+from water_column_sonar_processing.aws import (
+    DynamoDBManager,
+    S3FSManager,
+    S3Manager,
+    SNSManager,
+)
 
 
 ###########################################################
@@ -23,9 +25,9 @@ class Process:
         # self.output_bucket_secret_access_key = ?
 
     def execute(self):
-        input_s3_manager = (
-            S3Manager()
-        )  # TODO: Need to allow passing in of credentials when writing to protected bucket
+        # input_s3_manager = (
+        #     S3Manager()
+        # )  # TODO: Need to allow passing in of credentials when writing to protected bucket
         s3fs_manager = S3FSManager()  # TODO: delete this
         print(s3fs_manager)  # TODO: delete this
         output_s3_manager = S3Manager()

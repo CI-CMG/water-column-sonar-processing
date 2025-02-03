@@ -4,8 +4,7 @@ import tempfile
 import numcodecs
 import numpy as np
 
-from water_column_sonar_processing.aws import DynamoDBManager
-from water_column_sonar_processing.aws import S3Manager
+from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.model import ZarrManager
 from water_column_sonar_processing.utility import Cleaner
 
@@ -42,14 +41,12 @@ class CreateEmptyZarrStore:
         print("Starting upload with thread pool executor.")
         # # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
         all_files = []
-        for subdir, dirs, files in os.walk(
-            f"{local_directory}/{cruise_name}.zarr"
-        ):
+        for subdir, dirs, files in os.walk(f"{local_directory}/{cruise_name}.zarr"):
             for file in files:
                 local_path = os.path.join(subdir, file)
                 # TODO: find a better method for splitting strings here:
                 # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.zarr/.zattrs'
-                s3_key = f'{object_prefix}/{cruise_name}.zarr{local_path.split(f"{cruise_name}.zarr")[-1]}'
+                s3_key = f"{object_prefix}/{cruise_name}.zarr{local_path.split(f'{cruise_name}.zarr')[-1]}"
                 all_files.append([local_path, s3_key])
         #
         # print(all_files)
@@ -145,7 +142,7 @@ class CreateEmptyZarrStore:
             print(f"new_height: {new_height}")
 
             zarr_manager.create_zarr_store(
-                path=tempdir.name, # TODO: need to use .name or problem
+                path=tempdir.name,  # TODO: need to use .name or problem
                 ship_name=ship_name,
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
@@ -158,7 +155,7 @@ class CreateEmptyZarrStore:
             #################################################################
             self.upload_zarr_store_to_s3(
                 output_bucket_name=output_bucket_name,
-                local_directory=tempdir.name, # TODO: need to use .name or problem
+                local_directory=tempdir.name,  # TODO: need to use .name or problem
                 object_prefix=zarr_prefix,
                 cruise_name=cruise_name,
             )

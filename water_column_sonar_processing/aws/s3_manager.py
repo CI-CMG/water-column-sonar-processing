@@ -67,15 +67,17 @@ class S3Manager:
             region_name=self.s3_region,
             endpoint_url=self.endpoint_url,
         )
-        self.s3_resource_noaa_wcsd_zarr_pds = self.s3_session_noaa_wcsd_zarr_pds.resource(
-            service_name="s3",
-            config=self.s3_client_config,
-            region_name=self.s3_region,
-            endpoint_url=self.endpoint_url,
+        self.s3_resource_noaa_wcsd_zarr_pds = (
+            self.s3_session_noaa_wcsd_zarr_pds.resource(
+                service_name="s3",
+                config=self.s3_client_config,
+                region_name=self.s3_region,
+                endpoint_url=self.endpoint_url,
+            )
         )
         self.paginator = self.s3_client.get_paginator("list_objects_v2")
-        self.paginator_noaa_wcsd_zarr_pds = self.s3_client_noaa_wcsd_zarr_pds.get_paginator(
-            "list_objects_v2"
+        self.paginator_noaa_wcsd_zarr_pds = (
+            self.s3_client_noaa_wcsd_zarr_pds.get_paginator("list_objects_v2")
         )
 
     # def get_client(self): # TODO: do i need this?
@@ -95,17 +97,17 @@ class S3Manager:
         buckets. It allows public read of all objects.
         """
         # https://github.com/aodn/aodn_cloud_optimised/blob/e5035495e782783cc8b9e58711d63ed466420350/test_aodn_cloud_optimised/test_schema.py#L7
-        public_policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Principal": "*",
-                    "Action": "s3:GetObject",
-                    "Resource": f"arn:aws:s3:::{bucket_name}/*",
-                }
-            ],
-        }
+        # public_policy = {
+        #     "Version": "2012-10-17",
+        #     "Statement": [
+        #         {
+        #             "Effect": "Allow",
+        #             "Principal": "*",
+        #             "Action": "s3:GetObject",
+        #             "Resource": f"arn:aws:s3:::{bucket_name}/*",
+        #         }
+        #     ],
+        # }
         response1 = self.s3_client.create_bucket(Bucket=bucket_name, ACL="public-read")
         print(response1)
         # response = self.s3_client.put_bucket_policy(
@@ -254,7 +256,7 @@ class S3Manager:
     def folder_exists_and_not_empty(self, bucket_name: str, path: str) -> bool:
         if not path.endswith("/"):
             path = path + "/"
-        s3_client = self.s3_client
+        # s3_client = self.s3_client
         resp = self.list_objects(
             bucket_name=bucket_name, prefix=path
         )  # TODO: this is returning root folder and doesn't include children or hidden folders
@@ -359,7 +361,7 @@ class S3Manager:
                 self.s3_client_noaa_wcsd_zarr_pds.delete_objects(
                     Bucket=bucket_name, Delete={"Objects": batch}
                 )
-            print(f"Deleted files.")
+            print("Deleted files.")
         except Exception as err:
             print(f"Problem was encountered while deleting objects: {err}")
 
@@ -372,14 +374,18 @@ class S3Manager:
     ):
         try:
             print(f"Deleting {key_name} objects in {bucket_name}.")
-            self.s3_client_noaa_wcsd_zarr_pds.delete_object(Bucket=bucket_name, Key=key_name)
-            print(f"Deleted file.")
+            self.s3_client_noaa_wcsd_zarr_pds.delete_object(
+                Bucket=bucket_name, Key=key_name
+            )
+            print("Deleted file.")
         except Exception as err:
             print(f"Problem was encountered while deleting objects: {err}")
 
     #####################################################################
     def put(self, bucket_name, key, body):  # noaa-wcsd-model-pds
-        self.s3_client.put_object(Bucket=bucket_name, Key=key, Body=body)  # "Body" can be a file
+        self.s3_client.put_object(
+            Bucket=bucket_name, Key=key, Body=body
+        )  # "Body" can be a file
 
     #####################################################################
     def read_s3_json(

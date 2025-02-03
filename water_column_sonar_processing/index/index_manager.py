@@ -1,11 +1,11 @@
 import os
 import re
-import pandas as pd
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import as_completed
-from water_column_sonar_processing.aws import S3Manager
 
+import pandas as pd
+
+from water_column_sonar_processing.aws import S3Manager
 
 MAX_POOL_CONNECTIONS = 64
 MAX_CONCURRENCY = 64
@@ -20,7 +20,7 @@ class IndexManager:
         self.input_bucket_name = input_bucket_name
         self.calibration_bucket = calibration_bucket
         self.calibration_key = calibration_key
-        self.s3_manager = S3Manager() # TODO: make anonymous?
+        self.s3_manager = S3Manager()  # TODO: make anonymous?
 
     #################################################################
     def list_ships(
@@ -80,9 +80,7 @@ class IndexManager:
         # Gets all raw files for a cruise under the given prefix
         prefix = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/"  # Note no forward slash at beginning
         page_iterator = self.s3_manager.paginator.paginate(
-            Bucket=self.input_bucket_name,
-            Prefix=prefix,
-            Delimiter="/"
+            Bucket=self.input_bucket_name, Prefix=prefix, Delimiter="/"
         )
         all_files = []
         for page in page_iterator:
@@ -112,7 +110,9 @@ class IndexManager:
             Delimiter="/",
         )
         # page_iterator = page_iterator.search("Contents[?Size < `2200`][]")
-        page_iterator = page_iterator.search(expression="Contents[?contains(Key, '.raw')] ")
+        page_iterator = page_iterator.search(
+            expression="Contents[?contains(Key, '.raw')] "
+        )
         for res in page_iterator:
             if "Key" in res:
                 return res["Key"]
@@ -149,9 +149,7 @@ class IndexManager:
         sensor_name,
     ):
         raw_files = self.get_raw_files(
-            ship_name=ship_name,
-            cruise_name=cruise_name,
-            sensor_name=sensor_name
+            ship_name=ship_name, cruise_name=cruise_name, sensor_name=sensor_name
         )
         files_list = [
             {
@@ -174,9 +172,7 @@ class IndexManager:
     ):
         # gets all raw files in cruise and returns a list of dicts
         raw_files = self.get_raw_files(
-            ship_name=ship_name,
-            cruise_name=cruise_name,
-            sensor_name=sensor_name
+            ship_name=ship_name, cruise_name=cruise_name, sensor_name=sensor_name
         )
         files_list = [
             {
@@ -190,10 +186,9 @@ class IndexManager:
         return files_list
 
     #################################################################
-    def get_subset_ek60_prefix( # TODO: is this used?
-        self,
-        df: pd.DataFrame
-    ) -> pd.DataFrame:
+    def get_subset_ek60_prefix(
+        self, df: pd.DataFrame
+    ) -> pd.DataFrame:  # TODO: is this used?
         # Returns all objects with 'EK60' in prefix of file path
         # Note that this can include 'EK80' data that are false-positives
         # in dataframe with ['key', 'filename', 'ship', 'cruise', 'sensor', 'size', 'date', 'datagram']
@@ -237,10 +232,7 @@ class IndexManager:
         return pd.DataFrame(objects)
 
     #################################################################
-    def scan_datagram(
-        self,
-        select_key: str
-    ) -> list:
+    def scan_datagram(self, select_key: str) -> list:
         # Reads the first 8 bytes of S3 file. Used to determine if ek60 or ek80
         # Note: uses boto3 session instead of boto3 client: https://github.com/boto/boto3/issues/801
         # select_key = 'data/raw/Albatross_Iv/AL0403/EK60/L0005-D20040302-T200108-EK60.raw'
@@ -256,12 +248,15 @@ class IndexManager:
         return first_datagram
 
     #################################################################
-    def get_subset_datagrams( # TODO: is this getting used
-        self,
-        df: pd.DataFrame
-    ) -> list:
+    def get_subset_datagrams(
+        self, df: pd.DataFrame
+    ) -> list:  # TODO: is this getting used
         print("getting subset of datagrams")
-        select_keys = df[["KEY", "CRUISE"]].drop_duplicates(subset="CRUISE")["KEY"].values.tolist()
+        select_keys = (
+            df[["KEY", "CRUISE"]]
+            .drop_duplicates(subset="CRUISE")["KEY"]
+            .values.tolist()
+        )
         all_datagrams = []
         with ThreadPoolExecutor(max_workers=MAX_POOL_CONNECTIONS) as executor:
             futures = [
@@ -276,9 +271,7 @@ class IndexManager:
 
     #################################################################
     def get_ek60_objects(
-        self,
-        df: pd.DataFrame,
-        subset_datagrams: list
+        self, df: pd.DataFrame, subset_datagrams: list
     ) -> pd.DataFrame:
         # for each key write datagram value to all other files in same cruise
         for subset_datagram in subset_datagrams:

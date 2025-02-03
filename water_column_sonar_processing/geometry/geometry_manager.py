@@ -8,17 +8,15 @@ import pandas as pd
 from water_column_sonar_processing.aws import S3Manager
 from water_column_sonar_processing.utility import Cleaner
 
-"""
-//  [Decimal / Places / Degrees	/ Object that can be recognized at scale / N/S or E/W at equator, E/W at 23N/S, E/W at 45N/S, E/W at 67N/S]
-  //  0   1.0	        1° 00′ 0″	        country or large region                             111.32 km	  102.47 km	  78.71 km	43.496 km
-  //  1	  0.1	        0° 06′ 0″         large city or district                              11.132 km	  10.247 km	  7.871 km	4.3496 km
-  //  2	  0.01	      0° 00′ 36″        town or village                                     1.1132 km	  1.0247 km	  787.1 m	  434.96 m
-  //  3	  0.001	      0° 00′ 3.6″       neighborhood, street                                111.32 m	  102.47 m	  78.71 m	  43.496 m
-  //  4	  0.0001	    0° 00′ 0.36″      individual street, land parcel                      11.132 m	  10.247 m	  7.871 m	  4.3496 m
-  //  5	  0.00001	    0° 00′ 0.036″     individual trees, door entrance	                    1.1132 m	  1.0247 m	  787.1 mm	434.96 mm
-  //  6	  0.000001	  0° 00′ 0.0036″    individual humans                                   111.32 mm	  102.47 mm	  78.71 mm	43.496 mm
-  //  7	  0.0000001	  0° 00′ 0.00036″   practical limit of commercial surveying	            11.132 mm	  10.247 mm	  7.871 mm	4.3496 mm
-"""
+# //  [Decimal / Places / Degrees	/ Object that can be recognized at scale / N/S or E/W at equator, E/W at 23N/S, E/W at 45N/S, E/W at 67N/S]
+#   //  0   1.0	        1° 00′ 0″	        country or large region                             111.32 km	  102.47 km	  78.71 km	43.496 km
+#   //  1	  0.1	        0° 06′ 0″         large city or district                              11.132 km	  10.247 km	  7.871 km	4.3496 km
+#   //  2	  0.01	      0° 00′ 36″        town or village                                     1.1132 km	  1.0247 km	  787.1 m	  434.96 m
+#   //  3	  0.001	      0° 00′ 3.6″       neighborhood, street                                111.32 m	  102.47 m	  78.71 m	  43.496 m
+#   //  4	  0.0001	    0° 00′ 0.36″      individual street, land parcel                      11.132 m	  10.247 m	  7.871 m	  4.3496 m
+#   //  5	  0.00001	    0° 00′ 0.036″     individual trees, door entrance	                    1.1132 m	  1.0247 m	  787.1 mm	434.96 mm
+#   //  6	  0.000001	  0° 00′ 0.0036″    individual humans                                   111.32 mm	  102.47 mm	  78.71 mm	43.496 mm
+#   //  7	  0.0000001	  0° 00′ 0.00036″   practical limit of commercial surveying	            11.132 mm	  10.247 mm	  7.871 mm	4.3496 mm
 
 
 class GeometryManager:
@@ -62,9 +60,9 @@ class GeometryManager:
             time1 = echodata.environment.time1.values
 
             if len(nmea_times) < len(time1):
-                raise Exception( # TODO: explore this logic further...
+                raise Exception(
                     "Problem: Not enough NMEA times available to extrapolate time1."
-                )
+                )  # TODO: explore this logic further...
 
             # Align 'sv_times' to 'nmea_times'
             if not (
@@ -131,7 +129,9 @@ class GeometryManager:
             if write_geojson:
                 print("Creating local copy of geojson file.")
                 with open(geo_json_name, "w") as write_file:
-                    write_file.write(geo_json_line) # NOTE: this file can include zeros for lat lon
+                    write_file.write(
+                        geo_json_line
+                    )  # NOTE: this file can include zeros for lat lon
 
                 geo_json_prefix = (
                     f"spatial/geojson/{ship_name}/{cruise_name}/{sensor_name}"
@@ -141,11 +141,16 @@ class GeometryManager:
                 s3_manager = S3Manager(endpoint_url=endpoint_url)
                 geojson_object_exists = s3_manager.check_if_object_exists(
                     bucket_name=output_bucket_name,
-                    key_name=f"{geo_json_prefix}/{geo_json_name}"
+                    key_name=f"{geo_json_prefix}/{geo_json_name}",
                 )
                 if geojson_object_exists:
-                    print("GeoJSON already exists in s3, deleting existing and continuing.")
-                    s3_manager.delete_nodd_object(bucket_name=output_bucket_name, key_name=f"{geo_json_prefix}/{geo_json_name}")
+                    print(
+                        "GeoJSON already exists in s3, deleting existing and continuing."
+                    )
+                    s3_manager.delete_nodd_object(
+                        bucket_name=output_bucket_name,
+                        key_name=f"{geo_json_prefix}/{geo_json_name}",
+                    )
 
                 print("Upload GeoJSON to s3.")
                 s3_manager.upload_nodd_file(
@@ -205,7 +210,6 @@ class GeometryManager:
                 sensor_name=sensor_name,
                 file_name_stem=file_name_stem,
                 output_bucket_name=output_bucket_name,
-
             )
             ###
             geospatial = geopandas.GeoDataFrame.from_features(
@@ -231,13 +235,9 @@ class GeometryManager:
 
     ############################################################################
     # COMES from the raw-to-zarr conversion
-    def __write_geojson_to_file(
-            self,
-            store_name,
-            data
-    ) -> None:
-        print('Writing GeoJSON to file.')
-        with open(os.path.join(store_name, 'geo.json'), "w") as outfile:
+    def __write_geojson_to_file(self, store_name, data) -> None:
+        print("Writing GeoJSON to file.")
+        with open(os.path.join(store_name, "geo.json"), "w") as outfile:
             outfile.write(data)
 
 

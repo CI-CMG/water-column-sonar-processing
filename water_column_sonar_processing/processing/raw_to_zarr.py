@@ -1,11 +1,12 @@
 import gc
 import os
+from datetime import datetime
+from pathlib import Path  # , PurePath
+
 import echopype as ep
 import numcodecs
 import numpy as np
 from numcodecs import Blosc
-from datetime import datetime
-from pathlib import Path # , PurePath
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.geometry import GeometryManager
@@ -16,10 +17,10 @@ from water_column_sonar_processing.utility import Cleaner, PipelineStatus
 class RawToZarr:
     #######################################################
     def __init__(
-            self,
-            # output_bucket_access_key,
-            # output_bucket_secret_access_key,
-            # # overwrite_existing_zarr_store,
+        self,
+        # output_bucket_access_key,
+        # output_bucket_secret_access_key,
+        # # overwrite_existing_zarr_store,
     ):
         # TODO: revert to Blosc.BITSHUFFLE, troubleshooting misc error
         self.__compressor = Blosc(cname="zstd", clevel=2)  # shuffle=Blosc.NOSHUFFLE
@@ -33,45 +34,45 @@ class RawToZarr:
     ############################################################################
     ############################################################################
     def __zarr_info_to_table(
-            self,
-            output_bucket_name,
-            table_name,
-            ship_name,
-            cruise_name,
-            sensor_name,
-            file_name,
-            zarr_path,
-            min_echo_range,
-            max_echo_range,
-            num_ping_time_dropna,
-            start_time,
-            end_time,
-            frequencies,
-            channels
+        self,
+        output_bucket_name,
+        table_name,
+        ship_name,
+        cruise_name,
+        sensor_name,
+        file_name,
+        zarr_path,
+        min_echo_range,
+        max_echo_range,
+        num_ping_time_dropna,
+        start_time,
+        end_time,
+        frequencies,
+        channels,
     ):
-        print('Writing Zarr information to DynamoDB table.')
+        print("Writing Zarr information to DynamoDB table.")
         dynamodb_manager = DynamoDBManager()
         dynamodb_manager.update_item(
             table_name=table_name,
             key={
-                'FILE_NAME': {'S': file_name},  # Partition Key
-                'CRUISE_NAME': {'S': cruise_name},  # Sort Key
+                "FILE_NAME": {"S": file_name},  # Partition Key
+                "CRUISE_NAME": {"S": cruise_name},  # Sort Key
             },
             expression_attribute_names={
-                '#CH': 'CHANNELS',
-                '#ET': 'END_TIME',
+                "#CH": "CHANNELS",
+                "#ET": "END_TIME",
                 # "#ED": "ERROR_DETAIL",
-                '#FR': 'FREQUENCIES',
-                '#MA': 'MAX_ECHO_RANGE',
-                '#MI': 'MIN_ECHO_RANGE',
-                '#ND': 'NUM_PING_TIME_DROPNA',
+                "#FR": "FREQUENCIES",
+                "#MA": "MAX_ECHO_RANGE",
+                "#MI": "MIN_ECHO_RANGE",
+                "#ND": "NUM_PING_TIME_DROPNA",
                 "#PS": "PIPELINE_STATUS",
                 "#PT": "PIPELINE_TIME",
                 "#SE": "SENSOR_NAME",
                 "#SH": "SHIP_NAME",
-                '#ST': 'START_TIME',
-                '#ZB': 'ZARR_BUCKET',
-                '#ZP': 'ZARR_PATH',
+                "#ST": "START_TIME",
+                "#ZB": "ZARR_BUCKET",
+                "#ZP": "ZARR_PATH",
             },
             expression_attribute_values={
                 ":ch": {"L": [{"S": i} for i in channels]},
@@ -88,7 +89,7 @@ class RawToZarr:
                 ":sh": {"S": ship_name},
                 ":st": {"S": start_time},
                 ":zb": {"S": output_bucket_name},
-                ":zp": { "S": zarr_path },
+                ":zp": {"S": zarr_path},
             },
             update_expression=(
                 "SET "
@@ -108,21 +109,21 @@ class RawToZarr:
                 "#ZP = :zp"
             ),
         )
-        print('Done writing Zarr information to DynamoDB table.')
+        print("Done writing Zarr information to DynamoDB table.")
 
     ############################################################################
     ############################################################################
     ############################################################################
     def __upload_files_to_output_bucket(
-            self,
-            output_bucket_name,
-            local_directory,
-            object_prefix,
-            endpoint_url,
+        self,
+        output_bucket_name,
+        local_directory,
+        object_prefix,
+        endpoint_url,
     ):
         # Note: this will be passed credentials if using NODD
         s3_manager = S3Manager(endpoint_url=endpoint_url)
-        print('Uploading files using thread pool executor.')
+        print("Uploading files using thread pool executor.")
         all_files = []
         for subdir, dirs, files in os.walk(local_directory):
             for file in files:
@@ -138,38 +139,50 @@ class RawToZarr:
 
     ############################################################################
     def raw_to_zarr(
-            self,
-            table_name,
-            input_bucket_name,
-            output_bucket_name,
-            ship_name,
-            cruise_name,
-            sensor_name,
-            raw_file_name,
-            endpoint_url=None,
-            include_bot=True,
+        self,
+        table_name,
+        input_bucket_name,
+        output_bucket_name,
+        ship_name,
+        cruise_name,
+        sensor_name,
+        raw_file_name,
+        endpoint_url=None,
+        include_bot=True,
     ):
         """
         Downloads the raw files, processes them with echopype, writes geojson, and uploads files
         to the nodd bucket.
         """
-        print(f'Opening raw: {raw_file_name} and creating zarr store.')
+        print(f"Opening raw: {raw_file_name} and creating zarr store.")
         geometry_manager = GeometryManager()
         cleaner = Cleaner()
-        cleaner.delete_local_files(file_types=["*.zarr", "*.json"]) # TODO: include bot and raw?
+        cleaner.delete_local_files(
+            file_types=["*.zarr", "*.json"]
+        )  # TODO: include bot and raw?
 
         s3_manager = S3Manager(endpoint_url=endpoint_url)
-        s3_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
+        s3_file_path = (
+            f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
+        )
         bottom_file_name = f"{Path(raw_file_name).stem}.bot"
-        s3_bottom_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
-        s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
+        s3_bottom_file_path = (
+            f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
+        )
+        s3_manager.download_file(
+            bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name
+        )
         # TODO: add the bottom file
         if include_bot:
-            s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
+            s3_manager.download_file(
+                bucket_name=input_bucket_name,
+                key=s3_bottom_file_path,
+                file_name=bottom_file_name,
+            )
 
         try:
             gc.collect()
-            print('Opening raw file with echopype.')
+            print("Opening raw file with echopype.")
             # s3_file_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
             # s3_file_path = Path(f"s3://noaa-wcsd-pds/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}")
             echodata = ep.open_raw(
@@ -180,14 +193,16 @@ class RawToZarr:
                 # max_chunk_size=300,
                 # storage_options={'anon': True } # 'endpoint_url': self.endpoint_url} # this was creating problems
             )
-            print('Compute volume backscattering strength (Sv) from raw data.')
+            print("Compute volume backscattering strength (Sv) from raw data.")
             ds_sv = ep.calibrate.compute_Sv(echodata)
             gc.collect()
-            print('Done computing volume backscatter strength (Sv) from raw data.')
+            print("Done computing volume backscatter strength (Sv) from raw data.")
             # Note: detected_seafloor_depth is located at echodata.vendor.detected_seafloor_depth
             # but is not written out with ds_sv
             if "detected_seafloor_depth" in list(echodata.vendor.variables):
-                ds_sv["detected_seafloor_depth"] = echodata.vendor.detected_seafloor_depth
+                ds_sv["detected_seafloor_depth"] = (
+                    echodata.vendor.detected_seafloor_depth
+                )
             #
             frequencies = echodata.environment.frequency_nominal.values
             #################################################################
@@ -200,10 +215,12 @@ class RawToZarr:
                 sensor_name=sensor_name,
                 file_name=raw_file_name,
                 endpoint_url=endpoint_url,
-                write_geojson=True
+                write_geojson=True,
             )
             ds_sv = ep.consolidate.add_location(ds_sv, echodata)
-            ds_sv.latitude.values = lat # overwriting echopype gps values to include missing values
+            ds_sv.latitude.values = (
+                lat  # overwriting echopype gps values to include missing values
+            )
             ds_sv.longitude.values = lon
             # gps_data, lat, lon = self.__get_gps_data(echodata=echodata)
             #################################################################
@@ -216,8 +233,12 @@ class RawToZarr:
             # This is the number of missing values found throughout the lat/lon
             num_ping_time_dropna = lat[~np.isnan(lat)].shape[0]  # symmetric to lon
             #
-            start_time = np.datetime_as_string(ds_sv.ping_time.values[0], unit='ms') + "Z"
-            end_time = np.datetime_as_string(ds_sv.ping_time.values[-1], unit='ms') + "Z"
+            start_time = (
+                np.datetime_as_string(ds_sv.ping_time.values[0], unit="ms") + "Z"
+            )
+            end_time = (
+                np.datetime_as_string(ds_sv.ping_time.values[-1], unit="ms") + "Z"
+            )
             channels = list(ds_sv.channel.values)
             #
             #################################################################
@@ -225,7 +246,9 @@ class RawToZarr:
             store_name = f"{Path(raw_file_name).stem}.zarr"
             # Sv = ds_sv.Sv
             # ds_sv['Sv'] = Sv.astype('int32', copy=False)
-            ds_sv.to_zarr(store=store_name) # ds_sv.Sv.sel(channel=ds_sv.channel.values[0]).shape
+            ds_sv.to_zarr(
+                store=store_name
+            )  # ds_sv.Sv.sel(channel=ds_sv.channel.values[0]).shape
             gc.collect()
             #################################################################
             output_zarr_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"
@@ -237,7 +260,9 @@ class RawToZarr:
                 sub_prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{Path(raw_file_name).stem}.zarr",
             )
             if len(child_objects) > 0:
-                print('Zarr store data already exists in s3, deleting existing and continuing.')
+                print(
+                    "Zarr store data already exists in s3, deleting existing and continuing."
+                )
                 s3_manager.delete_nodd_objects(
                     bucket_name=output_bucket_name,
                     objects=child_objects,
@@ -247,7 +272,7 @@ class RawToZarr:
                 output_bucket_name=output_bucket_name,
                 local_directory=store_name,
                 object_prefix=output_zarr_prefix,
-                endpoint_url=endpoint_url
+                endpoint_url=endpoint_url,
             )
             #################################################################
             self.__zarr_info_to_table(
@@ -264,20 +289,24 @@ class RawToZarr:
                 start_time=start_time,
                 end_time=end_time,
                 frequencies=frequencies,
-                channels=channels
+                channels=channels,
             )
             #######################################################################
             # TODO: verify count of objects matches, publish message, update status
             #######################################################################
-            print('Finished raw-to-zarr conversion.')
+            print("Finished raw-to-zarr conversion.")
         except Exception as err:
-            print(f'Exception encountered creating local Zarr store with echopype: {err}')
+            print(
+                f"Exception encountered creating local Zarr store with echopype: {err}"
+            )
             raise RuntimeError(f"Problem creating local Zarr store, {err}")
         finally:
             gc.collect()
             print("Finally.")
-            cleaner.delete_local_files(file_types=["*.raw", "*.bot", "*.zarr", "*.json"])
-        print('Done creating local zarr store.')
+            cleaner.delete_local_files(
+                file_types=["*.raw", "*.bot", "*.zarr", "*.json"]
+            )
+        print("Done creating local zarr store.")
 
     ############################################################################
     # TODO: does this get called?
@@ -364,6 +393,7 @@ class RawToZarr:
     #######################################################################
 
     ############################################################################
+
 
 ################################################################################
 ############################################################################

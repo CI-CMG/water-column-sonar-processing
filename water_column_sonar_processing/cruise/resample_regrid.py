@@ -146,9 +146,9 @@ class ResampleRegrid:
         sensor_name,
         table_name,
         # TODO: file_name?,
-        bucket_name, # TODO: this is the same bucket
+        bucket_name,  # TODO: this is the same bucket
         override_select_files=None,
-        endpoint_url=None
+        endpoint_url=None,
     ) -> None:
         """
         The goal here is to interpolate the data against the depth values already populated
@@ -191,17 +191,19 @@ class ResampleRegrid:
                 file_name_stem = Path(file_name).stem
                 print(f"Processing file: {file_name_stem}.")
 
-                if f"{file_name_stem}.raw" not in list(cruise_df['FILE_NAME']):
-                    raise Exception(f"Raw file file_stem not found in dynamodb.")
+                if f"{file_name_stem}.raw" not in list(cruise_df["FILE_NAME"]):
+                    raise Exception("Raw file file_stem not found in dynamodb.")
 
                 # status = PipelineStatus['LEVEL_1_PROCESSING']
                 # TODO: filter rows by enum success, filter the dataframe just for enums >= LEVEL_1_PROCESSING
                 #  df[df['PIPELINE_STATUS'] < PipelineStatus.LEVEL_1_PROCESSING] = np.nan
 
                 # Get index from all cruise files. Note: should be based on which are included in cruise.
-                index = int(cruise_df.index[
-                    cruise_df["FILE_NAME"] == f"{file_name_stem}.raw"
-                ][0])
+                index = int(
+                    cruise_df.index[cruise_df["FILE_NAME"] == f"{file_name_stem}.raw"][
+                        0
+                    ]
+                )
 
                 # get input store
                 input_xr_zarr_store = zarr_manager.open_s3_zarr_store_with_xarray(
@@ -230,8 +232,7 @@ class ResampleRegrid:
 
                 # Note: cruise dims (depth, time, frequency)
                 all_cruise_depth_values = zarr_manager.get_depth_values(
-                    min_echo_range=min_echo_range,
-                    max_echo_range=max_echo_range
+                    min_echo_range=min_echo_range, max_echo_range=max_echo_range
                 )
 
                 print(" ".join(list(input_xr_zarr_store.Sv.dims)))
@@ -271,28 +272,34 @@ class ResampleRegrid:
                     all_cruise_depth_values=all_cruise_depth_values,
                 )
 
-                print(f"start_ping_time_index: {start_ping_time_index}, end_ping_time_index: {end_ping_time_index}")
+                print(
+                    f"start_ping_time_index: {start_ping_time_index}, end_ping_time_index: {end_ping_time_index}"
+                )
                 #########################################################################
                 # write Sv values to cruise-level-model-store
 
                 for fff in range(regrid_resample.shape[-1]):
-                    output_zarr_store.Sv[:, start_ping_time_index:end_ping_time_index, fff] = regrid_resample[:, :, fff]
+                    output_zarr_store.Sv[
+                        :, start_ping_time_index:end_ping_time_index, fff
+                    ] = regrid_resample[:, :, fff]
                 #########################################################################
                 # TODO: add the "detected_seafloor_depth/" to the
                 #  L2 cruise dataarrays
                 # TODO: make bottom optional
                 # TODO: Only checking the first channel for now. Need to average across all channels
                 #  in the future. See https://github.com/CI-CMG/water-column-sonar-processing/issues/11
-                if 'detected_seafloor_depth' in input_xr.variables:
-                    print('Found detected_seafloor_depth, adding data to output store.')
+                if "detected_seafloor_depth" in input_xr.variables:
+                    print("Found detected_seafloor_depth, adding data to output store.")
                     detected_seafloor_depth = input_xr.detected_seafloor_depth.values
-                    detected_seafloor_depth[detected_seafloor_depth == 0.] = np.nan
+                    detected_seafloor_depth[detected_seafloor_depth == 0.0] = np.nan
                     # TODO: problem here: Processing file: D20070711-T210709.
-                    detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0) # RuntimeWarning: Mean of empty slice detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)
-                    detected_seafloor_depths[detected_seafloor_depths == 0.] = np.nan
+                    detected_seafloor_depths = np.nanmean(
+                        detected_seafloor_depth, 0
+                    )  # RuntimeWarning: Mean of empty slice detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)
+                    detected_seafloor_depths[detected_seafloor_depths == 0.0] = np.nan
                     print(f"min depth measured: {np.nanmin(detected_seafloor_depths)}")
                     print(f"max depth measured: {np.nanmax(detected_seafloor_depths)}")
-                    #available_indices = np.argwhere(np.isnan(geospatial['latitude'].values))
+                    # available_indices = np.argwhere(np.isnan(geospatial['latitude'].values))
                     output_zarr_store.bottom[
                         start_ping_time_index:end_ping_time_index
                     ] = detected_seafloor_depths
@@ -301,7 +308,9 @@ class ResampleRegrid:
                 # [5] write subset of latitude/longitude
                 output_zarr_store.latitude[
                     start_ping_time_index:end_ping_time_index
-                ] = geospatial.dropna()["latitude"].values # TODO: get from ds_sv directly, dont need geojson anymore
+                ] = geospatial.dropna()[
+                    "latitude"
+                ].values  # TODO: get from ds_sv directly, dont need geojson anymore
                 output_zarr_store.longitude[
                     start_ping_time_index:end_ping_time_index
                 ] = geospatial.dropna()["longitude"].values
