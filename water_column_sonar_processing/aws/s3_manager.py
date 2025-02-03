@@ -1,10 +1,10 @@
 import json
 import os
-import boto3
-from typing import Optional
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Optional
 
+import boto3
 import botocore
 from boto3.s3.transfer import TransferConfig
 from botocore.config import Config
@@ -17,10 +17,7 @@ GB = 1024**3
 
 
 #########################################################################
-def chunked(
-    ll: list,
-    n: int
-) -> Generator:
+def chunked(ll: list, n: int) -> Generator:
     # Yields successively n-sized chunks from ll.
     for i in range(0, len(ll), n):
         yield ll[i : i + n]
@@ -76,8 +73,10 @@ class S3Manager:
             region_name=self.s3_region,
             endpoint_url=self.endpoint_url,
         )
-        self.paginator = self.s3_client.get_paginator('list_objects_v2')
-        self.paginator_noaa_wcsd_zarr_pds = self.s3_client_noaa_wcsd_zarr_pds.get_paginator('list_objects_v2')
+        self.paginator = self.s3_client.get_paginator("list_objects_v2")
+        self.paginator_noaa_wcsd_zarr_pds = self.s3_client_noaa_wcsd_zarr_pds.get_paginator(
+            "list_objects_v2"
+        )
 
     # def get_client(self): # TODO: do i need this?
     #     return self.s3_session.client(
@@ -107,10 +106,7 @@ class S3Manager:
                 }
             ],
         }
-        response1 = self.s3_client.create_bucket(
-            Bucket=bucket_name,
-            ACL='public-read'
-        )
+        response1 = self.s3_client.create_bucket(Bucket=bucket_name, ACL="public-read")
         print(response1)
         # response = self.s3_client.put_bucket_policy(
         #     Bucket=bucket_name, Policy=json.dumps(public_policy)
@@ -133,7 +129,9 @@ class S3Manager:
         """
         Used to upload a single file, e.g. the GeoJSON file to the NODD bucket
         """
-        self.s3_resource_noaa_wcsd_zarr_pds.Bucket(output_bucket_name).upload_file(Filename=file_name, Key=key)
+        self.s3_resource_noaa_wcsd_zarr_pds.Bucket(output_bucket_name).upload_file(
+            Filename=file_name, Key=key
+        )
         return key
 
     #####################################################################
@@ -167,10 +165,10 @@ class S3Manager:
     #####################################################################
     # TODO: this uses resource, try to use client
     def upload_file(
-            self,
-            filename: str,
-            bucket_name: str,
-            key: str,
+        self,
+        filename: str,
+        bucket_name: str,
+        key: str,
     ):
         # self.s3_client.upload_file(Filename=filename, Bucket=bucket, Key=key)
         self.s3_resource.Bucket(bucket_name).upload_file(Filename=filename, Key=key)
@@ -205,11 +203,7 @@ class S3Manager:
         return all_uploads
 
     #####################################################################
-    def check_if_object_exists(
-            self,
-            bucket_name,
-            key_name
-    ) -> bool:
+    def check_if_object_exists(self, bucket_name, key_name) -> bool:
         s3_manager2 = S3Manager()
         s3_manager2.list_objects(bucket_name=bucket_name, prefix=key_name)
         s3_client_noaa_wcsd_zarr_pds = self.s3_client_noaa_wcsd_zarr_pds
@@ -217,10 +211,10 @@ class S3Manager:
             # response = s3_resource_noaa_wcsd_zarr_pds.Object(bucket_name, key_name).load()
             s3_client_noaa_wcsd_zarr_pds.head_object(Bucket=bucket_name, Key=key_name)
         except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == "404":
+            if e.response["Error"]["Code"] == "404":
                 # The object does not exist.
                 return False
-            elif e.response['Error']['Code'] == 403:
+            elif e.response["Error"]["Code"] == 403:
                 # Unauthorized, including invalid bucket
                 return False
             else:
@@ -230,11 +224,7 @@ class S3Manager:
 
     #####################################################################
     # used: raw-to-zarr
-    def list_objects(  # noaa-wcsd-pds and noaa-wcsd-zarr-pds
-        self,
-        bucket_name,
-        prefix
-    ):
+    def list_objects(self, bucket_name, prefix):  # noaa-wcsd-pds and noaa-wcsd-zarr-pds
         # TODO: this isn't working for geojson detecting objects!!!!!!!
         # analog to "find_children_objects"
         # Returns a list of key strings for each object in bucket defined by prefix
@@ -261,11 +251,7 @@ class S3Manager:
 
     #####################################################################
     # TODO: change name to "directory"
-    def folder_exists_and_not_empty(
-        self,
-        bucket_name: str,
-        path: str
-    ) -> bool:
+    def folder_exists_and_not_empty(self, bucket_name: str, path: str) -> bool:
         if not path.endswith("/"):
             path = path + "/"
         s3_client = self.s3_client
@@ -350,7 +336,7 @@ class S3Manager:
         self,
         bucket_name,
         key,
-        file_name, # where the file will be saved
+        file_name,  # where the file will be saved
     ):
         self.s3_client.download_file(Bucket=bucket_name, Key=key, Filename=file_name)
         # TODO: if bottom file doesn't exist, don't fail downloader
@@ -364,9 +350,7 @@ class S3Manager:
         objects: list,
     ):
         try:
-            print(
-                f"Deleting {len(objects)} objects in {bucket_name} in batches."
-            )
+            print(f"Deleting {len(objects)} objects in {bucket_name} in batches.")
             objects_to_delete = []
             for obj in objects:
                 objects_to_delete.append({"Key": obj["Key"]})
@@ -382,14 +366,12 @@ class S3Manager:
     #####################################################################
     # TODO: need to test this!!!
     def delete_nodd_object(
-            self,
-            bucket_name,
-            key_name,
+        self,
+        bucket_name,
+        key_name,
     ):
         try:
-            print(
-                f"Deleting {key_name} objects in {bucket_name}."
-            )
+            print(f"Deleting {key_name} objects in {bucket_name}.")
             self.s3_client_noaa_wcsd_zarr_pds.delete_object(Bucket=bucket_name, Key=key_name)
             print(f"Deleted file.")
         except Exception as err:
@@ -397,7 +379,7 @@ class S3Manager:
 
     #####################################################################
     def put(self, bucket_name, key, body):  # noaa-wcsd-model-pds
-        self.s3_client.put_object(Bucket=bucket_name, Key=key, Body=body) # "Body" can be a file
+        self.s3_client.put_object(Bucket=bucket_name, Key=key, Body=body)  # "Body" can be a file
 
     #####################################################################
     def read_s3_json(

@@ -1,5 +1,6 @@
 import os
 from typing import Optional
+
 import s3fs
 
 # TODO: S3FS_LOGGING_LEVEL=DEBUG
@@ -38,8 +39,7 @@ class S3FSManager:
         # create=False, not false because will be writing
         # return s3fs.S3Map(root=s3_zarr_store_path, s3=self.s3fs, check=True)
         return s3fs.S3Map(
-            root=s3_zarr_store_path,
-            s3=self.s3fs
+            root=s3_zarr_store_path, s3=self.s3fs
         )  # create=False, not false because will be writing
 
     #####################################################################
@@ -53,12 +53,7 @@ class S3FSManager:
     #     print(ff)
 
     #####################################################################
-    def upload_data(
-            self,
-            bucket_name,
-            file_path,
-            prefix
-    ):
+    def upload_data(self, bucket_name, file_path, prefix):
         # TODO: this works in theory but use boto3 to upload files
         s3_path = f"s3://{bucket_name}/{prefix}/"
         s3_file_system = self.s3fs
@@ -71,6 +66,5 @@ class S3FSManager:
     ):
         # s3_file_system =
         return self.s3fs.exists(s3_path)
-
 
     #####################################################################
