@@ -39,8 +39,8 @@ Processing tool for converting Level_0 water column sonar data to Level_1 and Le
      4. Choose ~/.pyenv/versions/mocking_aws/bin/python
   3. Set up Python Facet (not sure if this is required)
      1. File -> Project Structure or CMD + ;
-     2. Facets -> + -> Python 
-     3. Set interpreter 
+     2. Facets -> + -> Python
+     3. Set interpreter
 
 # Installing Dependencies
 ```
@@ -92,7 +92,7 @@ git push origin --tags
 
 # To Publish To PROD
 ```commandline
-python -m build
+uv build
 python -m twine upload --repository pypi dist/*
 ```
 

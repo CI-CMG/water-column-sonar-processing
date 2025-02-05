@@ -1,4 +1,4 @@
-name: Testing
+name: Testing Python 🐍
 
 on: [push]
 

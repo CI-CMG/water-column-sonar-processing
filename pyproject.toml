@@ -7,11 +7,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "water_column_sonar_processing"
-version = "25.1.8"
+version = "25.2.0"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
+maintainers = [
+  { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
+]
 description = "Processing tool for water column sonar data."
+keywords = ["ocean", "sonar", "water column"]
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
@@ -19,7 +23,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-
 dependencies = [
     "aiobotocore==2.19.0",
     "boto3==1.36.3",
@@ -50,7 +53,6 @@ dependencies = [
 dev = [
     "bandit[toml]==1.8.0",
     "bandit",
-#    "black",
     "build",
     "flake8==7.1.1",
     "isort",

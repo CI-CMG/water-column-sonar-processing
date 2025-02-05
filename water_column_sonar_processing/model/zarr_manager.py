@@ -9,8 +9,8 @@ from numcodecs import Blosc
 from water_column_sonar_processing.aws import S3FSManager
 from water_column_sonar_processing.utility import Constants, Coordinates, Timestamp
 
-numcodecs.blosc.use_threads = False
-numcodecs.blosc.set_nthreads(1)
+# numcodecs.blosc.use_threads = False
+# numcodecs.blosc.set_nthreads(1)
 
 
 # TODO: when ready switch to version 3 of model spec
