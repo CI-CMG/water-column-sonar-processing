@@ -12,7 +12,7 @@ from water_column_sonar_processing.index import IndexManager
 #######################################################
 def setup_module():
     print("setup")
-    env_file = find_dotenv(".env-test")
+    env_file = find_dotenv(".env-dev")
     # env_file = find_dotenv(".env-prod")
     load_dotenv(dotenv_path=env_file, override=True)
 
@@ -145,6 +145,27 @@ def test_get_all_cruise_raw_files(tmp_path):
     print("--- %s seconds elapsed ---" % (time.time() - start_time))  # ~4 minutes
 
 
+#######################################################
+#######################################################
+#######################################################
+# Indexing bucket with object hashes
+@pytest.mark.skip(reason="requires prod credentials")
+def test_build_merkle_tree():
+    """
+    The goal of this test is to create a merkle tree of an s3 directory.
+    It will iterate over each object, record the keys, the checksum, the
+    size, the __, and organize the information into a networkx graph
+    """
+    input_bucket_name = "noaa-wcsd-pds"
+    calibration_bucket = "noaa-wcsd-pds-index"
+    calibration_key = "calibrated_crusies.csv"
+    index_manager = IndexManager(input_bucket_name, calibration_bucket, calibration_key)
+    foo = index_manager.build_merkle_tree()
+    assert len(foo) > 0
+
+
+#######################################################
+#######################################################
 #######################################################
 
 # TODO: for post analysis of coverage

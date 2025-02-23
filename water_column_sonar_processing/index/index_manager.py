@@ -3,6 +3,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
+import networkx as nx
 import pandas as pd
 
 from water_column_sonar_processing.aws import S3Manager
@@ -19,7 +20,7 @@ class IndexManager:
     def __init__(self, input_bucket_name, calibration_bucket, calibration_key):
         self.input_bucket_name = input_bucket_name
         self.calibration_bucket = calibration_bucket
-        self.calibration_key = calibration_key
+        self.calibration_key = calibration_key  # TODO: make optional?
         self.s3_manager = S3Manager()  # TODO: make anonymous?
 
     #################################################################
@@ -339,3 +340,46 @@ class IndexManager:
     #     end_time = datetime.now()  # used for benchmarking
     #     print(start_time)
     #     print(end_time)
+
+    # TODO: wip
+    def build_merkle_tree(self):
+        G = nx.DiGraph()
+
+        # https://noaa-wcsd-pds.s3.amazonaws.com/index.html#data/raw/Henry_B._Bigelow/HB0707/
+        ship_name = "Henry_B._Bigelow"
+        cruise_name = "HB0707"
+        prefix = f"data/raw/{ship_name}/{cruise_name}/"
+        page_iterator = self.s3_manager.paginator.paginate(
+            Bucket=self.input_bucket_name,
+            Prefix=prefix,
+            # Delimiter="/",
+            # PaginationConfig={'MaxItems': 10, 'StartingToken': "startToken", 'PageSize': 10},
+            PaginationConfig={"PageSize": 10},
+        )
+        # page_iterator = page_iterator.search("Contents[?Size < `2200`][]")
+        for page in page_iterator:
+            for contents in page["Contents"]:
+                # keys: ['Key', 'LastModified', 'ETag', 'Size', 'StorageClass']
+                obj_key = contents["Key"]
+                obj_etag = contents["ETag"]  # properties
+                obj_size = contents["Size"]
+                print(os.path.basename(obj_key))
+                basename = os.path.basename(obj_key)
+                G.add_node(node_for_adding=basename, ETag=obj_etag, Size=obj_size)
+                split_path = os.path.normpath(obj_key).split(os.path.sep)
+                print(split_path)
+                # iterate the path and add between each
+                G.add_edge(split_path[-2], split_path[-1])
+            # if "Contents" in page.keys():
+            # for contents in page["Contents"]:
+            #     # [i["Key"] for i in page["Contents"]]
+            #     # keys: ['Key', 'LastModified', 'ETag', 'Size', 'StorageClass']
+            #     obj_key = contents["Key"]
+            #     obj_etag = contents["ETag"]
+            #     obj_size = contents["Size"]
+            #     print(obj_key)
+            #     #all_files.extend([i["Key"] for i in page["Contents"]])
+        # return [i for i in all_files if i.endswith(".raw")]
+        print(G)
+        print(G.nodes.data("Size")[0])
+        return [1, 2, 3]
