@@ -2,8 +2,10 @@ import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
+from hashlib import sha256
 
 import networkx as nx
+import numpy as np
 import pandas as pd
 
 from water_column_sonar_processing.aws import S3Manager
@@ -344,42 +346,38 @@ class IndexManager:
     # TODO: wip
     def build_merkle_tree(self):
         G = nx.DiGraph()
-
         # https://noaa-wcsd-pds.s3.amazonaws.com/index.html#data/raw/Henry_B._Bigelow/HB0707/
         ship_name = "Henry_B._Bigelow"
-        cruise_name = "HB0707"
-        prefix = f"data/raw/{ship_name}/{cruise_name}/"
+        # cruise_name = "HB0707"
+        # cruise_name = "HB0805"
+        # prefix = f"data/raw/{ship_name}/{cruise_name}/"
+        prefix = f"data/raw/{ship_name}/"
         page_iterator = self.s3_manager.paginator.paginate(
             Bucket=self.input_bucket_name,
             Prefix=prefix,
-            # Delimiter="/",
-            # PaginationConfig={'MaxItems': 10, 'StartingToken': "startToken", 'PageSize': 10},
-            PaginationConfig={"PageSize": 10},
+            # PaginationConfig={"PageSize": 10},
         )
-        # page_iterator = page_iterator.search("Contents[?Size < `2200`][]")
         for page in page_iterator:
             for contents in page["Contents"]:
-                # keys: ['Key', 'LastModified', 'ETag', 'Size', 'StorageClass']
                 obj_key = contents["Key"]
                 obj_etag = contents["ETag"]  # properties
                 obj_size = contents["Size"]
-                print(os.path.basename(obj_key))
                 basename = os.path.basename(obj_key)
-                G.add_node(node_for_adding=basename, ETag=obj_etag, Size=obj_size)
+                G.add_node(
+                    node_for_adding=basename, ETag=obj_etag, Size=obj_size, Key=obj_key
+                )  # TODO: add parent hash
                 split_path = os.path.normpath(obj_key).split(os.path.sep)
-                print(split_path)
-                # iterate the path and add between each
-                G.add_edge(split_path[-2], split_path[-1])
-            # if "Contents" in page.keys():
-            # for contents in page["Contents"]:
-            #     # [i["Key"] for i in page["Contents"]]
-            #     # keys: ['Key', 'LastModified', 'ETag', 'Size', 'StorageClass']
-            #     obj_key = contents["Key"]
-            #     obj_etag = contents["ETag"]
-            #     obj_size = contents["Size"]
-            #     print(obj_key)
-            #     #all_files.extend([i["Key"] for i in page["Contents"]])
-        # return [i for i in all_files if i.endswith(".raw")]
-        print(G)
-        print(G.nodes.data("Size")[0])
-        return [1, 2, 3]
+                # split_path: ['data', 'raw', 'Henry_B._Bigelow', 'HB0707', 'EK60', 'D20070712-T004447.raw']
+                for previous, current in zip(split_path, split_path[1:]):
+                    if not G.has_edge(previous, current):
+                        G.add_edge(previous, current)
+        # print(G)
+        etag_set = frozenset(
+            [k for j, k in list(G.nodes.data("ETag")) if k is not None]
+        )
+        new_hash = sha256(str(etag_set.__hash__()).encode("utf-8")).hexdigest()
+        total_size = [k for j, k in list(G.nodes.data("Size")) if k is not None]
+        print(np.sum(total_size))  # 22.24 Terabytes in Henry_B._Bigelow cruises
+        print(" ")
+        print(new_hash)
+        return new_hash
