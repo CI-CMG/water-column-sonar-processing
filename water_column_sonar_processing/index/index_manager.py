@@ -348,19 +348,19 @@ class IndexManager:
         G = nx.DiGraph()
         # https://noaa-wcsd-pds.s3.amazonaws.com/index.html#data/raw/Henry_B._Bigelow/HB0707/
         ship_name = "Henry_B._Bigelow"
-        # cruise_name = "HB0707"
+        cruise_name = "HB0707"
         # cruise_name = "HB0805"
-        # prefix = f"data/raw/{ship_name}/{cruise_name}/"
-        prefix = f"data/raw/{ship_name}/"
+        prefix = f"data/raw/{ship_name}/{cruise_name}/"
+        # prefix = f"data/raw/{ship_name}/"
         page_iterator = self.s3_manager.paginator.paginate(
             Bucket=self.input_bucket_name,
             Prefix=prefix,
-            # PaginationConfig={"PageSize": 10},
         )
         for page in page_iterator:
             for contents in page["Contents"]:
                 obj_key = contents["Key"]
-                obj_etag = contents["ETag"]  # properties
+                # https://datatracker.ietf.org/doc/html/rfc7232#section-2.3
+                obj_etag = contents["ETag"].split('"')[1]  # properties
                 obj_size = contents["Size"]
                 basename = os.path.basename(obj_key)
                 G.add_node(
