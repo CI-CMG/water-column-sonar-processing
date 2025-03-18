@@ -172,9 +172,9 @@ class ResampleRegrid:
             # get dynamo stuff
             dynamo_db_manager = DynamoDBManager()
             cruise_df = dynamo_db_manager.get_table_as_df(
-                ship_name=ship_name,
+                # ship_name=ship_name,
                 cruise_name=cruise_name,
-                sensor_name=sensor_name,
+                # sensor_name=sensor_name,
                 table_name=table_name,
             )
 
@@ -205,7 +205,7 @@ class ResampleRegrid:
                     ]
                 )
 
-                # get input store
+                # Get input store
                 input_xr_zarr_store = zarr_manager.open_s3_zarr_store_with_xarray(
                     ship_name=ship_name,
                     cruise_name=cruise_name,
@@ -214,6 +214,10 @@ class ResampleRegrid:
                     input_bucket_name=bucket_name,
                     endpoint_url=endpoint_url,
                 )
+
+                # This is the horizontal offset of the measurement.
+                # See https://echopype.readthedocs.io/en/stable/data-proc-additional.html
+                water_level = input_xr_zarr_store.water_level.values
                 #########################################################################
                 # [3] Get needed indices
                 # Offset from start index to insert new data. Note that missing values are excluded.
@@ -232,7 +236,9 @@ class ResampleRegrid:
 
                 # Note: cruise dims (depth, time, frequency)
                 all_cruise_depth_values = zarr_manager.get_depth_values(
-                    min_echo_range=min_echo_range, max_echo_range=max_echo_range
+                    min_echo_range=min_echo_range,
+                    max_echo_range=max_echo_range,
+                    water_level=water_level,
                 )
 
                 print(" ".join(list(input_xr_zarr_store.Sv.dims)))
@@ -293,6 +299,7 @@ class ResampleRegrid:
                     detected_seafloor_depth = input_xr.detected_seafloor_depth.values
                     detected_seafloor_depth[detected_seafloor_depth == 0.0] = np.nan
                     # TODO: problem here: Processing file: D20070711-T210709.
+
                     detected_seafloor_depths = np.nanmean(
                         detected_seafloor_depth, 0
                     )  # RuntimeWarning: Mean of empty slice detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)

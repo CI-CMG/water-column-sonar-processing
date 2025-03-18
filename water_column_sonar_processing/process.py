@@ -78,8 +78,8 @@ class Process:
                 "#SE": "SENSOR_NAME",
                 "#SH": "SHIP_NAME",
                 "#ST": "START_TIME",
-                "#ZB": "ZARR_BUCKET",
-                "#ZP": "ZARR_PATH",
+                # "#ZB": "ZARR_BUCKET",
+                # "#ZP": "ZARR_PATH",
             },
             expression_attribute_values={
                 ":ch": {"L": [{"S": i} for i in test_channels]},
@@ -94,10 +94,10 @@ class Process:
                 ":se": {"S": sensor_name},
                 ":sh": {"S": ship_name},
                 ":st": {"S": "2006-04-06T11:34:07.288Z"},
-                ":zb": {"S": "r2d2-dev-echofish2-118234403147-echofish-dev-output"},
-                ":zp": {
-                    "S": "level_1/David_Starr_Jordan/DS0604/EK60/DSJ0604-D20060406-T113407.model"
-                },
+                # ":zb": {"S": "r2d2-dev-echofish2-118234403147-echofish-dev-output"},
+                # ":zp": {
+                #     "S": "level_1/David_Starr_Jordan/DS0604/EK60/DSJ0604-D20060406-T113407.model"
+                # },
             },
             update_expression=(
                 "SET "

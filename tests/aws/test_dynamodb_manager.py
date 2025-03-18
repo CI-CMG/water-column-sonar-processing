@@ -52,7 +52,7 @@ def test_serializer_deserializer():
 
 #######################################################
 @mock_aws
-def test_dynamodb_manager(): # PASSING
+def test_dynamodb_manager():  # PASSING
     # ---Initialize--- #
     table_name = "test_table"
     dynamo_db_manager = DynamoDBManager()
@@ -135,7 +135,7 @@ def test_dynamodb_manager(): # PASSING
     # ---Read From Table--- #
     response = dynamo_db_manager.get_table_item(
         table_name=table_name,
-        key={ "FILE_NAME": "DSJ0604-D20060419-T184612.raw", "CRUISE_NAME": "DS0604" },
+        key={"FILE_NAME": "DSJ0604-D20060419-T184612.raw", "CRUISE_NAME": "DS0604"},
     )
     assert (
         response["Item"]["PIPELINE_STATUS"]
@@ -161,7 +161,7 @@ def test_dynamodb_manager(): # PASSING
             ":ps": {"S": PipelineStatus.SUCCESS_CRUISE_PROCESSOR.name},
             ":pt": {"S": "2023-10-02T09:09:09Z"},
         },
-        update_expression=("SET " "#PS = :ps, " "#PT = :pt"),
+        update_expression=("SET #PS = :ps, #PT = :pt"),
     )
 
     # ---Read From Table Again--- #
@@ -175,9 +175,9 @@ def test_dynamodb_manager(): # PASSING
     # TODO: get the table as a dataframe
     df = dynamo_db_manager.get_table_as_df(
         table_name=table_name,
-        ship_name="David_Starr_Jordan",
+        # ship_name="David_Starr_Jordan",
         cruise_name="DS0604",
-        sensor_name="EK60",
+        # sensor_name="EK60",
     )
 
     assert df.shape[1] == 16
@@ -186,14 +186,14 @@ def test_dynamodb_manager(): # PASSING
 
 #######################################################
 def update_dynamodb_item(
-        dynamo_db_manager,
-        table_name,
-        ship_name,
-        sensor_name,
-        cruise_name,
-        file_name,
-        test_channels,
-        test_frequencies,
+    dynamo_db_manager,
+    table_name,
+    ship_name,
+    sensor_name,
+    cruise_name,
+    file_name,
+    test_channels,
+    test_frequencies,
 ):
     dynamo_db_manager.update_item(
         table_name=table_name,
@@ -227,7 +227,9 @@ def update_dynamodb_item(
             ":mi": {"N": str(np.round(0.25001, 4))},
             ":nd": {"N": str(2428)},
             ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
-            ":pt": {"S": "2023-10-02T08:08:080Z"}, # datetime.now().isoformat(timespec="seconds") + "Z"
+            ":pt": {
+                "S": "2023-10-02T08:08:080Z"
+            },  # datetime.now().isoformat(timespec="seconds") + "Z"
             ":se": {"S": sensor_name},
             ":sh": {"S": ship_name},
             ":st": {"S": "2006-04-19T18:46:12.564Z"},
@@ -255,8 +257,9 @@ def update_dynamodb_item(
         ),
     )
 
+
 @mock_aws
-def test_delete_item(): # PASSING
+def test_delete_item():  # PASSING
     # ---Initialize--- #
     table_name = "test_table"
     dynamo_db_manager = DynamoDBManager()
@@ -330,20 +333,20 @@ def test_delete_item(): # PASSING
 
     # ---Read From Table, verify four items--- #
     response = dynamo_db_manager.describe_table(table_name=table_name)
-    assert response['Table']['ItemCount'] == 4
+    assert response["Table"]["ItemCount"] == 4
     df1 = dynamo_db_manager.get_table_as_df(
-        ship_name=ship_name1,
+        # ship_name=ship_name1,
         cruise_name=cruise_name1,
-        sensor_name="EK60",
+        # sensor_name="EK60",
         table_name=table_name,
     )
     df2 = dynamo_db_manager.get_table_as_df(
-        ship_name=ship_name2,
+        # ship_name=ship_name2,
         cruise_name=cruise_name2,
-        sensor_name="EK60",
+        # sensor_name="EK60",
         table_name=table_name,
     )
-    assert df1.shape[0] == 2 # TODO: check actual filenames
+    assert df1.shape[0] == 2  # TODO: check actual filenames
     assert df2.shape[0] == 2
 
     # ---Delete cruise From Table Again--- #
@@ -360,18 +363,19 @@ def test_delete_item(): # PASSING
 
     # ---Get count of items again---#
     response = dynamo_db_manager.describe_table(table_name=table_name)
-    assert response['Table']['ItemCount'] == 2
+    assert response["Table"]["ItemCount"] == 2
 
     df4 = dynamo_db_manager.get_table_as_df(
         table_name=table_name,
-        ship_name=ship_name2,
+        # ship_name=ship_name2,
         cruise_name=cruise_name2,
-        sensor_name="EK60",
+        # sensor_name="EK60",
     )
     assert df4.shape == (0, 0)
 
     # assert df.shape[1] == 16
     # TODO: check fields
+
 
 # TODO: test with smaller paging, and with multiple cruises
 

@@ -122,7 +122,7 @@ class DynamoDBManager:
                 ExpressionAttributeValues=expression_attribute_values,
                 UpdateExpression=update_expression,
             )
-            return response["ResponseMetadata"]["HTTPStatusCode"]
+            return response["ResponseMetadata"]["HTTPStatusCode"]  # TODO: should be 200
             # print(f"HTTPStatusCode: {status_code}")
             # assert status_code == 200, "Problem, unable to update dynamodb table."
             # assert response['ConsumedCapacity']['TableName'] == table_name
@@ -133,14 +133,15 @@ class DynamoDBManager:
     # TODO: change to "get_cruise_as_df"
     def get_table_as_df(
         self,
-        ship_name,
+        # ship_name,
         cruise_name,
-        sensor_name,
+        # sensor_name,
         table_name,
     ) -> pd.DataFrame:
         """
         To be used to initialize a cruise, deletes all entries associated with that cruise
         in the database.
+        #TODO: cruise names isn't good enough, there could be two instrument for a cruise...
         """
         filter_expression = "CRUISE_NAME = :cr"
         response = self.dynamodb_client.scan(

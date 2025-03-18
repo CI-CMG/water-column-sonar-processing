@@ -35,10 +35,12 @@ class ZarrManager:
         self,
         min_echo_range: float = 1.0,  # minimum depth measured (zero non-inclusive) from whole cruise
         max_echo_range: float = 100.0,  # maximum depth measured from whole cruise
+        water_level: float = 0.0,  # TODO: use different value to test
     ):
         # Gets the set of depth values that will be used when resampling and
         # regridding the data to a cruise level model store.
         # Note: returned values do not start at zero.
+        # For more info see here: https://echopype.readthedocs.io/en/stable/data-proc-additional.html
         print("Getting depth values.")
         all_cruise_depth_values = np.linspace(
             start=min_echo_range,
@@ -46,6 +48,9 @@ class ZarrManager:
             num=int(max_echo_range / min_echo_range) + 1,
             endpoint=True,
         )
+
+        # Include vertical offset
+        all_cruise_depth_values = all_cruise_depth_values + water_level
 
         if np.any(np.isnan(all_cruise_depth_values)):
             raise Exception("Problem depth values returned were NaN.")

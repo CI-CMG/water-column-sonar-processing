@@ -10,7 +10,7 @@ from numcodecs import Blosc
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.geometry import GeometryManager
-from water_column_sonar_processing.utility import Cleaner, PipelineStatus
+from water_column_sonar_processing.utility import Cleaner
 
 
 # This code is getting copied from echofish-aws-raw-to-zarr-lambda
@@ -35,13 +35,13 @@ class RawToZarr:
     ############################################################################
     def __zarr_info_to_table(
         self,
-        output_bucket_name,
+        # output_bucket_name,
         table_name,
         ship_name,
         cruise_name,
         sensor_name,
         file_name,
-        zarr_path,
+        # zarr_path,
         min_echo_range,
         max_echo_range,
         num_ping_time_dropna,
@@ -49,6 +49,7 @@ class RawToZarr:
         end_time,
         frequencies,
         channels,
+        water_level,
     ):
         print("Writing Zarr information to DynamoDB table.")
         dynamodb_manager = DynamoDBManager()
@@ -66,13 +67,14 @@ class RawToZarr:
                 "#MA": "MAX_ECHO_RANGE",
                 "#MI": "MIN_ECHO_RANGE",
                 "#ND": "NUM_PING_TIME_DROPNA",
-                "#PS": "PIPELINE_STATUS",
+                # "#PS": "PIPELINE_STATUS",
                 "#PT": "PIPELINE_TIME",
                 "#SE": "SENSOR_NAME",
                 "#SH": "SHIP_NAME",
                 "#ST": "START_TIME",
-                "#ZB": "ZARR_BUCKET",
-                "#ZP": "ZARR_PATH",
+                # "#ZB": "ZARR_BUCKET",
+                # "#ZP": "ZARR_PATH",
+                "#WL": "WATER_LEVEL",
             },
             expression_attribute_values={
                 ":ch": {"L": [{"S": i} for i in channels]},
@@ -83,13 +85,14 @@ class RawToZarr:
                 ":mi": {"N": str(np.round(min_echo_range, 4))},
                 ":nd": {"N": str(num_ping_time_dropna)},
                 # ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
-                ":ps": {"S": PipelineStatus.LEVEL_1_PROCESSING.name},
+                # ":ps": {"S": PipelineStatus.LEVEL_1_PROCESSING.name},
                 ":pt": {"S": datetime.now().isoformat(timespec="seconds") + "Z"},
                 ":se": {"S": sensor_name},
                 ":sh": {"S": ship_name},
                 ":st": {"S": start_time},
-                ":zb": {"S": output_bucket_name},
-                ":zp": {"S": zarr_path},
+                ":wl": {"N": str(np.round(water_level, 2))},
+                # ":zb": {"S": output_bucket_name},
+                # ":zp": {"S": zarr_path},
             },
             update_expression=(
                 "SET "
@@ -100,13 +103,14 @@ class RawToZarr:
                 "#MA = :ma, "
                 "#MI = :mi, "
                 "#ND = :nd, "
-                "#PS = :ps, "
+                # "#PS = :ps, "
                 "#PT = :pt, "
                 "#SE = :se, "
                 "#SH = :sh, "
                 "#ST = :st, "
-                "#ZB = :zb, "
-                "#ZP = :zp"
+                "#WL = :wl"
+                # "#ZB = :zb, "
+                # "#ZP = :zp"
             ),
         )
         print("Done writing Zarr information to DynamoDB table.")
@@ -195,6 +199,10 @@ class RawToZarr:
             )
             print("Compute volume backscattering strength (Sv) from raw data.")
             ds_sv = ep.calibrate.compute_Sv(echodata)
+            ds_sv = ep.consolidate.add_depth(
+                ds_sv, echodata
+            )  # TODO: consolidate with other depth values
+            water_level = ds_sv["water_level"].values
             gc.collect()
             print("Done computing volume backscatter strength (Sv) from raw data.")
             # Note: detected_seafloor_depth is located at echodata.vendor.detected_seafloor_depth
@@ -276,13 +284,13 @@ class RawToZarr:
             )
             #################################################################
             self.__zarr_info_to_table(
-                output_bucket_name=output_bucket_name,
+                # output_bucket_name=output_bucket_name,
                 table_name=table_name,
                 ship_name=ship_name,
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
                 file_name=raw_file_name,
-                zarr_path=os.path.join(output_zarr_prefix, store_name),
+                # zarr_path=os.path.join(output_zarr_prefix, store_name),
                 min_echo_range=min_echo_range,
                 max_echo_range=max_echo_range,
                 num_ping_time_dropna=num_ping_time_dropna,
@@ -290,6 +298,7 @@ class RawToZarr:
                 end_time=end_time,
                 frequencies=frequencies,
                 channels=channels,
+                water_level=water_level,
             )
             #######################################################################
             # TODO: verify count of objects matches, publish message, update status

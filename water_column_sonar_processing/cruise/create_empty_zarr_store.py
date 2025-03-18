@@ -74,9 +74,9 @@ class CreateEmptyZarrStore:
 
             df = dynamo_db_manager.get_table_as_df(
                 table_name=table_name,
-                ship_name=ship_name,
+                # ship_name=ship_name,
                 cruise_name=cruise_name,
-                sensor_name=sensor_name,
+                # sensor_name=sensor_name,
             )
 
             # TODO: filter the dataframe just for enums >= LEVEL_1_PROCESSING
