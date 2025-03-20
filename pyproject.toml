@@ -59,6 +59,7 @@ dev = [
     "build",
     "flake8==7.1.1",
     "isort",
+    "matplotlib==3.10.1",
     "pooch==1.8.2",
     "pre-commit",
     "pyinstaller",

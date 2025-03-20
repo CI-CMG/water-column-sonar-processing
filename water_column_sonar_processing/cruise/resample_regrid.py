@@ -53,7 +53,7 @@ class ResampleRegrid:
                 data=data,
                 dims=("depth", "time", "frequency"),
                 coords={
-                    "depth": all_cruise_depth_values,
+                    "depth": all_cruise_depth_values,  # TODO: these should be on interval from 7.7 meters to 507 meters
                     "time": ping_times,
                     "frequency": input_xr.frequency_nominal.values,
                 },
@@ -62,20 +62,20 @@ class ResampleRegrid:
             channels = input_xr.channel.values
             for channel in range(
                 len(channels)
-            ):  # TODO: leaving off here, need to subset for just indices in time axis
+            ):  # ?TODO: leaving off here, need to subset for just indices in time axis
                 gc.collect()
                 print(
                     np.nanmax(
                         input_xr.echo_range.sel(
                             channel=input_xr.channel[channel]
-                        ).values
+                        ).values  # need to add water_level to this
                     )
                 )
                 #
                 max_depths = np.nanmax(
                     a=input_xr.echo_range.sel(channel=input_xr.channel[channel]).values,
                     axis=1,
-                )
+                )  # need to add water_level from each channel(?) to this
                 superset_of_max_depths = set(
                     np.nanmax(
                         input_xr.echo_range.sel(
@@ -231,15 +231,17 @@ class ResampleRegrid:
                 start_ping_time_index = ping_time_cumsum[index]
                 end_ping_time_index = ping_time_cumsum[index + 1]
 
-                min_echo_range = np.nanmin(np.float32(cruise_df["MIN_ECHO_RANGE"]))
+                min_echo_range = np.nanmin(
+                    np.float32(cruise_df["MIN_ECHO_RANGE"])
+                )  # TODO: this should have vertical offset integrated already for resample
                 max_echo_range = np.nanmax(np.float32(cruise_df["MAX_ECHO_RANGE"]))
 
                 # Note: cruise dims (depth, time, frequency)
                 all_cruise_depth_values = zarr_manager.get_depth_values(
                     min_echo_range=min_echo_range,
                     max_echo_range=max_echo_range,
-                    water_level=water_level,
-                )
+                    water_level=water_level,  # remove this & integrate into min_echo_range
+                )  # with offset of 7.5 meters, 0 meter measurement should now start at 7.5 meters
 
                 print(" ".join(list(input_xr_zarr_store.Sv.dims)))
                 if set(input_xr_zarr_store.Sv.dims) != {

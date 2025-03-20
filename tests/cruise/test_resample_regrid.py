@@ -236,7 +236,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
                 "SET "
                 "#CH = :ch, "
                 "#ET = :et, "
-                # "#ED = :ed, " # TODO: add back in
+                # "#ED = :ed, " # TODO: add back in?
                 "#FR = :fr, "
                 "#MA = :ma, "
                 "#MI = :mi, "
@@ -413,133 +413,15 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     sensor_name = "EK60"
     table_name = "water-column-sonar-table"
 
-    # [0] create bucket with test files
+    # create dynamodb table
+    dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
+
+    # create bucket with test files
     l0_test_bucket_name = "l0_test_bucket"
     l1_l2_test_bucket_name = "l1_l2_test_input_bucket"
-
     s3_manager.create_bucket(bucket_name=l0_test_bucket_name)
     s3_manager.create_bucket(bucket_name=l1_l2_test_bucket_name)
     print(s3_manager.list_buckets())
-
-    # [1] create dynamodb table
-    dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
-
-    # [2] bootstrap w/ test data
-    test_channels = [
-        "GPT  18 kHz 009072056b0e 2-1 ES18-11",
-        "GPT  38 kHz 0090720346bc 1-1 ES38B",
-        "GPT 120 kHz 0090720580f1 3-1 ES120-7",
-        "GPT 200 kHz 009072034261 4-1 ES200-7",
-    ]
-    frequency = [18_000, 38_000, 120_000, 200_000]
-    file_names = [
-        "D20191106-T034434.raw",
-        # "D20191106-T042540.raw",
-    ]
-    max_echo_range = [
-        499.9022,
-    ]
-    min_echo_range = 0.19
-    num_ping_time_dropna = [
-        2461,
-    ]
-    start_time = [
-        "2019-11-06T03:44:34.648Z",
-    ]
-    end_time = [
-        "2019-11-06T04:25:39.055Z",
-    ]
-    zarr_path = [
-        "level_1/Henry_B._Bigelow/HB1906/EK60/D20191106-T034434.zarr",
-    ]
-    for iii in range(0, len(file_names)):
-        dynamo_db_manager.update_item(
-            table_name=table_name,
-            key={
-                "FILE_NAME": {"S": file_names[iii]},  # Partition Key
-                "CRUISE_NAME": {"S": cruise_name},  # Sort Key
-            },
-            expression_attribute_names={
-                "#CH": "CHANNELS",
-                "#ET": "END_TIME",
-                "#ED": "ERROR_DETAIL",
-                "#FR": "FREQUENCIES",
-                "#MA": "MAX_ECHO_RANGE",
-                "#MI": "MIN_ECHO_RANGE",
-                "#ND": "NUM_PING_TIME_DROPNA",
-                "#PS": "PIPELINE_STATUS",  # testing this updated
-                "#PT": "PIPELINE_TIME",  # testing this updated
-                "#SE": "SENSOR_NAME",
-                "#SH": "SHIP_NAME",
-                "#ST": "START_TIME",
-                "#ZB": "ZARR_BUCKET",
-                "#ZP": "ZARR_PATH",
-            },
-            expression_attribute_values={
-                ":ch": {"L": [{"S": i} for i in test_channels]},
-                ":et": {"S": end_time[iii]},
-                ":ed": {"S": ""},
-                ":fr": {"L": [{"N": str(int(i))} for i in frequency]},
-                ":ma": {"N": str(np.round(max_echo_range[iii], 4))},
-                ":mi": {"N": str(np.round(min_echo_range, 4))},
-                ":nd": {"N": str(num_ping_time_dropna[iii])},
-                ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
-                ":pt": {"S": "2023-10-02T08:08:08Z"},
-                ":se": {"S": sensor_name},
-                ":sh": {"S": ship_name},
-                ":st": {"S": start_time[iii]},
-                ":zb": {"S": l1_l2_test_bucket_name},
-                ":zp": {"S": zarr_path[iii]},
-            },
-            update_expression=(
-                "SET "
-                "#CH = :ch, "
-                "#ET = :et, "
-                "#ED = :ed, "
-                "#FR = :fr, "
-                "#MA = :ma, "
-                "#MI = :mi, "
-                "#ND = :nd, "
-                "#PS = :ps, "
-                "#PT = :pt, "
-                "#SE = :se, "
-                "#SH = :sh, "
-                "#ST = :st, "
-                "#ZB = :zb, "
-                "#ZP = :zp"
-            ),
-        )
-
-    # [3] create new zarr store and upload
-    create_empty_zarr_store = CreateEmptyZarrStore()
-    # TODO: this is out of order, needs to happen after raw-to-zarr L0-to-L1
-    create_empty_zarr_store.create_cruise_level_zarr_store(
-        output_bucket_name=l1_l2_test_bucket_name,
-        ship_name=ship_name,
-        cruise_name=cruise_name,
-        sensor_name=sensor_name,
-        table_name=table_name,
-        # tempdir="/tmp", # TODO: create better tmp directory for testing
-    )
-
-    # Assert data is in the bucket
-    # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
-    assert (
-        len(
-            s3_manager.list_objects(
-                bucket_name=l1_l2_test_bucket_name,
-                prefix="level_2/Henry_B._Bigelow/HB1906/EK60/HB0707.zarr/",
-            )
-        )
-        > 1
-    )
-    assert (
-        "level_2/Henry_B._Bigelow/HB1906/EK60/HB1906.zarr/.zmetadata"
-        in s3_manager.list_objects(
-            bucket_name=l1_l2_test_bucket_name,
-            prefix="level_2/Henry_B._Bigelow/HB1906/EK60/HB1906.zarr/",
-        )
-    )
 
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T034434.raw"),
@@ -549,10 +431,21 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T034434.bot"),
         bucket_name=l0_test_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T034434.raw",
+        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T034434.bot",
     )
 
-    assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 2
+    s3_manager.upload_file(
+        filename=resample_regrid_test_path.joinpath("D20191106-T042540.raw"),
+        bucket_name=l0_test_bucket_name,
+        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T042540.raw",
+    )
+    s3_manager.upload_file(
+        filename=resample_regrid_test_path.joinpath("D20191106-T042540.bot"),
+        bucket_name=l0_test_bucket_name,
+        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T042540.bot",
+    )
+
+    assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 4
 
     raw_to_zarr = RawToZarr()
     gc.collect()
@@ -565,17 +458,79 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         sensor_name=sensor_name,
         raw_file_name="D20191106-T034434.raw",
         endpoint_url=moto_server,
-        include_bot=True,  # added bot
+        include_bot=True,
+    )
+    raw_to_zarr.raw_to_zarr(
+        table_name=table_name,
+        input_bucket_name=l0_test_bucket_name,
+        output_bucket_name=l1_l2_test_bucket_name,
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        raw_file_name="D20191106-T042540.raw",
+        endpoint_url=moto_server,
+        include_bot=True,
     )
     gc.collect()
+
+    # create new zarr store and upload
+    create_empty_zarr_store = CreateEmptyZarrStore()
+    # TODO: this is out of order, needs to happen after raw-to-zarr L0-to-L1
+    create_empty_zarr_store.create_cruise_level_zarr_store(
+        output_bucket_name=l1_l2_test_bucket_name,
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        table_name=table_name,
+        # tempdir="/tmp", # TODO: create better tmp directory for testing
+    )
+
+    # Assert data is in the bucket
+    assert (
+        len(
+            s3_manager.list_objects(
+                bucket_name=l1_l2_test_bucket_name,
+                prefix="level_2/Henry_B._Bigelow/HB1906/EK60/HB1906.zarr/",
+            )
+        )
+        > 1
+    )
+    assert (
+        "level_2/Henry_B._Bigelow/HB1906/EK60/HB1906.zarr/.zmetadata"
+        in s3_manager.list_objects(
+            bucket_name=l1_l2_test_bucket_name,
+            prefix="level_2/Henry_B._Bigelow/HB1906/EK60/HB1906.zarr/",
+        )
+    )
+
+    # raw_to_zarr = RawToZarr()
+    # gc.collect()
+    # raw_to_zarr.raw_to_zarr(
+    #     table_name=table_name,
+    #     input_bucket_name=l0_test_bucket_name,
+    #     output_bucket_name=l1_l2_test_bucket_name,
+    #     ship_name=ship_name,
+    #     cruise_name=cruise_name,
+    #     sensor_name=sensor_name,
+    #     raw_file_name="D20191106-T034434.raw",
+    #     endpoint_url=moto_server,
+    #     include_bot=True,  # added bot
+    # )
+    # gc.collect()
     number_of_files_xx = s3_manager.list_objects(
         bucket_name=l1_l2_test_bucket_name,
         prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
     )
-    assert len(number_of_files_xx) > 72  # 1402
+    assert len(number_of_files_xx) > 900  # 912
+
+    cruise_df_l0_l1 = dynamo_db_manager.get_table_as_df(
+        cruise_name=cruise_name,
+        table_name=table_name,
+    )
+    print(cruise_df_l0_l1)
 
     resample_regrid = ResampleRegrid()
-    resample_regrid.resample_regrid(
+    resample_regrid.resample_regrid(  # water_level == 7.5
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
@@ -585,10 +540,15 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         override_select_files=["D20191106-T034434.raw"],
         endpoint_url=moto_server,
     )
-
-    # TODO: verify that the two files in question were properly resampled and regridded
-    # check a couple of samples that are adjacent to one another
-    assert 2 > 1
+    resample_regrid.resample_regrid(  # water_level == 7.5
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        table_name=table_name,
+        bucket_name=l1_l2_test_bucket_name,
+        override_select_files=["D20191106-T042540.raw"],
+        endpoint_url=moto_server,
+    )
 
     test_zarr_manager = ZarrManager()
     test_output_zarr_store = test_zarr_manager.open_l2_zarr_store_with_xarray(
@@ -603,8 +563,8 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     # because we only processed two files, there should be missing values
     assert np.isnan(np.sum(test_output_zarr_store.latitude.values))
 
-    start_time = np.datetime64("2007-07-12T12:49:06.313")
-    end_time = np.datetime64("2007-07-12T17:18:03.032")
+    start_time = np.datetime64("2019-11-06T03:44:35.651")
+    end_time = np.datetime64("2019-11-06T05:06:44.176")
     select_times = (test_output_zarr_store.time > start_time) & (
         test_output_zarr_store.time < end_time
     )

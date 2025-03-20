@@ -102,7 +102,7 @@ class CreateEmptyZarrStore:
             # [4] calculate the maximum of the max depth values
             cruise_max_echo_range = float(
                 np.max(df["MAX_ECHO_RANGE"].dropna().astype(float))
-            )
+            )  # TODO: add the water_level here
             print(
                 f"cruise_min_echo_range: {cruise_min_echo_range}, cruise_max_echo_range: {cruise_max_echo_range}"
             )

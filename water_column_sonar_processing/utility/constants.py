@@ -10,11 +10,15 @@ class Constants(Flag):
     # NOTE: larger value here will speed up the TurfJS download of data in the UI
     # Problem interpolating the data: cannot reshape array of size 65536 into shape...
     SPATIOTEMPORAL_CHUNK_SIZE = int(2**16) - 1024  # e.g. int(2**14)
+    # TODO: create test for SPATIOTEMPORAL_CHUNK_SIZE with requirement!
 
     LEVEL_0 = "raw"
     LEVEL_1 = "level_1"
     LEVEL_2 = "level_2"
     LEVEL_3 = "level_3"
+
+    EK60 = "EK60"  # TODO: use for "instrument"
+    EK80 = "EK80"
 
 
 class Coordinates(Enum):

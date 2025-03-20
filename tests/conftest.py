@@ -33,8 +33,8 @@ HB1906_RAW = pooch.create(
         "D20191106-T034434.raw": "sha256:8df1da62bfaca5d8e3bfd7be0b0f385c585bfb1ed0743e6aa8a9f108f765b968",  # has non-zero water_level
         "D20191106-T034434.bot": "sha256:027edd2eeca18bf16030c8f3c7867ffc70ec9080f4af7eab2b7210134da6d950",
         # Could also test: D20191106-T034434.raw & D20191106-T042540.raw
-        # "D20191106-T042540.raw": "sha256:e3457b098f1818169fcd13a925792e21a80ce7641312ba149f84a3d7fda45bd0",
-        # "D20191106-T042540.bot": "sha256:2aa7727a708cf2c25bca4bda650f599107be4a14c74850900be62fe6d83c6944",
+        "D20191106-T042540.raw": "sha256:e3457b098f1818169fcd13a925792e21a80ce7641312ba149f84a3d7fda45bd0",
+        "D20191106-T042540.bot": "sha256:2aa7727a708cf2c25bca4bda650f599107be4a14c74850900be62fe6d83c6944",
     },
 )
 
@@ -42,6 +42,9 @@ HB1906_RAW = pooch.create(
 def fetch_raw_files():
     HB1906_RAW.fetch(fname="D20191106-T034434.raw", progressbar=True)
     HB1906_RAW.fetch(fname="D20191106-T034434.bot", progressbar=True)
+
+    HB1906_RAW.fetch(fname="D20191106-T042540.raw", progressbar=True)
+    HB1906_RAW.fetch(fname="D20191106-T042540.bot", progressbar=True)
 
     HB0707_RAW.fetch(fname="D20070712-T124906.raw", progressbar=True)
     HB0707_RAW.fetch(fname="D20070712-T124906.bot", progressbar=True)
