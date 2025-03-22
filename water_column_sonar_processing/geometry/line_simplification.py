@@ -1,6 +1,7 @@
 # import json
 import geopandas as gpd
 import numpy as np
+from pykalman import KalmanFilter
 from shapely.geometry import Point
 
 # import matplotlib.pyplot as plt
@@ -12,6 +13,15 @@ from shapely.geometry import Point
 # TODO: get line for example HB1906 ...save linestring to array for testing
 
 MAX_SPEED_KNOTS = 50
+
+
+# Lambert's formula ==> better accuracy than haversinte
+# Lambert's formula (the formula used by the calculators above) is the method used to calculate the shortest distance along the surface of an ellipsoid. When used to approximate the Earth and calculate the distance on the Earth surface, it has an accuracy on the order of 10 meters over thousands of kilometers, which is more precise than the haversine formula.
+
+
+def mph_to_knots(mph_value):
+    # 1 mile per hour === 0.868976 Knots
+    return mph_value * 0.868976
 
 
 # https://shapely.readthedocs.io/en/stable/reference/shapely.MultiLineString.html#shapely.MultiLineString
@@ -38,10 +48,6 @@ class LineSimplification:
         private static final double maxAllowedSpeedKnts = 60D;
     """
 
-    def mph_to_knots(self, mph_value):
-        # 1mph === 0.868976 Knots
-        return mph_value * 0.868976
-
     # TODO: in the future move to standalone library
     #######################################################
     def __init__(
@@ -50,14 +56,40 @@ class LineSimplification:
         pass
 
     #######################################################
-    #######################################################
-    def speed_check(
+    def kalman_filter(
         self,
-        times,  # don't really need time, do need to segment the data first
-        latitudes,
         longitudes,
-    ) -> None:  # 90,000 points
-        # TODO: high priority
+        latitudes,
+    ) -> (np.ndarray, np.ndarray):
+        ### https://github.com/pykalman/pykalman
+        # https://stackoverflow.com/questions/43377626/how-to-use-kalman-filter-in-python-for-location-data
+        measurements = np.asarray([list(elem) for elem in zip(longitudes, latitudes)])
+        initial_state_mean = [measurements[0, 0], 0, measurements[0, 1], 0]
+        transition_matrix = [[1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 1]]
+        observation_matrix = [[1, 0, 0, 0], [0, 0, 1, 0]]
+
+        kf = KalmanFilter(
+            transition_matrices=transition_matrix,
+            observation_matrices=observation_matrix,
+            initial_state_mean=initial_state_mean,
+        )
+        kf = kf.em(measurements, n_iter=2)
+        (smoothed_state_means, smoothed_state_covariances) = kf.smooth(measurements)
+
+        # plt.plot(longitudes, latitudes, label="original")
+        # plt.plot(smoothed_state_means[:, 0], smoothed_state_means[:, 2], label="smoothed")
+        # plt.legend()
+        # plt.show()
+
+        return smoothed_state_means[:, [0, 2]]
+
+    #######################################################
+    def get_speeds(
+        self,
+        times: np.ndarray,  # don't really need time, do need to segment the data first
+        latitudes: np.ndarray,
+        longitudes: np.ndarray,
+    ) -> np.ndarray:
         print(MAX_SPEED_KNOTS)  # TODO: too high
         print(times[0], latitudes[0], longitudes[0])
         # TODO: distance/time ==> need to take position2 - position1 to get speed
@@ -72,16 +104,13 @@ class LineSimplification:
         )  # https://gis.stackexchange.com/questions/293310/finding-distance-between-two-points-with-geoseries-distance
         distance_diffs = points_df.distance(points_df.shift())
         #
-        # get time differences, TODO: get speed in knots
-        # np.array(foo[1:]) - np.array(foo[:-1])# 1 second difference
-        # numpy.timedelta64[ns] => (times[1:] - times[:-1]).astype(int)
         time_diffs_ns = np.append(0, (times[1:] - times[:-1]).astype(int))
-        # time_diffs = [{x, y} for x, y in zip(longitudes, latitudes)]
         nanoseconds_per_second = 1e9
         speed_meters_per_second = (
             distance_diffs / time_diffs_ns * nanoseconds_per_second
         )
-        return speed_meters_per_second
+        # returns the speed in meters per second #TODO: get speed in knots
+        return speed_meters_per_second.to_numpy(dtype="float32")  # includes nan
 
     def remove_null_island_values(
         self,
@@ -103,68 +132,6 @@ class LineSimplification:
     ) -> None:
         # TODO: medium-high priority
         pass
-
-    def kalman_filter(
-        self,
-        times,  # don't really need time, do need to segment the data first
-        latitudes,
-        longitudes,
-    ):
-        # TODO: highest priority
-        # for cruises with bad signal, filter so that
-        # https://scipy-cookbook.readthedocs.io/items/KalmanFiltering.html
-        # plt.rcParams['figure.figsize'] = (10, 8)
-
-        # intial parameters
-        n_iter = 50
-        sz = (n_iter,)  # size of array
-        x = -0.37727  # truth value (typo in example at top of p. 13 calls this z)
-        z = np.random.normal(
-            x, 0.1, size=sz
-        )  # observations (normal about x, sigma=0.1)
-
-        Q = 1e-5  # process variance
-
-        # allocate space for arrays
-        xhat = np.zeros(sz)  # a posteri estimate of x
-        P = np.zeros(sz)  # a posteri error estimate
-        xhatminus = np.zeros(sz)  # a priori estimate of x
-        Pminus = np.zeros(sz)  # a priori error estimate
-        K = np.zeros(sz)  # gain or blending factor
-
-        R = 0.1**2  # estimate of measurement variance, change to see effect
-
-        # intial guesses
-        xhat[0] = 0.0
-        P[0] = 1.0
-
-        for k in range(1, n_iter):
-            # time update
-            xhatminus[k] = xhat[k - 1]
-            Pminus[k] = P[k - 1] + Q
-            # measurement update
-            K[k] = Pminus[k] / (Pminus[k] + R)
-            xhat[k] = xhatminus[k] + K[k] * (z[k] - xhatminus[k])
-            P[k] = (1 - K[k]) * Pminus[k]
-
-        # plt.figure()
-        # plt.plot(z, 'k+', label='noisy measurements')
-        # plt.plot(xhat, 'b-', label='a posteri estimate')
-        # plt.axhline(x, color='g', label='truth value')
-        # plt.legend()
-        # plt.title('Estimate vs. iteration step', fontweight='bold')
-        # plt.xlabel('Iteration')
-        # plt.ylabel('Voltage')
-
-        # plt.figure()
-        valid_iter = range(1, n_iter)  # Pminus not valid at step 0
-        print(valid_iter)
-        # plt.plot(valid_iter, Pminus[valid_iter], label='a priori error estimate')
-        # plt.title('Estimated $\it{\mathbf{a \ priori}}$ error vs. iteration step', fontweight='bold')
-        # plt.xlabel('Iteration')
-        # plt.ylabel('$(Voltage)^2$')
-        # plt.setp(plt.gca(), 'ylim', [0, .01])
-        # plt.show()
 
     #######################################################
 

@@ -39,6 +39,7 @@ dependencies = [
     "pandas==2.2.3",
     #"pip-audit",
     "pyarrow==18.1.0",
+    "pykalman==0.10.1",
     "python-dotenv==1.0.1",
     "requests==2.32.3",
     "s3fs==2024.2.0",

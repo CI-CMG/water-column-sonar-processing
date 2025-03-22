@@ -1,3 +1,4 @@
+import numpy as np
 import xarray as xr
 from dotenv import find_dotenv, load_dotenv
 from geometry.line_simplification import LineSimplification
@@ -31,39 +32,58 @@ def teardown_module():
 #         print('teardown')
 
 
-# @mock_s3
-def test_speed_check():
+def test_filter_coordinates():
     ### check the differences and speed of the data
-    # download data
+    #
+    # TODO: create offline test data
+    #
     bucket_name = "noaa-wcsd-zarr-pds"
     ship_name = "Henry_B._Bigelow"
     cruise_name = "HB0707"  # HB1906
     sensor_name = "EK60"
-    # cruise = xr.open_zarr(
-    #     store=f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{zarr_store}",
-    #     storage_options={'anon': True},
-    #     consolidated=False,
-    #     use_cftime=False,
-    #     chunks={},  # 'auto', None, -1, {}
-    # )
     cruise = xr.open_dataset(
         filename_or_obj=f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr",
         storage_options={"anon": True},
         engine="zarr",
         chunks={},
     )
-    # cruise = xr.open_dataset(filename_or_obj=store_path, engine="zarr", chunks={})
+    longitudes = cruise.longitude.values
+    latitudes = cruise.latitude.values
+
+    line_simplification = LineSimplification()
+    # filtered_coordinates = line_simplification.kalman_filter(longitudes[3_801:5_501], latitudes[3_801:5_501])
+    filtered_coordinates = line_simplification.kalman_filter(
+        longitudes[1:1000], latitudes[1:1000]
+    )
+    print(filtered_coordinates)
+    assert filtered_coordinates.shape[1] == 2
+    # assert int(np.nanmean(filtered_coordinates)) == 7  # 7.54 meters per second
+
+
+# @mock_s3
+def test_get_speeds():
+    ### check the differences and speed of the data
+    #
+    # TODO: create offline test data
+    #
+    bucket_name = "noaa-wcsd-zarr-pds"
+    ship_name = "Henry_B._Bigelow"
+    cruise_name = "HB0707"  # HB1906
+    sensor_name = "EK60"
+    cruise = xr.open_dataset(
+        filename_or_obj=f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr",
+        storage_options={"anon": True},
+        engine="zarr",
+        chunks={},
+    )
     times = cruise.time.values
     latitudes = cruise.latitude.values
     longitudes = cruise.longitude.values
 
     line_simplification = LineSimplification()
-    foo = line_simplification.speed_check(times, latitudes, longitudes)
-    print(foo)
-    # pass in lat/lon/time
-
-    #
-    pass
+    line_speeds = line_simplification.get_speeds(times, latitudes, longitudes)
+    print(line_speeds)
+    assert int(np.nanmean(line_speeds)) == 7  # 7.54 meters per second
 
 
 #######################################################
