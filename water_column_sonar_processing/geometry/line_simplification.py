@@ -1,5 +1,7 @@
 # import json
+import geopandas as gpd
 import numpy as np
+from shapely.geometry import Point
 
 # import matplotlib.pyplot as plt
 
@@ -7,9 +9,13 @@ import numpy as np
 # lambda for timestamp in form "yyyy-MM-ddTHH:mm:ssZ"
 # dt = lambda: datetime.now().isoformat(timespec="seconds") + "Z"
 
+# TODO: get line for example HB1906 ...save linestring to array for testing
+
+MAX_SPEED_KNOTS = 50
+
 
 # https://shapely.readthedocs.io/en/stable/reference/shapely.MultiLineString.html#shapely.MultiLineString
-class GeometrySimplification:
+class LineSimplification:
     """
     //  [Decimal / Places / Degrees	/ Object that can be recognized at scale / N/S or E/W at equator, E/W at 23N/S, E/W at 45N/S, E/W at 67N/S]
       //  0   1.0	        1° 00′ 0″	        country or large region                             111.32 km	  102.47 km	  78.71 km	43.496 km
@@ -32,6 +38,10 @@ class GeometrySimplification:
         private static final double maxAllowedSpeedKnts = 60D;
     """
 
+    def mph_to_knots(self, mph_value):
+        # 1mph === 0.868976 Knots
+        return mph_value * 0.868976
+
     # TODO: in the future move to standalone library
     #######################################################
     def __init__(
@@ -40,37 +50,67 @@ class GeometrySimplification:
         pass
 
     #######################################################
+    #######################################################
     def speed_check(
         self,
-        speed_knots=50,
-    ) -> None:
-        print(speed_knots)
-        pass
+        times,  # don't really need time, do need to segment the data first
+        latitudes,
+        longitudes,
+    ) -> None:  # 90,000 points
+        # TODO: high priority
+        print(MAX_SPEED_KNOTS)  # TODO: too high
+        print(times[0], latitudes[0], longitudes[0])
+        # TODO: distance/time ==> need to take position2 - position1 to get speed
+
+        # get distance difference
+        geom = [Point(xy) for xy in zip(longitudes, latitudes)]
+        points_df = gpd.GeoDataFrame({"geometry": geom}, crs="EPSG:4326")
+        # Conversion to UTM, a rectilinear projection coordinate system where distance can be calculated with pythagorean theorem
+        # an alternative could be to use EPSG 32663
+        points_df.to_crs(
+            epsg=3310, inplace=True
+        )  # https://gis.stackexchange.com/questions/293310/finding-distance-between-two-points-with-geoseries-distance
+        distance_diffs = points_df.distance(points_df.shift())
+        #
+        # get time differences, TODO: get speed in knots
+        # np.array(foo[1:]) - np.array(foo[:-1])# 1 second difference
+        # numpy.timedelta64[ns] => (times[1:] - times[:-1]).astype(int)
+        time_diffs_ns = np.append(0, (times[1:] - times[:-1]).astype(int))
+        # time_diffs = [{x, y} for x, y in zip(longitudes, latitudes)]
+        nanoseconds_per_second = 1e9
+        speed_meters_per_second = (
+            distance_diffs / time_diffs_ns * nanoseconds_per_second
+        )
+        return speed_meters_per_second
 
     def remove_null_island_values(
         self,
         epsilon=1e-5,
     ) -> None:
+        # TODO: low priority
         print(epsilon)
-        pass
-
-    def stream_geometry(
-        self,
-    ) -> None:
         pass
 
     def break_linestring_into_multi_linestring(
         self,
     ) -> None:
+        # TODO: medium priority
         # For any line-strings across the antimeridian, break into multilinestring
         pass
 
     def simplify(
         self,
     ) -> None:
+        # TODO: medium-high priority
         pass
 
-    def kalman_filter(self):
+    def kalman_filter(
+        self,
+        times,  # don't really need time, do need to segment the data first
+        latitudes,
+        longitudes,
+    ):
+        # TODO: highest priority
         # for cruises with bad signal, filter so that
         # https://scipy-cookbook.readthedocs.io/items/KalmanFiltering.html
         # plt.rcParams['figure.figsize'] = (10, 8)
