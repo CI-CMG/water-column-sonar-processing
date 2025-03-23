@@ -39,7 +39,7 @@ def test_filter_coordinates():
     #
     bucket_name = "noaa-wcsd-zarr-pds"
     ship_name = "Henry_B._Bigelow"
-    cruise_name = "HB0707"  # HB1906
+    cruise_name = "HB0707"
     sensor_name = "EK60"
     cruise = xr.open_dataset(
         filename_or_obj=f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr",
@@ -57,7 +57,6 @@ def test_filter_coordinates():
     )
     print(filtered_coordinates)
     assert filtered_coordinates.shape[1] == 2
-    # assert int(np.nanmean(filtered_coordinates)) == 7  # 7.54 meters per second
 
 
 # @mock_s3
@@ -68,7 +67,8 @@ def test_get_speeds():
     #
     bucket_name = "noaa-wcsd-zarr-pds"
     ship_name = "Henry_B._Bigelow"
-    cruise_name = "HB0707"  # HB1906
+    cruise_name = "HB0707"
+    # cruise_name = "HB1906"
     sensor_name = "EK60"
     cruise = xr.open_dataset(
         filename_or_obj=f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr",

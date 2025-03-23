@@ -61,6 +61,9 @@ class LineSimplification:
         longitudes,
         latitudes,
     ) -> (np.ndarray, np.ndarray):
+        """
+        # TODO: need to use masked array to get the right number of values
+        """
         ### https://github.com/pykalman/pykalman
         # https://stackoverflow.com/questions/43377626/how-to-use-kalman-filter-in-python-for-location-data
         measurements = np.asarray([list(elem) for elem in zip(longitudes, latitudes)])
@@ -73,7 +76,7 @@ class LineSimplification:
             observation_matrices=observation_matrix,
             initial_state_mean=initial_state_mean,
         )
-        kf = kf.em(measurements, n_iter=2)
+        kf = kf.em(measurements, n_iter=2)  # TODO: 5
         (smoothed_state_means, smoothed_state_covariances) = kf.smooth(measurements)
 
         # plt.plot(longitudes, latitudes, label="original")
@@ -103,8 +106,14 @@ class LineSimplification:
             epsg=3310, inplace=True
         )  # https://gis.stackexchange.com/questions/293310/finding-distance-between-two-points-with-geoseries-distance
         distance_diffs = points_df.distance(points_df.shift())
+        # distance_diffs_sorted = distance_diffs.sort_values(
+        #     ascending=False
+        # )  # TODO: get avg cutoff time
         #
         time_diffs_ns = np.append(0, (times[1:] - times[:-1]).astype(int))
+        # time_diffs_ns_sorted = np.sort(time_diffs_ns)
+        # largest time diffs HB0707 [ 17. 17.93749786  21.0781271  54.82812723  85.09374797, 113.56249805 204.87500006 216. 440.68749798 544.81249818]
+        # largest diffs HB1906 [3.01015808e+00 3.01016013e+00 3.01017805e+00 3.01018701e+00, 3.01018701e+00 3.01018906e+00 3.01019802e+00 3.01021005e+00, 3.01021005e+00 3.01021414e+00 3.01022208e+00 3.01022899e+00, 3.01024998e+00 3.01025920e+00 3.01026202e+00 3.01028096e+00, 3.01119411e+00 3.01120896e+00 3.01120998e+00 3.01120998e+00, 3.01122099e+00 3.01122790e+00 3.01122790e+00 3.01124506e+00, 3.01125197e+00 3.01128090e+00 3.01142707e+00 3.01219814e+00, 3.01221120e+00 3.01223014e+00 3.01225498e+00 3.01225882e+00, 3.01226010e+00 3.01312998e+00 3.01316096e+00 3.01321190e+00, 3.01321293e+00 3.01322880e+00 3.01322906e+00 3.01323110e+00, 3.01323213e+00 3.01323290e+00 3.01326208e+00 3.01328512e+00, 3.01418112e+00 3.01420109e+00 3.01421107e+00 3.01421184e+00, 3.01421414e+00 3.01424819e+00 3.01512883e+00 3.01516006e+00, 3.01524198e+00 3.01619917e+00 3.01623194e+00 3.01623296e+00, 3.01917594e+00 3.01921408e+00 3.01921587e+00 3.02022195e+00, 3.02025216e+00 3.02121702e+00 3.02325811e+00 3.02410291e+00, 3.02421914e+00 3.02426701e+00 3.02523776e+00 3.02718694e+00, 3.02927590e+00 3.03621606e+00 3.03826304e+00 3.34047514e+00, 3.36345114e+00 3.39148595e+00 4.36819302e+00 4.50157901e+00, 4.50315699e+00 4.50330598e+00 4.50333491e+00 4.50428416e+00, 4.50430490e+00 4.50430694e+00 4.50526387e+00 4.50530790e+00, 4.50530995e+00 4.50532301e+00 4.50533478e+00 4.50629402e+00, 4.50730701e+00 4.50825882e+00 4.50939008e+00 6.50179098e+00, 2.25025029e+01 1.39939425e+02 1.54452331e+02 1.60632653e+03, 1.74574667e+05 4.33569587e+05 4.35150475e+05 8.00044883e+05]
         nanoseconds_per_second = 1e9
         speed_meters_per_second = (
             distance_diffs / time_diffs_ns * nanoseconds_per_second
@@ -125,6 +134,8 @@ class LineSimplification:
     ) -> None:
         # TODO: medium priority
         # For any line-strings across the antimeridian, break into multilinestring
+        # average cadence is measurements every 1 second
+        # break when over 1 minute
         pass
 
     def simplify(
