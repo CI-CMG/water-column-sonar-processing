@@ -35,7 +35,7 @@ class ZarrManager:
         self,
         min_echo_range: float = 1.0,  # minimum depth measured (zero non-inclusive) from whole cruise
         max_echo_range: float = 100.0,  # maximum depth measured from whole cruise
-        water_level: float = 0.0,  # TODO: use different value to test
+        cruise_min_epsilon: float = 0.25,  # resolution between subsequent measurements
     ):
         # Gets the set of depth values that will be used when resampling and
         # regridding the data to a cruise level model store.
@@ -45,12 +45,9 @@ class ZarrManager:
         all_cruise_depth_values = np.linspace(
             start=min_echo_range,
             stop=max_echo_range,
-            num=int(max_echo_range / min_echo_range) + 1,
+            num=int((max_echo_range - min_echo_range) / cruise_min_epsilon) + 1,
             endpoint=True,
-        )
-
-        # Include vertical offset
-        all_cruise_depth_values = all_cruise_depth_values + water_level
+        )  # np.arange(min_echo_range, max_echo_range, step=min_echo_range) # this is worse
 
         if np.any(np.isnan(all_cruise_depth_values)):
             raise Exception("Problem depth values returned were NaN.")
@@ -69,6 +66,7 @@ class ZarrManager:
         width: int,  # TODO: needs better name... "ping_time"
         min_echo_range: float,  # smallest resolution in meters
         max_echo_range: float,
+        cruise_min_epsilon: float,
         calibration_status: bool = False,  # Assume uncalibrated
     ) -> str:
         print(
@@ -109,7 +107,9 @@ class ZarrManager:
         #####################################################################
         # --- Coordinate: Depth --- #
         depth_values = self.get_depth_values(
-            min_echo_range=min_echo_range, max_echo_range=max_echo_range
+            min_echo_range=min_echo_range,
+            max_echo_range=max_echo_range,
+            cruise_min_epsilon=cruise_min_epsilon,
         )
 
         root.create_dataset(

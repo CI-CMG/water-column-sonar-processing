@@ -1,9 +1,8 @@
 import numpy as np
 import xarray as xr
 from dotenv import find_dotenv, load_dotenv
-from geometry.line_simplification import LineSimplification
 
-# s3fs.core.setup_logging("DEBUG")
+from water_column_sonar_processing.geometry import LineSimplification
 
 
 #######################################################
@@ -15,21 +14,6 @@ def setup_module():
 
 def teardown_module():
     print("teardown")
-
-
-# class TestGeometrySimplification(unittest.TestCase):
-#     def setup_module(module):
-#         print('setup')
-#         pass
-#
-#     @pytest.fixture(scope='session', autouse=True)
-#     def load_env(self):
-#         # env_file = find_dotenv('.env-test')
-#         env_file = find_dotenv('.env-test')
-#         load_dotenv(dotenv_path=env_file, override=True)
-#
-#     def teardown_module(module):
-#         print('teardown')
 
 
 def test_filter_coordinates():

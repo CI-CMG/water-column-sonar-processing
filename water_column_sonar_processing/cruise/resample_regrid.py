@@ -35,6 +35,7 @@ class ResampleRegrid:
         input_xr,
         ping_times,
         all_cruise_depth_values,
+        water_level,
     ) -> np.ndarray:
         print("Interpolating data.")
         try:
@@ -64,32 +65,17 @@ class ResampleRegrid:
                 len(channels)
             ):  # ?TODO: leaving off here, need to subset for just indices in time axis
                 gc.collect()
-                print(
-                    np.nanmax(
-                        input_xr.echo_range.sel(
-                            channel=input_xr.channel[channel]
-                        ).values  # need to add water_level to this
-                    )
-                )
-                #
                 max_depths = np.nanmax(
-                    a=input_xr.echo_range.sel(channel=input_xr.channel[channel]).values,
+                    a=input_xr.echo_range.sel(channel=input_xr.channel[channel]).values
+                    + water_level,
                     axis=1,
-                )  # need to add water_level from each channel(?) to this
-                superset_of_max_depths = set(
-                    np.nanmax(
-                        input_xr.echo_range.sel(
-                            channel=input_xr.channel[channel]
-                        ).values,
-                        1,
-                    )
                 )
+                superset_of_max_depths = set(max_depths)
                 set_of_max_depths = list(
                     {x for x in superset_of_max_depths if x == x}
                 )  # removes nan's
                 # iterate through partitions of data with similar depths and resample
                 for select_max_depth in set_of_max_depths:
-                    gc.collect()
                     # TODO: for nan just skip and leave all nan's
                     select_indices = [
                         i
@@ -132,6 +118,7 @@ class ResampleRegrid:
                         )
                     ] = resampled
                     print(f"updated {len(times_select)} ping times")
+                    gc.collect()
         except Exception as err:
             print(f"Problem finding the dynamodb table: {err}")
             raise err
@@ -231,16 +218,25 @@ class ResampleRegrid:
                 start_ping_time_index = ping_time_cumsum[index]
                 end_ping_time_index = ping_time_cumsum[index + 1]
 
-                min_echo_range = np.nanmin(
-                    np.float32(cruise_df["MIN_ECHO_RANGE"])
-                )  # TODO: this should have vertical offset integrated already for resample
-                max_echo_range = np.nanmax(np.float32(cruise_df["MAX_ECHO_RANGE"]))
+                min_echo_range = np.min(
+                    (cruise_df["MIN_ECHO_RANGE"] + cruise_df["WATER_LEVEL"])
+                    .dropna()
+                    .astype(float)
+                )
+                max_echo_range = np.max(
+                    (cruise_df["MAX_ECHO_RANGE"] + cruise_df["WATER_LEVEL"])
+                    .dropna()
+                    .astype(float)
+                )
+                cruise_min_epsilon = np.min(
+                    cruise_df["MIN_ECHO_RANGE"].dropna().astype(float)
+                )
 
                 # Note: cruise dims (depth, time, frequency)
                 all_cruise_depth_values = zarr_manager.get_depth_values(
                     min_echo_range=min_echo_range,
                     max_echo_range=max_echo_range,
-                    water_level=water_level,  # remove this & integrate into min_echo_range
+                    cruise_min_epsilon=cruise_min_epsilon,  # remove this & integrate into min_echo_range
                 )  # with offset of 7.5 meters, 0 meter measurement should now start at 7.5 meters
 
                 print(" ".join(list(input_xr_zarr_store.Sv.dims)))
@@ -274,10 +270,13 @@ class ResampleRegrid:
                 )
 
                 # --- UPDATING --- #
-                regrid_resample = self.interpolate_data(
-                    input_xr=input_xr,
-                    ping_times=ping_times,
-                    all_cruise_depth_values=all_cruise_depth_values,
+                regrid_resample = (
+                    self.interpolate_data(  # TODO: need to add water_level here
+                        input_xr=input_xr,
+                        ping_times=ping_times,
+                        all_cruise_depth_values=all_cruise_depth_values,
+                        water_level=water_level,
+                    )
                 )
 
                 print(
@@ -303,8 +302,9 @@ class ResampleRegrid:
                     # TODO: problem here: Processing file: D20070711-T210709.
 
                     detected_seafloor_depths = np.nanmean(
-                        detected_seafloor_depth, 0
-                    )  # RuntimeWarning: Mean of empty slice detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)
+                        a=detected_seafloor_depth, axis=0
+                    )
+                    # RuntimeWarning: Mean of empty slice detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)
                     detected_seafloor_depths[detected_seafloor_depths == 0.0] = np.nan
                     print(f"min depth measured: {np.nanmin(detected_seafloor_depths)}")
                     print(f"max depth measured: {np.nanmax(detected_seafloor_depths)}")

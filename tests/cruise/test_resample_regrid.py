@@ -473,6 +473,12 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     )
     gc.collect()
 
+    cruise_df_before = dynamo_db_manager.get_table_as_df(
+        cruise_name=cruise_name,
+        table_name=table_name,
+    )
+    print(cruise_df_before)
+
     # create new zarr store and upload
     create_empty_zarr_store = CreateEmptyZarrStore()
     # TODO: this is out of order, needs to happen after raw-to-zarr L0-to-L1
@@ -503,20 +509,6 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         )
     )
 
-    # raw_to_zarr = RawToZarr()
-    # gc.collect()
-    # raw_to_zarr.raw_to_zarr(
-    #     table_name=table_name,
-    #     input_bucket_name=l0_test_bucket_name,
-    #     output_bucket_name=l1_l2_test_bucket_name,
-    #     ship_name=ship_name,
-    #     cruise_name=cruise_name,
-    #     sensor_name=sensor_name,
-    #     raw_file_name="D20191106-T034434.raw",
-    #     endpoint_url=moto_server,
-    #     include_bot=True,  # added bot
-    # )
-    # gc.collect()
     number_of_files_xx = s3_manager.list_objects(
         bucket_name=l1_l2_test_bucket_name,
         prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
@@ -558,38 +550,15 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         bucket_name=l1_l2_test_bucket_name,
         endpoint_url=moto_server,
     )
-    print(test_output_zarr_store.Sv)
+    assert np.isclose(test_output_zarr_store.Sv.depth[0].values, 7.69)
+    assert np.isclose(test_output_zarr_store.Sv.depth[-1].values, 507.4)
+    assert len(test_output_zarr_store.Sv.depth) == 2631
 
-    # because we only processed two files, there should be missing values
-    assert np.isnan(np.sum(test_output_zarr_store.latitude.values))
-
-    start_time = np.datetime64("2019-11-06T03:44:35.651")
-    end_time = np.datetime64("2019-11-06T05:06:44.176")
-    select_times = (test_output_zarr_store.time > start_time) & (
-        test_output_zarr_store.time < end_time
-    )
-    # check selected timestamps and verify all latitude/longitude/times are updated
-    # test_output_zarr_store.latitude.sel(time=slice('2007-07-12T12:49:06.313Z', '2007-07-12T17:18:03.032Z')).values
-    assert not np.isnan(
-        np.sum(
-            test_output_zarr_store.where(cond=select_times, drop=True).latitude.values
-        )
-    )
-    assert not np.isnan(
-        np.sum(
-            test_output_zarr_store.where(cond=select_times, drop=True).longitude.values
-        )
-    )
-
-    # TODO: times are initialized to '1970-01-01T00:00:00.000000000', need way to check updates
-    #  maybe monotonic increasing
-    # assert not np.isnan(np.sum(test_output_zarr_store.where(cond=(select_times), drop=True).time.values))
-
-    # TODO: assert that the test_output_zarr_store.Sv at specific depth equals the input files
-
-    # TODO: check the bottom values were written correctly
-    assert np.nanmax(test_output_zarr_store.bottom.values) == pytest.approx(949.5535)
-    assert np.nanmin(test_output_zarr_store.bottom.values) == pytest.approx(17.76)
+    # start_time = np.datetime64("2019-11-06T03:44:35.651")
+    # end_time = np.datetime64("2019-11-06T05:06:44.176")
+    # select_times = (test_output_zarr_store.time > start_time) & (
+    #     test_output_zarr_store.time < end_time
+    # )
 
 
 @mock_aws

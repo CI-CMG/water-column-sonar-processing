@@ -1,7 +1,8 @@
+import importlib.metadata
 import os
 import tempfile
 from tempfile import TemporaryDirectory
-import importlib.metadata
+
 import numcodecs
 import numpy as np
 import pytest
@@ -9,6 +10,7 @@ import xarray as xr
 import zarr
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
+
 from water_column_sonar_processing.aws import S3Manager
 from water_column_sonar_processing.model import ZarrManager
 from water_column_sonar_processing.utility import Constants
@@ -20,14 +22,17 @@ def setup_module():
     env_file = find_dotenv(".env-test")
     load_dotenv(dotenv_path=env_file, override=True)
 
+
 def teardown_module():
     print("teardown")
 
+
 # The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future.
 # Valid fixture loop scopes are: "function", "class", "module", "package", "session"
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def zarr_manager_tmp_path(test_path):
     return test_path["ZARR_MANAGER_TEST_PATH"]
+
 
 #######################################################
 # @pytest.mark.skip(reason="no way of currently testing this")
@@ -45,6 +50,7 @@ def zarr_manager_tmp_path(test_path):
 # def test_open_s3_zarr_store_with_xarray(zarr_manager_tmp_path):
 #     pass
 
+
 @mock_aws
 def test_zarr_manager():
     # create in a temporary directory and then check there
@@ -59,7 +65,7 @@ def test_zarr_manager():
 
     zarr_manager = ZarrManager()
     zarr_manager.create_zarr_store(
-        path=tempdir.name, # This is created in test_resources/zarr_manager/test_cruise.zarr
+        path=tempdir.name,  # This is created in test_resources/zarr_manager/test_cruise.zarr
         ship_name=ship_name,
         cruise_name=cruise_name,  # TODO: just pass stem
         sensor_name=sensor_name,
@@ -67,6 +73,7 @@ def test_zarr_manager():
         width=1201,  # number of ping samples recorded
         min_echo_range=0.50,
         max_echo_range=250.00,  # maximum depth found in cruise
+        cruise_min_epsilon=0.50,
         calibration_status=True,
     )
 
@@ -84,11 +91,15 @@ def test_zarr_manager():
     print(cruise_zarr.info)
 
     assert cruise_zarr.Sv.shape == (
-        501,
+        500,
         1201,
         len(frequencies),
     )  # (depth, time, frequency)
-    assert cruise_zarr.Sv.chunks == (Constants.TILE_SIZE.value, Constants.TILE_SIZE.value, 1)  # TODO: use enum?
+    assert cruise_zarr.Sv.chunks == (
+        Constants.TILE_SIZE.value,
+        Constants.TILE_SIZE.value,
+        1,
+    )  # TODO: use enum?
 
     # Open Zarr store with Xarray
     # TODO: move to separate test
@@ -103,7 +114,7 @@ def test_zarr_manager():
 
     # TODO: test to ensure the dimensions are in proper order
     assert file_xr.Sv.dims == ("depth", "time", "frequency")
-    assert file_xr.Sv.shape == (501, 1201, 4)
+    assert file_xr.Sv.shape == (500, 1201, 4)
 
     assert file_xr.attrs["processing_software_name"] == "echofish"
     assert file_xr.attrs[
@@ -112,7 +123,9 @@ def test_zarr_manager():
     assert file_xr.attrs["ship_name"] == "test_ship"
     assert file_xr.attrs["cruise_name"] == "test_cruise"
     assert file_xr.attrs["sensor_name"] == "EK60"
-    current_project_version = importlib.metadata.version('water_column_sonar_processing')
+    current_project_version = importlib.metadata.version(
+        "water_column_sonar_processing"
+    )
     assert file_xr.attrs["processing_software_version"] == current_project_version
 
     assert file_xr.Sv.dtype == "float32"
@@ -120,24 +133,13 @@ def test_zarr_manager():
     assert file_xr.longitude.dtype == "float32"
     assert file_xr.depth.dtype == "float32"
     assert file_xr.time.dtype == "<M8[ns]"
-    assert file_xr.frequency.dtype == "float64" # TODO: There is a problem here
+    assert file_xr.frequency.dtype == "float64"  # TODO: There is a problem here
     assert file_xr.bottom.dtype == "float32"
 
     # TODO: test depths
     # TODO: test compression
     tempdir.cleanup()
 
-
-# @mock_aws
-# def test_whatever():
-#     asyncio.run(test_zarr_manager()) # Here
-
-#######################################################
-# def test_zarr_manager_123(zarr_manager_test_path):
-#     print("asdf")
-#     s3_manager = S3Manager()
-#     s3_manager.create_bucket(bucket_name="asdf")
-#     assert 1
 
 @mock_aws
 def test_open_zarr_with_zarr_read_write():
@@ -165,6 +167,7 @@ def test_open_zarr_with_zarr_read_write():
         width=1201,  # number of ping samples recorded
         min_echo_range=0.5,
         max_echo_range=250.0,  # maximum depth found in cruise
+        cruise_min_epsilon=0.5,
         calibration_status=True,
     )
 
@@ -217,6 +220,7 @@ def test_open_zarr_with_xarray():
         # height=height,  # TODO: is this redundant with the min & max echo range?
         min_echo_range=min_echo_range,
         max_echo_range=max_echo_range,
+        cruise_min_epsilon=min_echo_range,  # TODO: test further
         calibration_status=True,
     )
 
@@ -237,6 +241,7 @@ def test_open_zarr_with_xarray():
 # def test_write_zarr_with_synchronizer(tmp_path):
 #     pass
 
+
 #######################################################
 ### Test 1 of 5 for depth values ###
 def test_get_depth_values_shallow_and_small_epsilon():
@@ -244,10 +249,12 @@ def test_get_depth_values_shallow_and_small_epsilon():
     depths = zarr_manager.get_depth_values(
         min_echo_range=0.17,
         max_echo_range=101,
+        cruise_min_epsilon=0.17,
     )
-    assert len(depths) == 595
+    assert len(depths) == 594
     assert depths[0] == 0.17
     assert depths[-1] == 101
+
 
 ### Test 2 of 5 for depth values ###
 def test_get_depth_values_shallow_and_large_epsilon():
@@ -255,10 +262,12 @@ def test_get_depth_values_shallow_and_large_epsilon():
     depths = zarr_manager.get_depth_values(
         min_echo_range=1.31,
         max_echo_range=24,
+        cruise_min_epsilon=1.31,
     )
-    assert len(depths) == 19
+    assert len(depths) == 18
     assert depths[0] == 1.31
     assert depths[-1] == 24
+
 
 ### Test 3 of 5 for depth values ###
 def test_get_depth_values_deep_and_small_epsilon():
@@ -266,10 +275,12 @@ def test_get_depth_values_deep_and_small_epsilon():
     depths = zarr_manager.get_depth_values(
         min_echo_range=0.11,
         max_echo_range=221.1,
+        cruise_min_epsilon=0.11,
     )
-    assert len(depths) == 2011
+    assert len(depths) == 2009
     assert depths[0] == 0.11
     assert depths[-1] == 221.1  # TODO: do we want this to be np.ceil(x)
+
 
 ### Test 4 of 5 for depth values ###
 def test_get_depth_values_deep_and_large_epsilon():
@@ -277,11 +288,13 @@ def test_get_depth_values_deep_and_large_epsilon():
     depths = zarr_manager.get_depth_values(
         min_echo_range=1.31,
         max_echo_range=222.2,
-    )
-    assert len(depths) == 170
+        cruise_min_epsilon=1.31,  # int((222.2 - 1.31) / 1.31) + 1 = 169
+    )  # 1.31 + 169*1.31 = 222.70
+    assert len(depths) == 169
     assert depths[0] == 1.31
     # TODO: would it be better to have whole numbers?
-    assert depths[-1] == 222.2
+    assert depths[-1] == 222.20
+
 
 ### Test 5 of 5 for depth values ###
 def test_get_depth_values_half_meter():
@@ -289,10 +302,24 @@ def test_get_depth_values_half_meter():
     depths = zarr_manager.get_depth_values(
         min_echo_range=0.50,
         max_echo_range=250.0,
+        cruise_min_epsilon=0.50,
     )
-    assert len(depths) == 501
+    assert len(depths) == 500
     assert depths[0] == 0.50
     assert depths[-1] == 250
+
+
+def test_get_depth_values_half_meter_shallow():
+    zarr_manager = ZarrManager()
+    depths = zarr_manager.get_depth_values(
+        min_echo_range=0.50,
+        max_echo_range=2.0,
+        cruise_min_epsilon=0.50,
+    )
+    assert len(depths) == 4
+    assert depths[0] == 0.50
+    assert depths[-1] == 2.0
+
 
 #######################################################
 #######################################################

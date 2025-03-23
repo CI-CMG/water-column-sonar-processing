@@ -74,9 +74,7 @@ class CreateEmptyZarrStore:
 
             df = dynamo_db_manager.get_table_as_df(
                 table_name=table_name,
-                # ship_name=ship_name,
                 cruise_name=cruise_name,
-                # sensor_name=sensor_name,
             )
 
             # TODO: filter the dataframe just for enums >= LEVEL_1_PROCESSING
@@ -95,14 +93,17 @@ class CreateEmptyZarrStore:
             )
 
             # [3] calculate the max/min measurement resolutions for the whole cruise
-            cruise_min_echo_range = float(
-                np.min(df["MIN_ECHO_RANGE"].dropna().astype(float))
+            cruise_min_echo_range = np.min(
+                (df["MIN_ECHO_RANGE"] + df["WATER_LEVEL"]).dropna().astype(float)
             )
 
             # [4] calculate the maximum of the max depth values
-            cruise_max_echo_range = float(
-                np.max(df["MAX_ECHO_RANGE"].dropna().astype(float))
-            )  # TODO: add the water_level here
+            cruise_max_echo_range = np.max(
+                (df["MAX_ECHO_RANGE"] + df["WATER_LEVEL"]).dropna().astype(float)
+            )
+
+            cruise_min_epsilon = np.min(df["MIN_ECHO_RANGE"].dropna().astype(float))
+
             print(
                 f"cruise_min_echo_range: {cruise_min_echo_range}, cruise_max_echo_range: {cruise_max_echo_range}"
             )
@@ -137,6 +138,7 @@ class CreateEmptyZarrStore:
                 zarr_manager.get_depth_values(
                     min_echo_range=cruise_min_echo_range,
                     max_echo_range=cruise_max_echo_range,
+                    cruise_min_epsilon=cruise_min_epsilon,
                 )
             )
             print(f"new_height: {new_height}")
@@ -150,6 +152,7 @@ class CreateEmptyZarrStore:
                 width=new_width,
                 min_echo_range=cruise_min_echo_range,
                 max_echo_range=cruise_max_echo_range,
+                cruise_min_epsilon=cruise_min_epsilon,
                 calibration_status=True,
             )
             #################################################################
