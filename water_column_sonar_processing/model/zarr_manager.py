@@ -215,7 +215,7 @@ class ZarrManager:
         )
 
         # SPEED is indexed by TIME
-        root.SPEED.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
+        root.speed.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
 
         root.speed.attrs["units"] = Coordinates.SPEED_UNITS.value
         root.speed.attrs["long_name"] = Coordinates.SPEED_LONG_NAME.value

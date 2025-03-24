@@ -281,6 +281,12 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
         "longitude",
         "time",
     }
+    assert ds.speed.attrs == {
+        "long_name": "Nautical miles per hour",
+        "standard_name": "speed",
+        "units": "Knots",
+    }
+    assert set(ds.speed.dims) == {"time"}
 
 
 #######################################################

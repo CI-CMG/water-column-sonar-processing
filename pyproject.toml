@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "water_column_sonar_processing"
-version = "25.3.0"
+version = "25.3.2"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
@@ -64,7 +64,7 @@ dev = [
     "pooch==1.8.2",
     "pre-commit",
     "pyinstaller",
-    "pytest~=8.3.3",
+    "pytest~=8.3.4",
     "ruff",
     "tqdm",
     "twine",
