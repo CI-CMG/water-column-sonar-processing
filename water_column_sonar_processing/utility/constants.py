@@ -3,7 +3,7 @@ from enum import Enum, Flag, unique
 
 @unique
 class Constants(Flag):
-    TILE_SIZE = 1024
+    TILE_SIZE = 512
 
     # Average https://noaa-wcsd-zarr-pds.s3.us-east-1.amazonaws.com/level_2/Henry_B._Bigelow/HB0902/EK60/HB0902.zarr/time/927
     # chunk size is ~1.3 kB, HB0902 cruise takes ~30 seconds to load all time/lat/lon data
@@ -70,6 +70,12 @@ class Coordinates(Enum):
     BOTTOM_UNITS = "m"
     BOTTOM_LONG_NAME = "Detected sea floor depth"
     BOTTOM_STANDARD_NAME = "bottom"
+
+    SPEED = "speed"
+    SPEED_DTYPE = "float32"
+    SPEED_UNITS = "Knots"
+    SPEED_LONG_NAME = "Nautical miles per hour"
+    SPEED_STANDARD_NAME = "speed"
 
     SV = "Sv"
     SV_DTYPE = "float32"  # TODO: experiment with dtype of int

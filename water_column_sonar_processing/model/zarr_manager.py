@@ -201,6 +201,27 @@ class ZarrManager:
         root.bottom.attrs["standard_name"] = Coordinates.BOTTOM_STANDARD_NAME.value
 
         #####################################################################
+        # TODO: verify adding this variable with test
+        # --- Coordinate: Speed --- #
+        root.create_dataset(
+            name=Coordinates.SPEED.value,
+            data=np.repeat(np.nan, width),  # root.longitude[:] = np.nan
+            shape=width,
+            chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
+            dtype=np.dtype(Coordinates.SPEED_DTYPE.value),
+            compressor=self.__compressor,
+            fill_value=np.nan,
+            overwrite=self.__overwrite,
+        )
+
+        # SPEED is indexed by TIME
+        root.SPEED.attrs["_ARRAY_DIMENSIONS"] = [Coordinates.TIME.value]
+
+        root.speed.attrs["units"] = Coordinates.SPEED_UNITS.value
+        root.speed.attrs["long_name"] = Coordinates.SPEED_LONG_NAME.value
+        root.speed.attrs["standard_name"] = Coordinates.SPEED_STANDARD_NAME.value
+
+        #####################################################################
         # --- Coordinate: Frequency --- #
         root.create_dataset(
             name=Coordinates.FREQUENCY.value,
