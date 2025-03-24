@@ -42,7 +42,7 @@ class ZarrManager:
         # Note: returned values do not start at zero.
         # For more info see here: https://echopype.readthedocs.io/en/stable/data-proc-additional.html
         print("Getting depth values.")
-        all_cruise_depth_values = np.linspace(
+        all_cruise_depth_values = np.linspace(  # TODO: PROBLEM HERE
             start=min_echo_range,
             stop=max_echo_range,
             num=int((max_echo_range - min_echo_range) / cruise_min_epsilon) + 1,
