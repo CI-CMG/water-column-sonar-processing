@@ -13,7 +13,7 @@ class Constants(Flag):
     # TODO: create test for SPATIOTEMPORAL_CHUNK_SIZE with requirement!
 
     LEVEL_0 = "raw"
-    LEVEL_1 = "level_1"
+    LEVEL_1 = "level_1"  # from bucket path
     LEVEL_2 = "level_2"
     LEVEL_3 = "level_3"
 

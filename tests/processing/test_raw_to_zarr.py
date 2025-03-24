@@ -156,7 +156,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     df_after = dynamo_db_manager.get_table_as_df(
         # ship_name=ship_name,
         cruise_name=cruise_name,
-        # sensor_name=sensor_name,
+        # sensor_name, # TODO: need to add this back for EK80
         table_name=table_name,
     )
     print(df_after)

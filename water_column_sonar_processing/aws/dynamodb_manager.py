@@ -135,7 +135,7 @@ class DynamoDBManager:
         self,
         # ship_name,
         cruise_name,
-        # sensor_name,
+        # sensor_name, # TODO: need to add this back for EK80
         table_name,
     ) -> pd.DataFrame:
         """
