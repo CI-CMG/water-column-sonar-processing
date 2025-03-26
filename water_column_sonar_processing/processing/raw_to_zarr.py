@@ -237,6 +237,8 @@ class RawToZarr:
             # TODO revert this so that smaller diffs can be used
             # The most minimum the resolution can be is as small as 0.25 meters
             min_echo_range = np.round(np.nanmin(np.diff(ds_sv.echo_range.values)), 2)
+            # For the HB0710 cruise the depths vary from 499.7215 @19cm to 2999.4805 @ 1cm. Moving that back
+            # inline with the
             min_echo_range = np.max([0.20, min_echo_range])
 
             max_echo_range = float(np.nanmax(ds_sv.echo_range))
