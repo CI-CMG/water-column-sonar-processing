@@ -24,6 +24,10 @@ def mph_to_knots(mph_value):
     return mph_value * 0.868976
 
 
+def mps_to_knots(mps_value):
+    return mps_value * 1.94384
+
+
 # https://shapely.readthedocs.io/en/stable/reference/shapely.MultiLineString.html#shapely.MultiLineString
 class LineSimplification:
     """

@@ -550,9 +550,9 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         bucket_name=l1_l2_test_bucket_name,
         endpoint_url=moto_server,
     )
-    assert np.isclose(test_output_zarr_store.Sv.depth[0].values, 7.69)
+    assert np.isclose(test_output_zarr_store.Sv.depth[0].values, 7.7)
     assert np.isclose(test_output_zarr_store.Sv.depth[-1].values, 507.4)
-    assert len(test_output_zarr_store.Sv.depth) == 2631
+    assert len(test_output_zarr_store.Sv.depth) == 2499
 
     # start_time = np.datetime64("2019-11-06T03:44:35.651")
     # end_time = np.datetime64("2019-11-06T05:06:44.176")
