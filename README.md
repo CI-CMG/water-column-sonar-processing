@@ -92,8 +92,9 @@ git push origin --tags
 
 # To Publish To PROD
 ```commandline
-uv build
-python -m twine upload --repository pypi dist/*
+uv build --no-sources
+#python -m twine upload --repository pypi dist/*
+uv publish
 ```
 
 # TODO:
