@@ -1,16 +1,11 @@
 # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 
-name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
+name: Publish Python 🐍 distribution 📦 to PyPI
 
 on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
-#on:
-#  push:
-#    # Pattern matched against refs/tags
-#    tags:
-#      - '*'           # Push events to every tag not containing /
 
 jobs:
   build:
@@ -24,6 +19,7 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@v5
       with:
+        enable-cache: true
         version: "0.5.25"
 
     - name: Set up Python
@@ -58,17 +54,20 @@ jobs:
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
+
     - name: Install uv
       uses: astral-sh/setup-uv@v5
       with:
         version: "0.5.25"
+
     - name: Download all the dists
       uses: actions/download-artifact@v4
       with:
         name: python-package-distributions
         path: dist/
+
     - name: Publish distribution 📦 to PyPI
-#      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@release/v1
       run: uv publish
 
   github-release:
