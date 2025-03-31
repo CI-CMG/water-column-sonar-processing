@@ -1,15 +1,17 @@
 name: Testing Python 🐍
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
-    branches:
-      - main
-    name: python 🐍
+    name: build python project 🐍
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out
+        uses: actions/checkout@v4
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
