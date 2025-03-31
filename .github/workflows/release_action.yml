@@ -67,7 +67,7 @@ jobs:
 
     - name: Publish distribution 📦 to PyPI
 #      uses: pypa/gh-action-pypi-publish@release/v1
-      run: uv publish
+      run: uv publish --trusted-publishing always
 
   github-release:
     name: Sign the Python 🐍 distribution 📦 with Sigstore and upload them to GitHub Release
