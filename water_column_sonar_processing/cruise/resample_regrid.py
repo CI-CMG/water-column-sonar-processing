@@ -1,4 +1,5 @@
 import gc
+import warnings
 from pathlib import Path
 
 import numcodecs
@@ -9,6 +10,8 @@ import xarray as xr
 from water_column_sonar_processing.aws import DynamoDBManager
 from water_column_sonar_processing.geometry import GeometryManager
 from water_column_sonar_processing.model import ZarrManager
+
+warnings.simplefilter("ignore", category=RuntimeWarning)
 
 numcodecs.blosc.use_threads = False
 numcodecs.blosc.set_nthreads(1)
@@ -301,9 +304,13 @@ class ResampleRegrid:
                     detected_seafloor_depth[detected_seafloor_depth == 0.0] = np.nan
                     # TODO: problem here: Processing file: D20070711-T210709.
 
-                    detected_seafloor_depths = np.nanmean(
-                        a=detected_seafloor_depth, axis=0
-                    )
+                    # RuntimeWarning: Mean of empty slice
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", category=RuntimeWarning)
+                        detected_seafloor_depths = np.nanmean(
+                            a=detected_seafloor_depth, axis=0
+                        )
+
                     # RuntimeWarning: Mean of empty slice detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)
                     detected_seafloor_depths[detected_seafloor_depths == 0.0] = np.nan
                     print(f"min depth measured: {np.nanmin(detected_seafloor_depths)}")
