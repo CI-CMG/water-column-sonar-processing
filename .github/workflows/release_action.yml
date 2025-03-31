@@ -54,7 +54,6 @@ jobs:
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
-
     - name: Install uv
       uses: astral-sh/setup-uv@v5
       with:
@@ -67,7 +66,7 @@ jobs:
         path: dist/
 
     - name: Publish distribution 📦 to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+#      uses: pypa/gh-action-pypi-publish@release/v1
       run: uv publish
 
   github-release:
