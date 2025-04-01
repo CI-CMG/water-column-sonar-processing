@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "water_column_sonar_processing"
-version = "25.3.9"
+version = "25.4.0"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
@@ -28,7 +28,7 @@ dependencies = [
     "boto3==1.36.3",
     "botocore==1.36.3",
     "botocore==1.36.3",
-    "echopype==0.9.0",
+    "echopype==0.10.0",
     "fiona==1.10.1",
     "geopandas==1.0.1",
     "mock==5.1.0",
@@ -39,7 +39,7 @@ dependencies = [
     "numpy==1.26.4",
     "pandas==2.2.3",
     #"pip-audit",
-    "pyarrow==18.1.0",
+    "pyarrow==19.0.1",
     "pykalman==0.10.1",
     "python-dotenv==1.0.1",
     "requests==2.32.3",
@@ -49,7 +49,7 @@ dependencies = [
     "setuptools",
     "shapely==2.0.3",
     "typing-extensions==4.10.0",
-    "xarray==2024.10.0",
+    "xarray==2025.3.1",
     "xbatcher==0.4.0",
     "zarr==2.18.3",
 ]
