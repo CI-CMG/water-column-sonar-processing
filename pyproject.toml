@@ -70,9 +70,9 @@ dev = [
     "tqdm",
     "twine",
 ]
-test = [
-    "pytest-cov",
-]
+#test = [
+#    "pytest-cov",
+#]
 
 [project.urls]
 Homepage = "https://github.com/CI-CMG/water-column-sonar-processing"

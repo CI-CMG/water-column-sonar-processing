@@ -1,59 +1,21 @@
 # Water Column Sonar Processing
 Processing tool for converting Level_0 water column sonar data to Level_1 and Level_2 derived data sets as well as generating geospatial information.
 
-[![Publish Python 🐍 distribution 📦 to PyPI](https://github.com/CI-CMG/water-column-sonar-processing/actions/workflows/release_action.yml/badge.svg)](https://github.com/CI-CMG/water-column-sonar-processing/actions/workflows/release_action.yml)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CI-CMG/water-column-sonar-processing/test_action.yaml)
 ![PyPI - Implementation](https://img.shields.io/pypi/v/water-column-sonar-processing) ![GitHub License](https://img.shields.io/github/license/CI-CMG/water-column-sonar-processing) ![PyPI - Downloads](https://img.shields.io/pypi/dd/water-column-sonar-processing) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/CI-CMG/water-column-sonar-processing) ![GitHub repo size](https://img.shields.io/github/repo-size/CI-CMG/water-column-sonar-processing)
 
 # Setting up the Python Environment
 > Python 3.10.12
 
-# MacOS Pyenv Installation Instructions
-  1. Install pyenv (https://github.com/pyenv/pyenv#set-up-your-shell-environment-for-pyenv)
-     1. ```brew update```
-     2. ```arch -arm64 brew install pyenv```
-     3. In ~/.bashrc add
-        1. ```export PYENV_ROOT="$HOME/.pyenv"```
-        2. ```export PATH="$PYENV_ROOT/bin:$PATH"```
-        3. ```eval "$(pyenv init -)"```
-     4. ```arch -arm64 brew install openssl readline sqlite3 xz zlib tcl-tk```
-  2. Install pyenv-virtualenv (https://github.com/pyenv/pyenv-virtualenv)
-     1. ```arch -arm64 brew install pyenv-virtualenv```
-     2. In ~/.bashrc add
-         1. ```eval "$(pyenv virtualenv-init -)"```
-  3. Open a new terminal
-  4. Install Python version
-     1. ```env CONFIGURE_OPTS='--enable-optimizations' arch -arm64 pyenv install 3.10.12```
-  5. Create virtual env (to delete 'pyenv uninstall 3.10.12/water-column-sonar-processing')
-     1. ```pyenv virtualenv 3.10.12 water-column-sonar-processing```
-  6. Set local version of python (if not done already)
-     1. change directory to root of project
-     2. ```pyenv local 3.10.12 water-column-sonar-processing```
-     3. ```pyenv activate water-column-sonar-processing```
-
-# Setting up IntelliJ
-
-  1. Install the IntelliJ Python plugin
-  2. Set up pyenv
-     1. File -> Project Structure or CMD + ;
-     2. SDKs -> + -> Add Python SDK -> Virtual Environment
-     3. Select Existing Environment
-     4. Choose ~/.pyenv/versions/mocking_aws/bin/python
-  3. Set up Python Facet (not sure if this is required)
-     1. File -> Project Structure or CMD + ;
-     2. Facets -> + -> Python
-     3. Set interpreter
-
 # Installing Dependencies
 ```
 uv pip install --upgrade pip
-#uv pip install -r requirements_dev.txt
-uv pip install -r pyproject.toml --extra dev
+uv pip install -r pyproject.toml --all-extras
 ```
 
 
 # Pytest
-```commandline
+```
 uv run pytest tests
 ```
 or
