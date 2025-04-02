@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "water_column_sonar_processing"
-version = "25.4.1"
+version = "25.4.2"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
@@ -21,32 +21,32 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "aiobotocore==2.19.0",
-    "boto3==1.36.3",
-    "botocore==1.36.3",
-    "botocore==1.36.3",
-    "echopype==0.9.0",
+    #"aiobotocore==2.19.0",
+#    "aiobotocore",
+    "boto3==1.37.1",
+    "botocore==1.37.1",
+    "echopype==0.10.0",
     "fiona==1.10.1",
     "geopandas==1.0.1",
-    "mock==5.1.0",
-    "moto[all]==5.0.27",
-    "moto[server]==5.0.27",
+    "mock==5.2.0",
+    "moto[all]==5.1.2",
+    "moto[server]==5.1.2",
     "networkx==3.4.2",
     "numcodecs==0.13.1",
     "numpy==1.26.4",
     "pandas==2.2.3",
     "pooch==1.8.2",
-    "pyarrow==18.1.0",
+    "pyarrow==19.0.1",
     "pykalman==0.10.1",
     "python-dotenv==1.0.1",
     "requests==2.32.3",
     "s3fs==2024.2.0",
-#    "safety==3.2.14",
-    "scipy==1.14.1",
+#    "s3fs==2025.3.2",
+    "scipy==1.15.1",
     "setuptools",
-    "shapely==2.0.3",
+    "shapely==2.0.7",
     "typing-extensions==4.10.0",
-    "xarray==2024.10.0",
+    "xarray==2025.3.1",
     "xbatcher==0.4.0",
     "zarr==2.18.3",
 ]

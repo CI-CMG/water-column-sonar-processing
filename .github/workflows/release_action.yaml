@@ -30,8 +30,8 @@ jobs:
     - name: Install the project
       run: uv sync --all-extras --dev
 
-#    - name: Run tests
-#      run: uv run pytest tests
+    - name: Run tests
+      run: uv run pytest tests
 
     - name: Build a binary wheel and a source tarball
       run: uv build --no-sources
@@ -52,12 +52,12 @@ jobs:
       name: pypi
       url: https://pypi.org/p/water-column-sonar-processing
     permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
+      id-token: write  # mandatory for trusted publishing
     steps:
     - name: Install uv
       uses: astral-sh/setup-uv@v5
-#      with:
-#        version: "0.5.25"
+      with:
+        version: "0.5.25"
 
     - name: Download all the dists
       uses: actions/download-artifact@v4
@@ -66,10 +66,7 @@ jobs:
         path: dist/
 
     - name: Publish distribution 📦 to PyPI
-#      uses: pypa/gh-action-pypi-publish@release/v1
       run: uv publish --trusted-publishing always
-#      with:
-#        repository-url: https://test.pypi.org/legacy/
 
 #  github-release:
 #    name: Sign the Python 🐍 distribution 📦 with Sigstore and upload them to GitHub Release

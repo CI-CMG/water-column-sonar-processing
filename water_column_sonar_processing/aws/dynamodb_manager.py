@@ -273,7 +273,7 @@ class DynamoDBManager:
         response = self.dynamodb_client.delete_item(
             Key={"CRUISE_NAME": {"S": cruise_name}, "FILE_NAME": {"S": file_name}},
             TableName=table_name,
-            ReturnConsumedCapacity="TOTALS",
+            ReturnConsumedCapacity="TOTAL",
         )
         # TODO: there should be attributes included in response but they are missing
         # if response["ResponseMetadata"]["HTTPStatusCode"] != 200:

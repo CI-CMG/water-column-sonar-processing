@@ -71,11 +71,14 @@ for extracting the version
 Experimental Plotting in Xarray (hvPlot):
 https://colab.research.google.com/drive/18vrI9LAip4xRGEX6EvnuVFp35RAiVYwU#scrollTo=q9_j9p2yXsLV
 
-HB0707 Cruise zoomable:
+HB0707 Zoomable Cruise:
 https://hb0707.s3.us-east-1.amazonaws.com/index.html
 
 
-# UV
+# UV Debugging
+```
 uv lock --check
+uv lock
 uv sync --extra dev
 uv run pytest tests
+```
