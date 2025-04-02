@@ -73,3 +73,9 @@ https://colab.research.google.com/drive/18vrI9LAip4xRGEX6EvnuVFp35RAiVYwU#scroll
 
 HB0707 Cruise zoomable:
 https://hb0707.s3.us-east-1.amazonaws.com/index.html
+
+
+# UV
+uv lock --check
+uv sync --extra dev
+uv run pytest tests

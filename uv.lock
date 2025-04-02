@@ -3577,7 +3577,7 @@ wheels = [
 [[package]]
 name = "water-column-sonar-processing"
 version = "25.4.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "aiobotocore" },
     { name = "boto3" },
