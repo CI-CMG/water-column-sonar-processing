@@ -32,7 +32,7 @@ dependencies = [
     "numpy==1.26.4",
     "pandas==2.2.3",
     "pooch==1.8.2",
-    "pyarrow==19.0.1",
+    "pyarrow==18.1.0",
     "pykalman==0.10.1",
     "python-dotenv==1.0.1",
     "requests==2.32.3",
@@ -42,7 +42,7 @@ dependencies = [
     "setuptools",
     "shapely==2.0.3",
     "typing-extensions==4.10.0",
-    "xarray==2025.3.1",
+    "xarray==2024.11.0",
     "xbatcher==0.4.0",
     "zarr==2.18.3",
 ]
