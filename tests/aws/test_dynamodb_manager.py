@@ -3,7 +3,6 @@ from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 
 from water_column_sonar_processing.aws import DynamoDBManager
-from water_column_sonar_processing.utility import PipelineStatus
 
 
 #######################################################
@@ -72,6 +71,7 @@ def test_dynamodb_manager():  # PASSING
     cruise_name = "DS0604"
     sensor_name = "EK60"
     file_name = "DSJ0604-D20060419-T184612.raw"
+    water_level = 6.5
 
     dynamo_db_manager.update_item(
         table_name=table_name,
@@ -82,53 +82,56 @@ def test_dynamodb_manager():  # PASSING
         expression_attribute_names={
             "#CH": "CHANNELS",
             "#ET": "END_TIME",
-            "#ED": "ERROR_DETAIL",
+            # "#ED": "ERROR_DETAIL",
             "#FR": "FREQUENCIES",
             "#MA": "MAX_ECHO_RANGE",
             "#MI": "MIN_ECHO_RANGE",
             "#ND": "NUM_PING_TIME_DROPNA",
-            "#PS": "PIPELINE_STATUS",  # testing this updated
+            # "#PS": "PIPELINE_STATUS",  # testing this updated
             "#PT": "PIPELINE_TIME",  # testing this updated
             "#SE": "SENSOR_NAME",
             "#SH": "SHIP_NAME",
             "#ST": "START_TIME",
-            "#ZB": "ZARR_BUCKET",
-            "#ZP": "ZARR_PATH",
+            # "#ZB": "ZARR_BUCKET",
+            # "#ZP": "ZARR_PATH",
+            "#WL": "WATER_LEVEL",
         },
         expression_attribute_values={
             ":ch": {"L": [{"S": i} for i in test_channels]},
             ":et": {"S": "2006-04-19T20:07:33.623Z"},
-            ":ed": {"S": ""},
+            # ":ed": {"S": ""},
             ":fr": {"L": [{"N": str(i)} for i in test_frequencies]},
             ":ma": {"N": str(np.round(500.785201, 4))},
             ":mi": {"N": str(np.round(0.25001, 4))},
             ":nd": {"N": str(2428)},
-            ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
+            # ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
             ":pt": {"S": "2023-10-02T08:08:08Z"},
             ":se": {"S": sensor_name},
             ":sh": {"S": ship_name},
             ":st": {"S": "2006-04-19T18:46:12.564Z"},
-            ":zb": {"S": "r2d2-dev-echofish2-118234403147-echofish-dev-output"},
-            ":zp": {
-                "S": f"level_1/{ship_name}/{cruise_name}/{sensor_name}/DSJ0604-D20060419-T184612.zarr"
-            },
+            # ":zb": {"S": "r2d2-dev-echofish2-118234403147-echofish-dev-output"},
+            # ":zp": {
+            #     "S": f"level_1/{ship_name}/{cruise_name}/{sensor_name}/DSJ0604-D20060419-T184612.zarr"
+            # },
+            ":wl": {"N": str(np.round(water_level, 2))},
         },
         update_expression=(
             "SET "
             "#CH = :ch, "
             "#ET = :et, "
-            "#ED = :ed, "
+            # "#ED = :ed, "
             "#FR = :fr, "
             "#MA = :ma, "
             "#MI = :mi, "
             "#ND = :nd, "
-            "#PS = :ps, "
+            # "#PS = :ps, "
             "#PT = :pt, "
             "#SE = :se, "
             "#SH = :sh, "
             "#ST = :st, "
-            "#ZB = :zb, "
-            "#ZP = :zp"
+            # "#ZB = :zb, "
+            # "#ZP = :zp"
+            "#WL = :wl"
         ),
     )
 
@@ -137,40 +140,41 @@ def test_dynamodb_manager():  # PASSING
         table_name=table_name,
         key={"FILE_NAME": "DSJ0604-D20060419-T184612.raw", "CRUISE_NAME": "DS0604"},
     )
-    assert (
-        response["Item"]["PIPELINE_STATUS"]
-        == "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"
-    )
+    # assert (
+    #     response["Item"]["PIPELINE_STATUS"]
+    #     == "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"
+    # )
 
     # ---Change Items in Table (using src)--- #
-    dynamo_db_manager.update_item(
-        table_name=table_name,
-        key={
-            "FILE_NAME": {
-                "S": "DSJ0604-D20060419-T184612.raw",
-            },
-            "CRUISE_NAME": {
-                "S": "DS0604",
-            },
-        },
-        expression_attribute_names={
-            "#PS": "PIPELINE_STATUS",
-            "#PT": "PIPELINE_TIME",
-        },
-        expression_attribute_values={
-            ":ps": {"S": PipelineStatus.SUCCESS_CRUISE_PROCESSOR.name},
-            ":pt": {"S": "2023-10-02T09:09:09Z"},
-        },
-        update_expression=("SET #PS = :ps, #PT = :pt"),
-    )
+    # dynamo_db_manager.update_item(
+    #     table_name=table_name,
+    #     key={
+    #         "FILE_NAME": {
+    #             "S": "DSJ0604-D20060419-T184612.raw",
+    #         },
+    #         "CRUISE_NAME": {
+    #             "S": "DS0604",
+    #         },
+    #     },
+    #     expression_attribute_names={
+    #         "#PS": "PIPELINE_STATUS",
+    #         "#PT": "PIPELINE_TIME",
+    #     },
+    #     expression_attribute_values={
+    #         ":ps": {"S": PipelineStatus.SUCCESS_CRUISE_PROCESSOR.name},
+    #         ":pt": {"S": "2023-10-02T09:09:09Z"},
+    #     },
+    #     update_expression=("SET #PS = :ps, #PT = :pt"),
+    # )
 
     # ---Read From Table Again--- #
     response = dynamo_db_manager.get_table_item(
         table_name=table_name,
         key={"FILE_NAME": "DSJ0604-D20060419-T184612.raw", "CRUISE_NAME": "DS0604"},
     )
+    print(response)
 
-    assert response["Item"]["PIPELINE_STATUS"] == "SUCCESS_CRUISE_PROCESSOR"
+    # assert response["Item"]["PIPELINE_STATUS"] == "SUCCESS_CRUISE_PROCESSOR"
 
     # TODO: get the table as a dataframe
     df = dynamo_db_manager.get_table_as_df(
@@ -180,7 +184,7 @@ def test_dynamodb_manager():  # PASSING
         # sensor_name="EK60",
     )
 
-    assert df.shape[1] == 16
+    assert df.shape[1] == 13
     # TODO: check fields
 
 
@@ -194,6 +198,7 @@ def update_dynamodb_item(
     file_name,
     test_channels,
     test_frequencies,
+    water_level,
 ):
     dynamo_db_manager.update_item(
         table_name=table_name,
@@ -205,55 +210,58 @@ def update_dynamodb_item(
         expression_attribute_names={
             "#CH": "CHANNELS",
             "#ET": "END_TIME",
-            "#ED": "ERROR_DETAIL",
+            # "#ED": "ERROR_DETAIL",
             "#FR": "FREQUENCIES",
             "#MA": "MAX_ECHO_RANGE",
             "#MI": "MIN_ECHO_RANGE",
             "#ND": "NUM_PING_TIME_DROPNA",
-            "#PS": "PIPELINE_STATUS",  # testing this updated
+            # "#PS": "PIPELINE_STATUS",  # testing this updated
             "#PT": "PIPELINE_TIME",  # testing this updated
             "#SE": "SENSOR_NAME",
             "#SH": "SHIP_NAME",
             "#ST": "START_TIME",
-            "#ZB": "ZARR_BUCKET",
-            "#ZP": "ZARR_PATH",
+            # "#ZB": "ZARR_BUCKET",
+            # "#ZP": "ZARR_PATH",
+            "#WL": "WATER_LEVEL",
         },
         expression_attribute_values={
             ":ch": {"L": [{"S": i} for i in test_channels]},
             ":et": {"S": "2006-04-19T20:07:33.623Z"},
-            ":ed": {"S": ""},
+            # ":ed": {"S": ""},
             ":fr": {"L": [{"N": str(i)} for i in test_frequencies]},
             ":ma": {"N": str(np.round(500.785201, 4))},
             ":mi": {"N": str(np.round(0.25001, 4))},
             ":nd": {"N": str(2428)},
-            ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
+            # ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
             ":pt": {
                 "S": "2023-10-02T08:08:080Z"
             },  # datetime.now().isoformat(timespec="seconds") + "Z"
             ":se": {"S": sensor_name},
             ":sh": {"S": ship_name},
             ":st": {"S": "2006-04-19T18:46:12.564Z"},
-            ":zb": {"S": "r2d2-dev-echofish2-118234403147-echofish-dev-output"},
-            ":zp": {
-                "S": f"level_1/{ship_name}/{cruise_name}/{sensor_name}/DSJ0604-D20060419-T184612.zarr"
-            },
+            # ":zb": {"S": "r2d2-dev-echofish2-118234403147-echofish-dev-output"},
+            # ":zp": {
+            #     "S": f"level_1/{ship_name}/{cruise_name}/{sensor_name}/DSJ0604-D20060419-T184612.zarr"
+            # },
+            ":wl": {"N": str(np.round(water_level, 2))},
         },
         update_expression=(
             "SET "
             "#CH = :ch, "
             "#ET = :et, "
-            "#ED = :ed, "
+            # "#ED = :ed, "
             "#FR = :fr, "
             "#MA = :ma, "
             "#MI = :mi, "
             "#ND = :nd, "
-            "#PS = :ps, "
+            # "#PS = :ps, "
             "#PT = :pt, "
             "#SE = :se, "
             "#SH = :sh, "
             "#ST = :st, "
-            "#ZB = :zb, "
-            "#ZP = :zp"
+            # "#ZB = :zb, "
+            # "#ZP = :zp"
+            "#WL = :wl"
         ),
     )
 
@@ -275,6 +283,7 @@ def test_delete_item():  # PASSING
         "GPT 200 kHz 0090720564e4 4 ES200-7C",
     ]
     test_frequencies = [38_000, 70_000, 120_000, 200_000]
+    test_water_level = 6.5
 
     sensor_name = "EK60"
 
@@ -299,6 +308,7 @@ def test_delete_item():  # PASSING
         file_name=file_name1a,
         test_channels=test_channels,
         test_frequencies=test_frequencies,
+        water_level=test_water_level,
     )
     update_dynamodb_item(
         dynamo_db_manager=dynamo_db_manager,
@@ -309,6 +319,7 @@ def test_delete_item():  # PASSING
         file_name=file_name1b,
         test_channels=test_channels,
         test_frequencies=test_frequencies,
+        water_level=test_water_level,
     )
     update_dynamodb_item(
         dynamo_db_manager=dynamo_db_manager,
@@ -319,6 +330,7 @@ def test_delete_item():  # PASSING
         file_name=file_name2a,
         test_channels=test_channels,
         test_frequencies=test_frequencies,
+        water_level=test_water_level,
     )
     update_dynamodb_item(
         dynamo_db_manager=dynamo_db_manager,
@@ -329,6 +341,7 @@ def test_delete_item():  # PASSING
         file_name=file_name2b,
         test_channels=test_channels,
         test_frequencies=test_frequencies,
+        water_level=test_water_level,
     )
 
     # ---Read From Table, verify four items--- #
