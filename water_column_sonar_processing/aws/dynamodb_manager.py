@@ -127,7 +127,7 @@ class DynamoDBManager:
             # assert status_code == 200, "Problem, unable to update dynamodb table."
             # assert response['ConsumedCapacity']['TableName'] == table_name
         except Exception as err:
-            print(f"Problem was encountered while updating item: {err}")
+            raise RuntimeError(f"Problem was encountered while updating item, {err}")
 
     #####################################################################
     # TODO: change to "get_cruise_as_df"

@@ -160,7 +160,8 @@ class S3Manager:
                     if result:
                         all_uploads.extend([result])
         except Exception as err:
-            print(err)
+            raise RuntimeError(f"Problem, {err}")
+
         print("Done uploading files using threading pool.")
         return all_uploads
 
@@ -363,7 +364,7 @@ class S3Manager:
                 )
             print("Deleted files.")
         except Exception as err:
-            print(f"Problem was encountered while deleting objects: {err}")
+            raise RuntimeError(f"Problem was encountered while deleting objects, {err}")
 
     #####################################################################
     # TODO: need to test this!!!
@@ -379,7 +380,7 @@ class S3Manager:
             )
             print("Deleted file.")
         except Exception as err:
-            print(f"Problem was encountered while deleting objects: {err}")
+            raise RuntimeError(f"Problem was encountered while deleting objects, {err}")
 
     #####################################################################
     def put(self, bucket_name, key, body):  # noaa-wcsd-model-pds
@@ -405,9 +406,8 @@ class S3Manager:
             file_content = content_object["Body"].read().decode("utf-8")
             json_content = json.loads(file_content)
             return json_content
-        except Exception as err:  # Failure
-            print(f"Exception encountered reading s3 GeoJSON: {err}")
-            raise
+        except Exception as err:
+            raise RuntimeError(f"Exception encountered reading s3 GeoJSON, {err}")
 
     #####################################################################
 

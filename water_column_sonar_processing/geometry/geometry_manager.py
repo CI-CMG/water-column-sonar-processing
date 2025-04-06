@@ -180,10 +180,10 @@ class GeometryManager:
             #################################################################
             # GeoJSON FeatureCollection with IDs as "time"
         except Exception as err:
-            print(
-                f"Exception encountered extracting gps coordinates creating geojson: {err}"
+            raise RuntimeError(
+                f"Exception encountered extracting gps coordinates creating geojson, {err}"
             )
-            raise
+
         # Note: returned lat/lon values can include np.nan because they need to be aligned with
         # the Sv data! GeoJSON needs simplification but has been filtered.
         # return gps_df.index.values, gps_df.latitude.values, gps_df.longitude.values
@@ -229,9 +229,8 @@ class GeometryManager:
             indices = np.searchsorted(a=aa, v=vv)
 
             return indices, geospatial
-        except Exception as err:  # Failure
-            print(f"Exception encountered reading s3 GeoJSON: {err}")
-            raise
+        except Exception as err:
+            raise RuntimeError(f"Exception encountered reading s3 GeoJSON, {err}")
 
     ############################################################################
     # COMES from the raw-to-zarr conversion

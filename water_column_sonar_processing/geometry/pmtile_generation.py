@@ -181,7 +181,7 @@ class PMTileGeneration(object):
                     if result:
                         completed_cruises.extend([result])
         except Exception as err:
-            print(err)
+            raise RuntimeError(f"Problem, {err}")
         print("Done opening zarr stores using thread pool.")
         return completed_cruises  # Took ~12 minutes
 

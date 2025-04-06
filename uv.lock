@@ -2804,7 +2804,7 @@ wheels = [
 
 [[package]]
 name = "water-column-sonar-processing"
-version = "25.4.3"
+version = "25.4.4"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
@@ -2860,7 +2860,7 @@ requires-dist = [
     { name = "flake8", marker = "extra == 'dev'", specifier = "==7.1.1" },
     { name = "geopandas", specifier = "==1.0.1" },
     { name = "isort", marker = "extra == 'dev'" },
-    { name = "matplotlib", marker = "extra == 'dev'", specifier = "==3.10.1" },
+    { name = "matplotlib", marker = "extra == 'dev'" },
     { name = "mock", specifier = "==5.2.0" },
     { name = "moto", extras = ["all"], specifier = "==5.1.2" },
     { name = "moto", extras = ["server"], specifier = "==5.1.2" },

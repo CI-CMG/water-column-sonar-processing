@@ -4,6 +4,10 @@ import numpy as np
 from pykalman import KalmanFilter
 from shapely.geometry import Point
 
+# import hvplot.pandas
+# from holoviews import opts
+# hv.extension('bokeh')
+
 # import matplotlib.pyplot as plt
 
 
@@ -26,6 +30,12 @@ def mph_to_knots(mph_value):
 
 def mps_to_knots(mps_value):
     return mps_value * 1.94384
+
+
+###############################################################################
+# Colab Notebook:
+# https://colab.research.google.com/drive/1Ihb1x0EeYRNwGJ4Bqi4RqQQHu9-40oDk?usp=sharing#scrollTo=hIPziqVO48Xg
+###############################################################################
 
 
 # https://shapely.readthedocs.io/en/stable/reference/shapely.MultiLineString.html#shapely.MultiLineString
@@ -150,5 +160,16 @@ class LineSimplification:
 
     #######################################################
 
+
+# [(-72.2001724243164, 40.51750183105469), # latBB
+#  (-72.20023345947266, 40.51749038696289),
+#  (-72.20033264160156, 40.51750183105469), # lonAA, latBB
+#  (-72.20030212402344, 40.517391204833984),
+#  (-72.20033264160156, 40.517330169677734), # lonAA, latCC
+#  (-72.2003402709961, 40.51729965209961),
+#  (-72.20033264160156, 40.517330169677734), # lonAA, latCC
+#  (-72.20040130615234, 40.5172004699707),
+#  (-72.20050048828125, 40.51716995239258),
+#  (-72.2004623413086, 40.51710891723633)]
 
 ###########################################################

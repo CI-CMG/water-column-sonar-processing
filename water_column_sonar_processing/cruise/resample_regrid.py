@@ -123,8 +123,7 @@ class ResampleRegrid:
                     print(f"updated {len(times_select)} ping times")
                     gc.collect()
         except Exception as err:
-            print(f"Problem finding the dynamodb table: {err}")
-            raise err
+            raise RuntimeError(f"Problem finding the dynamodb table, {err}")
         print("Done interpolating data.")
         return regrid_resample.values.copy()
 
@@ -333,8 +332,7 @@ class ResampleRegrid:
                 #########################################################################
                 #########################################################################
         except Exception as err:
-            print(f"Problem with resample_regrid: {err}")
-            raise err
+            raise RuntimeError(f"Problem with resample_regrid, {err}")
         finally:
             print("Exiting resample_regrid.")
             # TODO: read across times and verify data was written?

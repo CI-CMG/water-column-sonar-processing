@@ -78,7 +78,7 @@ class Coordinates(Enum):
     SPEED_STANDARD_NAME = "speed"
 
     SV = "Sv"
-    SV_DTYPE = "float32"  # TODO: experiment with dtype of int
+    SV_DTYPE = "float32"  # int64
     SV_UNITS = "dB"
     SV_LONG_NAME = "Volume backscattering strength (Sv re 1 m-1)"
     SV_STANDARD_NAME = "volume_backscattering_strength"

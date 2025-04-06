@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "water_column_sonar_processing"
-version = "25.4.3"
+version = "25.4.4"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
@@ -31,10 +31,12 @@ dependencies = [
     "mock==5.2.0",
     "moto[all]==5.1.2",
     "moto[server]==5.1.2",
+    #"multidict==6.2.0",
     "networkx==3.4.2",
     "numcodecs==0.13.1",
     "numpy==1.26.4",
     "pandas==2.2.3",
+    #"pelicanfs==1.0.2",
     "pooch==1.8.2",
     "pyarrow==19.0.1",
     "pykalman==0.10.1",
@@ -58,7 +60,7 @@ dev = [
     "build",
     "flake8==7.1.1",
     "isort",
-    "matplotlib==3.10.1",
+    "matplotlib",
     "pooch==1.8.2",
     "pre-commit",
     "pyinstaller",

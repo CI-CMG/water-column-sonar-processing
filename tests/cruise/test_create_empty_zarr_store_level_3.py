@@ -7,7 +7,7 @@ from moto import mock_aws
 from moto.server import ThreadedMotoServer
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3FSManager, S3Manager
-from water_column_sonar_processing.cruise import CreateEmptyZarrStore
+from water_column_sonar_processing.cruise import CreateEmptyZarrStoreLevel3
 
 
 #######################################################
@@ -24,7 +24,6 @@ def teardown_module():
 @pytest.fixture(scope="module")
 def moto_server():
     """Fixture to run a mocked AWS server for testing."""
-    # Note: pass `port=0` to get a random free port.
     server = ThreadedMotoServer(port=0)
     server.start()
     host, port = server.get_host_and_port()
@@ -39,7 +38,7 @@ def create_empty_zarr_test_path(test_path):
 
 #######################################################
 @mock_aws()
-def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
+def test_create_empty_zarr_store_level_3(create_empty_zarr_test_path, moto_server):
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager(endpoint_url=moto_server)
 
@@ -60,12 +59,12 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     s3_manager.upload_file(
         filename=create_empty_zarr_test_path.joinpath("HB0707.zarr/.zmetadata"),
         bucket_name=output_bucket_name,
-        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata",
+        key="level_3/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata",
     )
     s3_manager.upload_file(
         filename=create_empty_zarr_test_path.joinpath("HB0707.zarr/.zattrs"),
         bucket_name=output_bucket_name,
-        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zattrs",
+        key="level_3/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zattrs",
     )
     assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 1
 
@@ -151,20 +150,6 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
         "2007-07-12T23:17:58.454Z",
         "2007-07-13T00:55:17.454Z",
     ]
-    # zarr_path = [
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070711-T182032.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070711-T210709.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T004447.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T033431.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T061745.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T100505.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T171804.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T201647.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T202050.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T231759.zarr",
-    # ]
     water_level = 0.0
 
     for iii in range(0, len(file_name)):
@@ -187,8 +172,6 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
                 "#SE": "SENSOR_NAME",
                 "#SH": "SHIP_NAME",
                 "#ST": "START_TIME",
-                # "#ZB": "ZARR_BUCKET",
-                # "#ZP": "ZARR_PATH",
                 "#WL": "WATER_LEVEL",
             },
             expression_attribute_values={
@@ -204,8 +187,6 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
                 ":se": {"S": sensor_name},
                 ":sh": {"S": ship_name},
                 ":st": {"S": start_time[iii]},
-                # ":zb": {"S": output_bucket_name},
-                # ":zp": {"S": zarr_path[iii]},
                 ":wl": {"N": str(np.round(water_level, 2))},
             },
             update_expression=(
@@ -222,56 +203,50 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
                 "#SE = :se, "
                 "#SH = :sh, "
                 "#ST = :st, "
-                # "#ZB = :zb, "
-                # "#ZP = :zp"
                 "#WL = :wl"
             ),
         )
 
     # [3] create new zarr store and upload
-    create_empty_zarr_store = CreateEmptyZarrStore()
-    create_empty_zarr_store.create_cruise_level_zarr_store(
+    create_empty_zarr_store_level_3 = CreateEmptyZarrStoreLevel3()
+    create_empty_zarr_store_level_3.create_cruise_level_zarr_store_level_3(
         output_bucket_name=output_bucket_name,
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         table_name=table_name,
-        # tempdir="/tmp",
     )
 
-    # assert os.path.exists(f"/tmp/{cruise_name}.zarr") # TODO: create better tmp directory for testing
-    # Assert data is in the bucket
-    # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
     assert (
         len(
             s3_manager.list_objects(
                 bucket_name=output_bucket_name,
-                prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
+                prefix="level_3/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
             )
         )
         > 1
     )
     assert (
-        "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata"
+        "level_3/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata"
         in s3_manager.list_objects(
             bucket_name=output_bucket_name,
-            prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
+            prefix="level_3/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
         )
     )
     # mount and verify:
     s3fs_manager = S3FSManager(endpoint_url=moto_server)
-    s3_path = f"{output_bucket_name}/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr"
+    s3_path = f"{output_bucket_name}/level_3/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr"
     zarr_store = s3fs_manager.s3_map(s3_path)
 
     # --- Open with Zarr --- #
     root = zarr.open(store=zarr_store, mode="r")
     print(root.info)
-    assert root.Sv.shape == (3998, 89911, 4)
+    assert root.Sv.shape == (1000, 89911, 4)
 
     # --- Open with Xarray --- #
     ds = xr.open_dataset(zarr_store, engine="zarr")
     print(ds)
-    assert ds.Sv.size == 1437856712  # ~1.44 GB
+    assert ds.Sv.size == 359644000  # ~0.34 GB ==> 25% of the size
     assert set(list(ds.variables)) == {
         "Sv",
         "bottom",
