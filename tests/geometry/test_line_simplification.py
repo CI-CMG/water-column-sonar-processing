@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import xarray as xr
 from dotenv import find_dotenv, load_dotenv
 
@@ -16,26 +17,29 @@ def teardown_module():
     print("teardown")
 
 
-def test_filter_coordinates():
+@pytest.fixture(scope="function")
+def line_simplification_tmp_path(test_path):
+    return test_path["LINE_SIMPLIFICATION_TEST_PATH"]
+
+
+def test_filter_coordinates(line_simplification_tmp_path):
     ### check the differences and speed of the data
-    #
-    # TODO: create offline test data
-    #
-    bucket_name = "noaa-wcsd-zarr-pds"
-    ship_name = "Henry_B._Bigelow"
-    cruise_name = "HB0707"
-    sensor_name = "EK60"
+
+    # open the test dataset
     cruise = xr.open_dataset(
-        filename_or_obj=f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr",
-        storage_options={"anon": True},
+        filename_or_obj=line_simplification_tmp_path.joinpath(
+            "HB1906_geospatial_coordinates.zarr"
+        ),
         engine="zarr",
-        chunks={},
     )
     longitudes = cruise.longitude.values
     latitudes = cruise.latitude.values
 
+    # TODO: get better description for what is happening
+    # get lat/lon/time, want two things
+    # 1) replace values with smoothed positions for speed etc.
+    # 2) get geometry for drawing on map viewer
     line_simplification = LineSimplification()
-    # filtered_coordinates = line_simplification.kalman_filter(longitudes[3_801:5_501], latitudes[3_801:5_501])
     filtered_coordinates = line_simplification.kalman_filter(
         longitudes[1:1000], latitudes[1:1000]
     )

@@ -66,6 +66,7 @@ def test_path():
         "RESAMPLE_REGRID_TEST_PATH": fetch_raw_files(),
         "S3FS_MANAGER_TEST_PATH": TEST_DATA_FOLDER / "s3fs_manager",
         "S3_MANAGER_TEST_PATH": TEST_DATA_FOLDER / "s3_manager",
+        "LINE_SIMPLIFICATION_TEST_PATH": TEST_DATA_FOLDER / "line_simplification",
     }
 
 
