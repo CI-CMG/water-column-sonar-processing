@@ -80,7 +80,7 @@ class DatasetManager:
             ds=sv_array,
             input_dims=patch_input_dims,
             input_overlap=patch_input_overlap,
-            batch_dims={},
+            batch_dims={"depth": 3},
             concat_input_dims=False,
             preload_batch=False,  # Load each batch dynamically
             # cache=None, # TODO: figure this out
@@ -111,12 +111,11 @@ class DatasetManager:
         dataset = CustomTFDataset(x_batch_generator, x_batch_generator)
 
         # Create a DataLoader using tf.data.Dataset
-        train_dataloader = tf.data.Dataset.from_generator(
+        train_dataloader = tf.data.Dataset.from_generator(  # num_batches == 32
             lambda: iter(dataset),
             output_signature=(
-                tf.TensorSpec(
-                    shape=(8, 8, 4), dtype=tf.float32
-                ),  # shuffles the dims: {'depth': 8, 'frequency': 4, 'time': 8}
+                # Note: shuffles the dims: {'depth': 8, 'frequency': 4, 'time': 8}
+                tf.TensorSpec(shape=(8, 8, 4), dtype=tf.float32),
                 tf.TensorSpec(shape=(8, 8, 4), dtype=tf.float32),
             ),
         ).prefetch(2)  # Prefetch N batches to improve performance

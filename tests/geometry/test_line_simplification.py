@@ -47,22 +47,13 @@ def test_filter_coordinates(line_simplification_tmp_path):
     assert filtered_coordinates.shape[1] == 2
 
 
-# @mock_s3
-def test_get_speeds():
+def test_get_speeds(line_simplification_tmp_path):
     ### check the differences and speed of the dataset
-    #
-    # TODO: create offline test dataset
-    #
-    bucket_name = "noaa-wcsd-zarr-pds"
-    ship_name = "Henry_B._Bigelow"
-    cruise_name = "HB0707"
-    # cruise_name = "HB1906"
-    sensor_name = "EK60"
     cruise = xr.open_dataset(
-        filename_or_obj=f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr",
-        storage_options={"anon": True},
+        filename_or_obj=line_simplification_tmp_path.joinpath(
+            "HB1906_geospatial_coordinates.zarr"
+        ),
         engine="zarr",
-        chunks={},
     )
     times = cruise.time.values
     latitudes = cruise.latitude.values
