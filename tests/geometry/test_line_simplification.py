@@ -23,7 +23,7 @@ def line_simplification_tmp_path(test_path):
 
 
 def test_filter_coordinates(line_simplification_tmp_path):
-    ### check the differences and speed of the data
+    ### check the differences and speed of the dataset
 
     # open the test dataset
     cruise = xr.open_dataset(
@@ -49,9 +49,9 @@ def test_filter_coordinates(line_simplification_tmp_path):
 
 # @mock_s3
 def test_get_speeds():
-    ### check the differences and speed of the data
+    ### check the differences and speed of the dataset
     #
-    # TODO: create offline test data
+    # TODO: create offline test dataset
     #
     bucket_name = "noaa-wcsd-zarr-pds"
     ship_name = "Henry_B._Bigelow"

@@ -15,11 +15,9 @@ description = "Processing tool for water column sonar data."
 keywords = ["ocean", "sonar", "water column"]
 readme = "README.md"
 requires-python = ">=3.12"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-]
+license = "MIT"
+license-files = ["LICENSE-MIT"]
+
 dependencies = [
     #"aiobotocore==2.19.0",
 #    "aiobotocore",
@@ -47,10 +45,10 @@ dependencies = [
     "scipy==1.15.1",
     "setuptools",
     "shapely==2.0.7",
-    #"tensorflow==2.17.0",
+    "tensorflow==2.18.0",
     #"typing-extensions==4.10.0",
     "xarray==2025.3.1",
-    "xbatcher==0.4.0",
+    "xbatcher[tensorflow]==0.4.0",
     "zarr==2.18.3",
 ]
 

@@ -10,7 +10,7 @@ import xbatcher
 
 class BatchDownloader:
     """
-    Uses the xbatcher XbatchDownloader to download data from an xarray dataset. Connection
+    Uses the xbatcher XbatchDownloader to download dataset from an xarray dataset. Connection
     is established
     """
 
@@ -50,13 +50,13 @@ class BatchDownloader:
 
     def get_toy_batch_generator(self) -> xbatcher.BatchGenerator:
         """
-        Returns a BatchGenerator with subsets of Sv data
-        Note: this is synthetic data, for a smaller toy example
+        Returns a BatchGenerator with subsets of Sv dataset
+        Note: this is synthetic dataset, for a smaller toy example
         """
         depth = np.arange(1, 21)  # N meters
         time = pd.date_range(start="2025-01-01", end="2025-01-31", freq="D")  # N days
         frequency = [1_000, 2_000, 3_000]  # N frequencies
-        Sv = np.random.rand(len(depth), len(time), len(frequency))  # synthetic data
+        Sv = np.random.rand(len(depth), len(time), len(frequency))  # synthetic dataset
         cruise = xr.Dataset(
             data_vars={"Sv": (["depth", "time", "frequency"], Sv)},
             coords={
@@ -84,10 +84,10 @@ class BatchDownloader:
         return batch_generator
 
     def get_s3_batch_generator(self) -> xbatcher.BatchGenerator:
-        """Returns a BatchGenerator with subsets of Sv data from s3 Zarr store"""
+        """Returns a BatchGenerator with subsets of Sv dataset from s3 Zarr store"""
         cruise = self.get_s3_zarr_store()
 
-        # TODO: temporarily limits to a smaller slice of the data
+        # TODO: temporarily limits to a smaller slice of the dataset
         cruise_select = (
             cruise.where(cruise.depth < 100.0, drop=True).sel(
                 time=slice("2007-07-11T18:20:33", "2007-07-11T18:20:53")
@@ -111,19 +111,19 @@ class BatchDownloader:
             preload_batch=False,
         )
 
-        # TODO: need to raise exception if all the data is nan
+        # TODO: need to raise exception if all the dataset is nan
 
         return batch_generator
         # https://www.tensorflow.org/api_docs/python/tf/data/Dataset#from_generator
 
     def get_s3_manual_batch_generator(self):
         """
-        Using just xarray (no xbatcher), iterate through the data and generate batches.
-        Returns a BatchGenerator with subsets of Sv data from s3 Zarr store.
+        Using just xarray (no xbatcher), iterate through the dataset and generate batches.
+        Returns a BatchGenerator with subsets of Sv dataset from s3 Zarr store.
         """
         cruise = self.get_s3_zarr_store()
 
-        # TODO: temporarily limits to a smaller slice of the data
+        # TODO: temporarily limits to a smaller slice of the dataset
         cruise_select = cruise.where(cruise.depth < 100.0, drop=True).sel(
             time=slice("2007-07-11T18:20:33", "2007-07-11T18:20:53")
         )
@@ -143,7 +143,7 @@ class BatchDownloader:
             preload_batch=True,
         )
 
-        # TODO: need to raise exception if all the data is nan
+        # TODO: need to raise exception if all the dataset is nan
 
         return batch_generator
         # https://www.tensorflow.org/api_docs/python/tf/data/Dataset#from_generator

@@ -1,0 +1,10 @@
+{
+    "calibration_status": true,
+    "cruise_name": "HB1906",
+    "processing_software_name": "echofish",
+    "processing_software_time": "2025-04-05T21:36:19.223Z",
+    "processing_software_version": "25.4.3",
+    "sensor_name": "EK60",
+    "ship_name": "Henry_B._Bigelow",
+    "tile_size": 512
+}

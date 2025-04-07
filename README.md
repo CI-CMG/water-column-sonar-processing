@@ -16,7 +16,7 @@ uv pip install -r pyproject.toml --all-extras
 
 # Pytest
 ```
-uv run pytest tests
+uv run pytest tests -W ignore::DeprecationWarning
 ```
 or
 > pytest --cache-clear --cov=src tests/ --cov-report=xml

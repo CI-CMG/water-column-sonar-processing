@@ -35,7 +35,7 @@ class SQSManager:
     #######################################################
     def list_queues(self, queue_name_prefix):
         # Note: SQS control plane is eventually consistent, meaning that it
-        # takes a while to propagate the data accross the systems.
+        # takes a while to propagate the dataset accross the systems.
         response = self.__sqs_client.list_queues(QueueNamePrefix=queue_name_prefix)
         print(response)
 

@@ -230,7 +230,7 @@ class DynamoDBManager:
     #     if len(response["Items"]) == 0 and "LastEvaluatedKey" not in response:
     #         return pd.DataFrame() # If no results, return empty dataframe
     #
-    #     data = response["Items"]
+    #     dataset = response["Items"]
     #
     #     while response.get('LastEvaluatedKey'): #"LastEvaluatedKey" in response:
     #         response = self.dynamodb_client.scan(
@@ -252,10 +252,10 @@ class DynamoDBManager:
     #             ConsistentRead=True,
     #             ExclusiveStartKey=response["LastEvaluatedKey"],
     #         )
-    #         data.extend(response["Items"])
+    #         dataset.extend(response["Items"])
     #
     #     deserializer = self.type_deserializer
-    #     df = pd.DataFrame([deserializer.deserialize({"M": i}) for i in data])
+    #     df = pd.DataFrame([deserializer.deserialize({"M": i}) for i in dataset])
     #
     #     return df.sort_values(by="START_TIME", ignore_index=True)
 

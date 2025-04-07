@@ -51,7 +51,7 @@ def resample_regrid_test_path(test_path):
 #     #  need to create geojson
 #     #  need to populate dynamodb
 #
-#     # Opens s3 input model store as xr and writes data to output model store
+#     # Opens s3 input model store as xr and writes dataset to output model store
 #
 #     # HB0706 - 53 files
 #     # bucket_name = 'noaa-wcsd-model-pds'
@@ -75,7 +75,7 @@ def resample_regrid_test_path(test_path):
 def test_resample_regrid(resample_regrid_test_path, moto_server):
     # TODO: HB0707 isn't good _enough_ test because the MIN_ECHO_RANGE doesn't change
 
-    # TODO: set up db w all 12 data file info for HB0707,
+    # TODO: set up db w all 12 dataset file info for HB0707,
     # iterate through 2 files ("D20070712-T100505.raw", "D20070712-T152416.raw") and do resample/regrid
     # verify the output is gridded as expected
 
@@ -98,7 +98,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # [1] create dynamodb table
     dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
 
-    # [2] bootstrap w/ test data
+    # [2] bootstrap w/ test dataset
     test_channels = [
         "GPT  18 kHz 009072056b0e 2 ES18-11",
         "GPT  38 kHz 0090720346bc 1 ES38B",
@@ -264,7 +264,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         # tempdir="/tmp", # TODO: create better tmp directory for testing
     )
 
-    # Assert data is in the bucket
+    # Assert dataset is in the bucket
     # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
     assert (
         len(
@@ -292,23 +292,23 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20070712-T124906.raw"),
         bucket_name=l0_test_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.raw",
+        key="dataset/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.raw",
     )
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20070712-T124906.bot"),
         bucket_name=l0_test_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.bot",
+        key="dataset/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.bot",
     )
 
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20070712-T152416.raw"),
         bucket_name=l0_test_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.raw",
+        key="dataset/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.raw",
     )
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20070712-T152416.bot"),
         bucket_name=l0_test_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.bot",
+        key="dataset/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.bot",
     )
     assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 4
 
@@ -426,23 +426,23 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T034434.raw"),
         bucket_name=l0_test_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T034434.raw",
+        key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T034434.raw",
     )
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T034434.bot"),
         bucket_name=l0_test_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T034434.bot",
+        key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T034434.bot",
     )
 
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T042540.raw"),
         bucket_name=l0_test_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T042540.raw",
+        key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T042540.raw",
     )
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T042540.bot"),
         bucket_name=l0_test_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T042540.bot",
+        key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T042540.bot",
     )
 
     assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 4
@@ -491,7 +491,7 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         # tempdir="/tmp", # TODO: create better tmp directory for testing
     )
 
-    # Assert data is in the bucket
+    # Assert dataset is in the bucket
     assert (
         len(
             s3_manager.list_objects(

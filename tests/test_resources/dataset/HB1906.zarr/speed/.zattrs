@@ -1,0 +1,8 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "time"
+    ],
+    "long_name": "Nautical miles per hour",
+    "standard_name": "speed",
+    "units": "Knots"
+}

@@ -15,7 +15,7 @@ compressor = Blosc(cname="zstd", clevel=9)
 # ZARR_V3_EXPERIMENTAL_API = 1
 
 
-# creates the latlon data: foo = ep.consolidate.add_location(ds_Sv, echodata)
+# creates the latlon dataset: foo = ep.consolidate.add_location(ds_Sv, echodata)
 class ZarrManager:
     #######################################################
     def __init__(
@@ -31,7 +31,7 @@ class ZarrManager:
         cruise_min_epsilon: float = 0.25,  # resolution between subsequent measurements
     ):
         # Gets the set of depth values that will be used when resampling and
-        # regridding the data to a cruise level model store.
+        # regridding the dataset to a cruise level model store.
         # Note: returned values do not start at zero.
         # For more info see here: https://echopype.readthedocs.io/en/stable/data-proc-additional.html
         print("Getting depth values.")
@@ -134,7 +134,7 @@ class ZarrManager:
             # --- Coordinate: Latitude --- #
             root.create_dataset(
                 name=Coordinates.LATITUDE.value,
-                # data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
+                # dataset=np.repeat(0.0, width),  # root.longitude[:] = np.nan
                 data=np.repeat(np.nan, width),
                 shape=width,
                 chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
@@ -157,7 +157,7 @@ class ZarrManager:
             # --- Coordinate: Longitude --- #
             root.create_dataset(
                 name=Coordinates.LONGITUDE.value,
-                # data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
+                # dataset=np.repeat(0.0, width),  # root.longitude[:] = np.nan
                 data=np.repeat(np.nan, width),
                 shape=width,
                 chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
@@ -390,7 +390,7 @@ class ZarrManager:
             # --- Coordinate: Latitude --- #
             root.create_dataset(
                 name=Coordinates.LATITUDE.value,
-                # data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
+                # dataset=np.repeat(0.0, width),  # root.longitude[:] = np.nan
                 data=np.repeat(np.nan, width),
                 shape=width,
                 chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
@@ -412,7 +412,7 @@ class ZarrManager:
             # --- Coordinate: Longitude --- #
             root.create_dataset(
                 name=Coordinates.LONGITUDE.value,
-                # data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
+                # dataset=np.repeat(0.0, width),  # root.longitude[:] = np.nan
                 data=np.repeat(np.nan, width),
                 shape=width,
                 chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,

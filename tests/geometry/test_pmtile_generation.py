@@ -11,8 +11,10 @@ def setup_module():
     env_file = find_dotenv(".env-test")
     load_dotenv(dotenv_path=env_file, override=True)
 
+
 def teardown_module():
     print("teardown")
+
 
 # def test_async_s3(pmtile_generation_test_path):
 #     s3_fs = s3fs.S3FileSystem(anon=True)
@@ -22,23 +24,27 @@ def teardown_module():
 #     print(ds_zarr.Sv.shape)
 #     # _()
 
-@pytest.mark.skip(reason="This test uses actual data in s3 buckets")
+
+@pytest.mark.skip(reason="This test uses actual dataset in s3 buckets")
 def test_get_geospatial_info_from_zarr_store():
     # This is creating a dataframe and writing to a file?!
     ship_name = "Henry_B._Bigelow"
     cruise_name = "HB0706"
     pmtile_generation = PMTileGeneration()
-    processed_cruise = pmtile_generation.get_geospatial_info_from_zarr_store(ship_name, cruise_name)
+    processed_cruise = pmtile_generation.get_geospatial_info_from_zarr_store(
+        ship_name, cruise_name
+    )
 
-    assert processed_cruise == 'HB0706'
+    assert processed_cruise == "HB0706"
 
-@pytest.mark.skip(reason="This test uses actual data in s3 buckets")
+
+@pytest.mark.skip(reason="This test uses actual dataset in s3 buckets")
 def test_open_zarr_stores_with_thread_pool_executor():
     level_2_cruises = [
         "HB0706",
         "HB0707",
         "HB0710",
-        "HB0802", # problem
+        "HB0802",  # problem
         "HB0803",
         "HB0805",
         "HB0806",
@@ -51,12 +57,12 @@ def test_open_zarr_stores_with_thread_pool_executor():
         "HB1002",
         "HB1006",
         "HB1102",
-        "HB1103", # shapely.errors.GEOSException: IllegalArgumentException: Non-finite envelope bounds passed to index insert
+        "HB1103",  # shapely.errors.GEOSException: IllegalArgumentException: Non-finite envelope bounds passed to index insert
         "HB1105",
         "HB1201",
         "HB1206",
         "HB1301",
-        "HB1303", # HB1303 missing lat/lon
+        "HB1303",  # HB1303 missing lat/lon
         "HB1304",
         "HB1401",
         "HB1402",
@@ -65,13 +71,13 @@ def test_open_zarr_stores_with_thread_pool_executor():
         "HB1501",
         "HB1502",
         "HB1503",
-        "HB1506", # missing lat/lon
+        "HB1506",  # missing lat/lon
         "HB1507",
-        "HB1601", # problem, botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "https://noaa-wcsd-zarr-pds.s3.amazonaws.com/level_2/Henry_B._Bigelow/HB1601/EK60/HB1601.zarr/longitude/907"
-        #"HB1603", # HB1603 missing lat/lon
-        #"HB1604", # missing lat/lon
+        "HB1601",  # problem, botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "https://noaa-wcsd-zarr-pds.s3.amazonaws.com/level_2/Henry_B._Bigelow/HB1601/EK60/HB1601.zarr/longitude/907"
+        # "HB1603", # HB1603 missing lat/lon
+        # "HB1604", # missing lat/lon
         "HB1701",
-        #"HB1702", # missing lat/lon
+        # "HB1702", # missing lat/lon
         "HB1801",
         "HB1802",
         "HB1803",
@@ -88,24 +94,30 @@ def test_open_zarr_stores_with_thread_pool_executor():
         "HB2006",
         "HB2007",
         "HB20ORT",
-        "HB20TR"
+        "HB20TR",
     ]
     pmtile_generation = PMTileGeneration()
-    processed_cruises = pmtile_generation.open_zarr_stores_with_thread_pool_executor(level_2_cruises)
+    processed_cruises = pmtile_generation.open_zarr_stores_with_thread_pool_executor(
+        level_2_cruises
+    )
     print(processed_cruises)
     print(level_2_cruises)
     assert len(processed_cruises) == len(level_2_cruises)
 
-@pytest.mark.skip(reason="This test uses actual data in s3 buckets")
+
+@pytest.mark.skip(reason="This test uses actual dataset in s3 buckets")
 def test_aggregate_geojson_into_dataframe():
     pmtile_generation = PMTileGeneration()
     processed_cruises = pmtile_generation.aggregate_geojson_into_dataframe()
     assert len(processed_cruises) > 0
-    # creates data.geojson
+    # creates dataset.geojson
     # then in the terminal
     # tippecanoe -zg --projection=EPSG:4326 -o water-column-sonar-id.pmtiles -l cruises dataframe.geojson
 
-@pytest.mark.skip(reason="no way of currently testing this without accessing actual zarr stores")
+
+@pytest.mark.skip(
+    reason="no way of currently testing this without accessing actual zarr stores"
+)
 def test_get_info_from_zarr_store():
     # this was just an experiment to get the total number of geospatial points
     level_2_cruises = [
@@ -126,13 +138,13 @@ def test_get_info_from_zarr_store():
         "HB1002",
         "HB1006",
         "HB1102",
-        #"HB1103", # shapely.errors.GEOSException: IllegalArgumentException: Non-finite envelope bounds passed to index insert
+        # "HB1103", # shapely.errors.GEOSException: IllegalArgumentException: Non-finite envelope bounds passed to index insert
         #  ^ has nans
         "HB1105",
         "HB1201",
         "HB1206",
         "HB1301",
-        #"HB1303",
+        # "HB1303",
         "HB1304",
         "HB1401",
         "HB1402",
@@ -141,13 +153,13 @@ def test_get_info_from_zarr_store():
         "HB1501",
         "HB1502",
         "HB1503",
-        #"HB1506",
+        # "HB1506",
         "HB1507",
-        #"HB1601", # problem, botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "https://noaa-wcsd-zarr-pds.s3.amazonaws.com/level_2/Henry_B._Bigelow/HB1601/EK60/HB1601.zarr/longitude/907"
-        #"HB1603",
-        #"HB1604",
+        # "HB1601", # problem, botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "https://noaa-wcsd-zarr-pds.s3.amazonaws.com/level_2/Henry_B._Bigelow/HB1601/EK60/HB1601.zarr/longitude/907"
+        # "HB1603",
+        # "HB1604",
         "HB1701",
-        #"HB1702",
+        # "HB1702",
         "HB1801",
         "HB1802",
         "HB1803",
@@ -164,19 +176,24 @@ def test_get_info_from_zarr_store():
         "HB2006",
         "HB2007",
         "HB20ORT",
-        "HB20TR"
+        "HB20TR",
     ]
     pmtile_generation = PMTileGeneration()
-    foo = pmtile_generation.get_info_from_zarr_store("Henry_B._Bigelow", level_2_cruises)
-    print(foo) # total number of timestamps: 73_799_563
+    foo = pmtile_generation.get_info_from_zarr_store(
+        "Henry_B._Bigelow", level_2_cruises
+    )
+    print(foo)  # total number of timestamps: 73_799_563
+
 
 # @mock_aws
-@pytest.mark.skip(reason="no way of currently testing this without accessing actual zarr stores")
+@pytest.mark.skip(
+    reason="no way of currently testing this without accessing actual zarr stores"
+)
 def test_pmtile_generator(zarr_store_base, pmtile_generation_test_path):
     # ---Scan Bucket For All Zarr Stores--- #
     # https://noaa-wcsd-zarr-pds.s3.amazonaws.com/index.html#level_2/Henry_B._Bigelow/HB0706/EK60/HB0706.zarr/
     level_2_cruises = [
-       "HB0706",
+        "HB0706",
         "HB0707",
         "HB0710",
         "HB0711",

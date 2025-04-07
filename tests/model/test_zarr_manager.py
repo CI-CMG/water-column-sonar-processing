@@ -185,7 +185,7 @@ def test_open_zarr_with_zarr_read_write():
 def test_open_zarr_with_xarray():
     # TODO: open with xarray
     #  [1] check timestamps are in proper format
-    #  [2] check that lat/lons are formatted (need data)
+    #  [2] check that lat/lons are formatted (need dataset)
     #  [3] check
     # TODO: open with model python library and check format
     ship_name = "Okeanos_Explorer"

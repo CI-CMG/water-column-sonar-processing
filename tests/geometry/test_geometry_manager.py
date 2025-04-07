@@ -35,7 +35,7 @@ def test_geometry_manager(tmp_path):
     sensor_name = "EK60"
 
     s3_path = f"s3://{input_bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
-    # s3_path = f"r2d2-testing-level-2-data/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model"
+    # s3_path = f"r2d2-testing-level-2-dataset/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model"
 
     print(s3_path)
 

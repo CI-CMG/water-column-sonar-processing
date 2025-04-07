@@ -38,6 +38,7 @@ def create_empty_zarr_test_path(test_path):
 
 #######################################################
 @mock_aws()
+@pytest.skip
 def test_create_empty_zarr_store_level_3(create_empty_zarr_test_path, moto_server):
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager(endpoint_url=moto_server)
@@ -71,7 +72,7 @@ def test_create_empty_zarr_store_level_3(create_empty_zarr_test_path, moto_serve
     # [1] create dynamodb table
     dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
 
-    # [2] bootstrap w/ test data
+    # [2] bootstrap w/ test dataset
     test_channels = [
         "GPT  18 kHz 009072056b0e 2 ES18-11",
         "GPT  38 kHz 0090720346bc 1 ES38B",

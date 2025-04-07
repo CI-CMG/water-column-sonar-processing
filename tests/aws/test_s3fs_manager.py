@@ -16,6 +16,10 @@ port = 5555
 endpoint_url = f"http://{ip_address}:{port}"
 
 
+# TODO: https://github.com/open-metadata/OpenMetadata/pull/17805#issue-2519402796
+# switch from moto to minio
+
+
 #######################################################
 def setup_module():
     print("setup")
@@ -146,7 +150,7 @@ def test_s3_map(moto_server, s3fs_manager_test_path, tmp_path):
 
     assert s3_zarr_xr.a.shape == (2, 3)
 
-    # Write new data to subset
+    # Write new dataset to subset
     cruise_zarr.a[0, 1] = 42
 
     assert s3_zarr_xr.a[0, 1].values == 42

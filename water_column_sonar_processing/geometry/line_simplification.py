@@ -103,7 +103,7 @@ class LineSimplification:
     #######################################################
     def get_speeds(
         self,
-        times: np.ndarray,  # don't really need time, do need to segment the data first
+        times: np.ndarray,  # don't really need time, do need to segment the dataset first
         latitudes: np.ndarray,
         longitudes: np.ndarray,
     ) -> np.ndarray:

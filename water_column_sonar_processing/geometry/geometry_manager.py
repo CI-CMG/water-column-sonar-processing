@@ -42,7 +42,7 @@ class GeometryManager:
         file_name_stem = Path(file_name).stem
         geo_json_name = f"{file_name_stem}.json"
 
-        print("Getting GPS data from echopype object.")
+        print("Getting GPS dataset from echopype object.")
         try:
             latitude = np.round(
                 echodata.platform.latitude.values, self.DECIMAL_PRECISION
@@ -56,7 +56,7 @@ class GeometryManager:
             #   note that nmea_times, unlike time1, can be sorted
             nmea_times = np.sort(echodata.platform.time1.values)
 
-            # 'time1' are times from the echosounder associated with the data of the transducer measurement
+            # 'time1' are times from the echosounder associated with the dataset of the transducer measurement
             time1 = echodata.environment.time1.values
 
             if len(nmea_times) < len(time1):
@@ -98,14 +98,14 @@ class GeometryManager:
 
             # create requirement for minimum linestring size
             MIN_ALLOWED_SIZE = (
-                4  # don't want to process files with less than 4 data points
+                4  # don't want to process files with less than 4 dataset points
             )
             if (
                 len(lat[~np.isnan(lat)]) < MIN_ALLOWED_SIZE
                 or len(lon[~np.isnan(lon)]) < MIN_ALLOWED_SIZE
             ):
                 raise Exception(
-                    f"There was not enough data in lat or lon to create geojson, {len(lat[~np.isnan(lat)])} found, less than {MIN_ALLOWED_SIZE}."
+                    f"There was not enough dataset in lat or lon to create geojson, {len(lat[~np.isnan(lat)])} found, less than {MIN_ALLOWED_SIZE}."
                 )
 
             # https://osoceanacoustics.github.io/echopype-examples/echopype_tour.html
@@ -124,7 +124,7 @@ class GeometryManager:
                 crs="epsg:4326",
             )
             # Note: We set np.nan to 0,0 so downstream missing values can be omitted
-            # TODO: so what ends up here is data with corruption at null island!!!
+            # TODO: so what ends up here is dataset with corruption at null island!!!
             geo_json_line = gps_gdf.to_json()
             if write_geojson:
                 print("Creating local copy of geojson file.")
@@ -185,7 +185,7 @@ class GeometryManager:
             )
 
         # Note: returned lat/lon values can include np.nan because they need to be aligned with
-        # the Sv data! GeoJSON needs simplification but has been filtered.
+        # the Sv dataset! GeoJSON needs simplification but has been filtered.
         # return gps_df.index.values, gps_df.latitude.values, gps_df.longitude.values
         return gps_df.index.values, lat, lon
         # TODO: if geojson is already returned with 0,0, the return here

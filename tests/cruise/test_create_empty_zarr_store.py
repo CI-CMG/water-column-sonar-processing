@@ -72,7 +72,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     # [1] create dynamodb table
     dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
 
-    # [2] bootstrap w/ test data
+    # [2] bootstrap w/ test dataset
     test_channels = [
         "GPT  18 kHz 009072056b0e 2 ES18-11",
         "GPT  38 kHz 0090720346bc 1 ES38B",
@@ -240,7 +240,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     )
 
     # assert os.path.exists(f"/tmp/{cruise_name}.zarr") # TODO: create better tmp directory for testing
-    # Assert data is in the bucket
+    # Assert dataset is in the bucket
     # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
     assert (
         len(

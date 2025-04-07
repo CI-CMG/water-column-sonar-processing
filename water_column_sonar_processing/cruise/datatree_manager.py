@@ -16,6 +16,6 @@
 #         input_ds,
 #     ) -> None:
 #         ds1 = xr.Dataset({"foo": "orange"})
-#         dt = DataTree(name="root", data=ds1)  # create root node
+#         dt = DataTree(name="root", dataset=ds1)  # create root node
 #         # ds2 = xr.Dataset({"bar": 0}, coords={"y": ("y", [0, 1, 2])})
 #         return dt

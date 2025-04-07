@@ -19,7 +19,7 @@ numcodecs.blosc.set_nthreads(1)
 
 # TODO: when ready switch to version 3 of model spec
 #  ZARR_V3_EXPERIMENTAL_API = 1
-#  creates the latlon data: foo = ep.consolidate.add_location(ds_Sv, echodata)
+#  creates the latlon dataset: foo = ep.consolidate.add_location(ds_Sv, echodata)
 
 
 class ResampleRegrid:
@@ -40,7 +40,7 @@ class ResampleRegrid:
         all_cruise_depth_values,
         water_level,
     ) -> np.ndarray:
-        print("Interpolating data.")
+        print("Interpolating dataset.")
         try:
             data = np.empty(
                 (
@@ -77,7 +77,7 @@ class ResampleRegrid:
                 set_of_max_depths = list(
                     {x for x in superset_of_max_depths if x == x}
                 )  # removes nan's
-                # iterate through partitions of data with similar depths and resample
+                # iterate through partitions of dataset with similar depths and resample
                 for select_max_depth in set_of_max_depths:
                     # TODO: for nan just skip and leave all nan's
                     select_indices = [
@@ -124,7 +124,7 @@ class ResampleRegrid:
                     gc.collect()
         except Exception as err:
             raise RuntimeError(f"Problem finding the dynamodb table, {err}")
-        print("Done interpolating data.")
+        print("Done interpolating dataset.")
         return regrid_resample.values.copy()
 
     #################################################################
@@ -140,12 +140,12 @@ class ResampleRegrid:
         endpoint_url=None,
     ) -> None:
         """
-        The goal here is to interpolate the data against the depth values already populated
+        The goal here is to interpolate the dataset against the depth values already populated
         in the existing file level model stores. We open the cruise-level store with model for
         read/write operations. We open the file-level store with Xarray to leverage tools for
-        resampling and subsetting the data.
+        resampling and subsetting the dataset.
         """
-        print("Resample Regrid, Interpolating data.")
+        print("Resample Regrid, Interpolating dataset.")
         try:
             zarr_manager = ZarrManager()
             geo_manager = GeometryManager()
@@ -209,7 +209,7 @@ class ResampleRegrid:
                 water_level = input_xr_zarr_store.water_level.values
                 #########################################################################
                 # [3] Get needed indices
-                # Offset from start index to insert new data. Note that missing values are excluded.
+                # Offset from start index to insert new dataset. Note that missing values are excluded.
                 ping_time_cumsum = np.insert(
                     np.cumsum(
                         cruise_df["NUM_PING_TIME_DROPNA"].dropna().to_numpy(dtype=int)
@@ -298,7 +298,9 @@ class ResampleRegrid:
                 # TODO: Only checking the first channel for now. Need to average across all channels
                 #  in the future. See https://github.com/CI-CMG/water-column-sonar-processing/issues/11
                 if "detected_seafloor_depth" in input_xr.variables:
-                    print("Found detected_seafloor_depth, adding data to output store.")
+                    print(
+                        "Found detected_seafloor_depth, adding dataset to output store."
+                    )
                     detected_seafloor_depth = input_xr.detected_seafloor_depth.values
                     detected_seafloor_depth[detected_seafloor_depth == 0.0] = np.nan
                     # TODO: problem here: Processing file: D20070711-T210709.
@@ -335,7 +337,7 @@ class ResampleRegrid:
             raise RuntimeError(f"Problem with resample_regrid, {err}")
         finally:
             print("Exiting resample_regrid.")
-            # TODO: read across times and verify data was written?
+            # TODO: read across times and verify dataset was written?
 
     #######################################################
 

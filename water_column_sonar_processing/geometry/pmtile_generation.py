@@ -35,7 +35,7 @@ class PMTileGeneration(object):
         print("123")
 
     #######################################################
-    # This uses a local collection of file-level geojson files to create the data
+    # This uses a local collection of file-level geojson files to create the dataset
     def generate_geojson_feature_collection(self):
         # This was used to read from noaa-wcsd-model-pds bucket geojson files and then to
         # generate the geopandas dataframe which could be exported to another comprehensive
@@ -139,7 +139,7 @@ class PMTileGeneration(object):
         latitude = xr_store.latitude.values
         longitude = xr_store.longitude.values
         if np.isnan(latitude).any() or np.isnan(longitude).any():
-            print(f"there was missing lat-lon data for {cruise_name}")
+            print(f"there was missing lat-lon dataset for {cruise_name}")
             return None
         # ---Add To GeoPandas Dataframe--- #
         # TODO: experiment with tolerance "0.001"
@@ -213,7 +213,7 @@ class PMTileGeneration(object):
         print(gps_gdf)
         gps_gdf.set_index("id", inplace=True)
         gps_gdf.to_file(
-            "data.geojson",
+            "dataset.geojson",
             driver="GeoJSON",
             engine="pyogrio",
             layer_options={"ID_GENERATE": "YES"},
@@ -227,7 +227,7 @@ class PMTileGeneration(object):
         # gps_gdf.to_file(f"dataframe_{cruise_name}.geojson", driver="GeoJSON", engine="pyogrio", layer_options={"ID_GENERATE": "YES"})
         # https://gdal.org/en/latest/drivers/vector/jsonfg.html
         # gps_gdf.to_file(
-        #     f"data.geojson",
+        #     f"dataset.geojson",
         #     driver="GeoJSON",
         #     engine="pyogrio",
         #     layer_options={"ID_FIELD": "id"}
@@ -264,12 +264,12 @@ class PMTileGeneration(object):
 # }
 
 # # https://docs.protomaps.com/pmtiles/create
-# #ogr2ogr -t_srs EPSG:4326 data.geojson dataframe.shp
+# #ogr2ogr -t_srs EPSG:4326 dataset.geojson dataframe.shp
 # # Only need to do the second one here...
-# tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises dataframe.geojson
-# tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises --coalesce-densest-as-needed --extend-zooms-if-still-dropping dataframe*.geojson
+# tippecanoe -zg --projection=EPSG:4326 -o dataset.pmtiles -l cruises dataframe.geojson
+# tippecanoe -zg --projection=EPSG:4326 -o dataset.pmtiles -l cruises --coalesce-densest-as-needed --extend-zooms-if-still-dropping dataframe*.geojson
 # # used this to combine all the geojson files into single pmtile file (2024-12-03):
-# tippecanoe -zg --projection=EPSG:4326 -o data.pmtiles -l cruises --coalesce-densest-as-needed --extend-zooms-if-still-dropping dataframe*.geojson
+# tippecanoe -zg --projection=EPSG:4326 -o dataset.pmtiles -l cruises --coalesce-densest-as-needed --extend-zooms-if-still-dropping dataframe*.geojson
 #
 # TODO:
 #     run each one of the cruises in a separate ospool workflow.

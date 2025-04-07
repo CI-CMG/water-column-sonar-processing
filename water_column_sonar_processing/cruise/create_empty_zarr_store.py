@@ -13,7 +13,7 @@ numcodecs.blosc.set_nthreads(1)
 
 # TODO: when ready switch to version 3 of model spec
 # ZARR_V3_EXPERIMENTAL_API = 1
-# creates the latlon data: foo = ep.consolidate.add_location(ds_Sv, echodata)
+# creates the latlon dataset: foo = ep.consolidate.add_location(ds_Sv, echodata)
 
 
 # TODO: change name to "CreateLocalEmptyZarrStore"
@@ -27,35 +27,35 @@ class CreateEmptyZarrStore:
         # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 
     #######################################################
-    # TODO: move this to the s3_manager
-    def upload_zarr_store_to_s3(
-        self,
-        output_bucket_name: str,
-        local_directory: str,
-        object_prefix: str,
-        cruise_name: str,
-    ) -> None:
-        print("uploading model store to s3")
-        s3_manager = S3Manager()
-        #
-        print("Starting upload with thread pool executor.")
-        # # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
-        all_files = []
-        for subdir, dirs, files in os.walk(f"{local_directory}/{cruise_name}.zarr"):
-            for file in files:
-                local_path = os.path.join(subdir, file)
-                # TODO: find a better method for splitting strings here:
-                # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.zarr/.zattrs'
-                s3_key = f"{object_prefix}/{cruise_name}.zarr{local_path.split(f'{cruise_name}.zarr')[-1]}"
-                all_files.append([local_path, s3_key])
-        #
-        # print(all_files)
-        s3_manager.upload_files_with_thread_pool_executor(
-            output_bucket_name=output_bucket_name,
-            all_files=all_files,
-        )
-        print("Done uploading with thread pool executor.")
-        # TODO: move to common place
+    # TODO: moved this to the s3_manager
+    # def upload_zarr_store_to_s3(
+    #     self,
+    #     output_bucket_name: str,
+    #     local_directory: str,
+    #     object_prefix: str,
+    #     cruise_name: str,
+    # ) -> None:
+    #     print("uploading model store to s3")
+    #     s3_manager = S3Manager()
+    #     #
+    #     print("Starting upload with thread pool executor.")
+    #     # # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
+    #     all_files = []
+    #     for subdir, dirs, files in os.walk(f"{local_directory}/{cruise_name}.zarr"):
+    #         for file in files:
+    #             local_path = os.path.join(subdir, file)
+    #             # TODO: find a better method for splitting strings here:
+    #             # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.zarr/.zattrs'
+    #             s3_key = f"{object_prefix}/{cruise_name}.zarr{local_path.split(f'{cruise_name}.zarr')[-1]}"
+    #             all_files.append([local_path, s3_key])
+    #     #
+    #     # print(all_files)
+    #     s3_manager.upload_files_with_thread_pool_executor(
+    #         output_bucket_name=output_bucket_name,
+    #         all_files=all_files,
+    #     )
+    #     print("Done uploading with thread pool executor.")
+    #     # TODO: move to common place
 
     #######################################################
     def create_cruise_level_zarr_store(
@@ -156,7 +156,7 @@ class CreateEmptyZarrStore:
                 calibration_status=True,
             )
             #################################################################
-            self.upload_zarr_store_to_s3(
+            s3_manager.upload_zarr_store_to_s3(
                 output_bucket_name=output_bucket_name,
                 local_directory=tempdir.name,  # TODO: need to use .name or problem
                 object_prefix=zarr_prefix,
