@@ -96,7 +96,7 @@ class DatasetManager:
         cruise_name: str,
         sensor_name: str,
         endpoint_url: str = None,
-    ) -> bool:
+    ):
         # get generator
         x_batch_generator = self.setup_xbatcher(
             bucket_name=bucket_name,
