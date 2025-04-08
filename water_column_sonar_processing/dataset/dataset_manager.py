@@ -1,6 +1,7 @@
 import tensorflow as tf
 import xarray as xr
 import xbatcher
+import xbatcher.loaders.keras
 
 from water_column_sonar_processing.aws import S3FSManager
 
@@ -40,7 +41,7 @@ class DatasetManager:
                 cache=True,
             )
 
-            # Mask the sub-bottom dataset
+            # Mask all sub-bottom dataset
             ds_select = ds.where(ds.depth < ds.bottom)
             return ds_select
 
