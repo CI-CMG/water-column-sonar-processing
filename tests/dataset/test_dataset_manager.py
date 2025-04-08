@@ -55,7 +55,7 @@ def dataset_test_path(test_path):
 
 
 @mock_aws
-def test_open_xarray_data_array(dataset_test_path, moto_server):
+def test_open_xarray_dataset(dataset_test_path, moto_server):
     test_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
 
     ship_name = "Henry_B._Bigelow"
@@ -83,7 +83,7 @@ def test_open_xarray_data_array(dataset_test_path, moto_server):
 
     # --- test loading zarr store from mocked s3 bucket --- #
     dataset_manager = DatasetManager()
-    sv_array = dataset_manager.open_xarray_data_array(
+    sv_dataset = dataset_manager.open_xarray_dataset(
         bucket_name=test_bucket_name,
         ship_name=ship_name,
         cruise_name=cruise_name,
@@ -92,10 +92,12 @@ def test_open_xarray_data_array(dataset_test_path, moto_server):
     )
 
     # --- verify dataset shape --- #
-    assert isinstance(sv_array, xr.core.dataarray.DataArray)
-    assert sv_array.values.dtype == "float32"
-    assert sv_array.shape == (64, 32, 4)
-    assert sv_array.tile_size == 512
+    assert isinstance(sv_dataset, xr.core.dataarray.Dataset)
+    assert sv_dataset.Sv.values.dtype == "float32"
+    assert sv_dataset.Sv.shape == (64, 32, 4)
+    assert sv_dataset.Sv.tile_size == 512
+
+    # TODO: verify metrics about depth/time/frequency/etc.
 
 
 @mock_aws
@@ -142,13 +144,12 @@ def test_setup_xbatcher(dataset_test_path, moto_server):
     for batch in sv_batch_generator:
         pass
 
-    assert batch.shape == (8, 8, 4)
-    assert batch.dtype == "float32"
+    assert batch.Sv.shape == (8, 8, 4)
+    assert batch.Sv.dtype == "float32"
     assert np.allclose(batch.depth.values[[0, -1]], np.array([17.4, 18.8]))
     assert batch.time.values[0] == np.datetime64("2019-09-03T17:19:26.710808064")
     assert batch.time.values[-1] == np.datetime64("2019-09-03T17:19:33.721990912")
 
-    # assert batch.time.values[[0, -1]] ==
     assert np.allclose(
         batch.frequency.values, np.array([18000.0, 38000.0, 120000.0, 200000.0])
     )
@@ -192,9 +193,17 @@ def test_create_keras_dataloader(dataset_test_path, moto_server):
     )
 
     # Extract a batch from the DataLoader
-    for train_features, train_labels in train_dataloader:  # .take(1):
-        print(f"Feature batch shape: {train_features.shape}")
-        # print(np.mean(train_features[:, :, 0]))
+    for train_features, train_labels in train_dataloader:
+        print(train_features[0, :, :, 0])
+        print(train_labels[0, :, :, 0])
+        if np.isnan(train_features).all():
+            print("_+_+_+_+_ all nan, skip _+_+_+_+_+_+_+_")
+        print("___________________")
         break
 
-    assert np.isclose(np.mean(train_features[:, :, 0]), -82.72129)
+    assert np.isclose(np.mean(train_features), -86.18572)
+
+    # TODO: figure out how to skip when all the data is nan
+    # figure out how to pad missing data
+    # test with actual nn
+    # plot
