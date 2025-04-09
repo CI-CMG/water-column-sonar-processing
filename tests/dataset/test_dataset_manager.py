@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 import pytest
-import xarray as xr
+import xarray.core.dataset
 import xbatcher.generators
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
@@ -22,7 +22,7 @@ def setup_module():
 def moto_server():
     """Fixture to run a mocked AWS server for testing."""
     # Note: pass `port=0` to get a random free port.
-    server = ThreadedMotoServer(port=0)
+    server = ThreadedMotoServer(ip_address="127.0.0.1", port=0)
     server.start()
     host, port = server.get_host_and_port()
     yield f"http://{host}:{port}"
@@ -92,11 +92,19 @@ def test_open_xarray_dataset(dataset_test_path, moto_server):
     )
 
     # --- verify dataset shape --- #
-    assert isinstance(sv_dataset, xr.core.dataarray.Dataset)
+    assert isinstance(sv_dataset, xarray.core.dataset.DataArray)
     assert sv_dataset.Sv.values.dtype == "float32"
     assert sv_dataset.Sv.shape == (64, 32, 4)
     assert sv_dataset.Sv.tile_size == 512
+    assert sv_dataset.Sv.values[:2, :2, 0]
 
+    # First four values of DataArray first frequency
+    # 0,-88.06821,-88.39746
+    # 1,-85.19297,-103.90151
+    assert np.allclose(
+        sv_dataset.Sv.values[:2, :2, 0],
+        np.array([[-88.06821, -88.39746], [-85.19297, -103.90151]]),
+    )
     # TODO: verify metrics about depth/time/frequency/etc.
 
 
@@ -142,13 +150,13 @@ def test_setup_xbatcher(dataset_test_path, moto_server):
 
     # Generates batch of Sv DataArray
     for batch in sv_batch_generator:
-        pass
+        break
 
     assert batch.Sv.shape == (8, 8, 4)
     assert batch.Sv.dtype == "float32"
-    assert np.allclose(batch.depth.values[[0, -1]], np.array([17.4, 18.8]))
-    assert batch.time.values[0] == np.datetime64("2019-09-03T17:19:26.710808064")
-    assert batch.time.values[-1] == np.datetime64("2019-09-03T17:19:33.721990912")
+    assert np.allclose(batch.depth.values[[0, -1]], np.array([6.2, 7.6]))
+    assert batch.time.values[0] == np.datetime64("2019-09-03T17:19:02.683080960")
+    assert batch.time.values[-1] == np.datetime64("2019-09-03T17:19:09.693223936")
 
     assert np.allclose(
         batch.frequency.values, np.array([18000.0, 38000.0, 120000.0, 200000.0])
@@ -197,7 +205,7 @@ def test_create_keras_dataloader(dataset_test_path, moto_server):
         print(train_features[0, :, :, 0])
         print(train_labels[0, :, :, 0])
         if np.isnan(train_features).all():
-            print("_+_+_+_+_ all nan, skip _+_+_+_+_+_+_+_")
+            print("_+_+_+_+_ skip, all nan, skip _+_+_+_+_+_+_+_")
         print("___________________")
         break
 

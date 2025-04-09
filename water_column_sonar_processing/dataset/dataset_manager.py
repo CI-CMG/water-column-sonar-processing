@@ -65,13 +65,13 @@ class DatasetManager:
                 endpoint_url=endpoint_url,
             )
 
-            patch_input_dims = dict(depth=8, time=8, frequency=4)
+            patch_input_dims = dict(depth=16, time=8, frequency=4)
             patch_input_overlap = dict(depth=0, time=0, frequency=0)
 
-            def preprocess_batch(batch):
-                # example: add a new variable to each batch
-                # TODO: can i get this to do something
-                return batch  # .Sv.fillna(0)
+            # def preprocess_batch(batch):
+            #     # example: add a new variable to each batch
+            #     # TODO: can i get this to do something
+            #     return batch.Sv  # .Sv.fillna(0)
 
             batch_generator = xbatcher.BatchGenerator(
                 ds=sv_dataset.Sv,  # TODO: need to get the depth out of this somehow?
@@ -81,7 +81,7 @@ class DatasetManager:
                 concat_input_dims=False,
                 preload_batch=False,  # Load each batch dynamically
                 # cache=None, # TODO: figure this out
-                cache_preprocess=preprocess_batch,  # https://xbatcher.readthedocs.io/en/latest/user-guide/caching.html
+                # cache_preprocess=preprocess_batch,  # https://xbatcher.readthedocs.io/en/latest/user-guide/caching.html
             )
 
             return batch_generator
@@ -121,7 +121,9 @@ class DatasetManager:
         train_dataloader = tf.data.Dataset.from_generator(
             generator=lambda: iter(dataset),
             output_signature=(
-                tf.TensorSpec(shape=(8, 8, 4), dtype=tf.float32),
+                tf.TensorSpec(
+                    shape=(8, 8, 4), dtype=tf.float32
+                ),  # TODO: parameterize dimension
                 tf.TensorSpec(shape=(8, 8, 4), dtype=tf.float32),
             ),
         )
