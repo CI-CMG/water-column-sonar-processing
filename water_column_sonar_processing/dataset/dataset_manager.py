@@ -1,9 +1,10 @@
-import tensorflow as tf
+import tensorflow
 import xarray as xr
 import xbatcher
 import xbatcher.loaders.keras
 
 from water_column_sonar_processing.aws import S3FSManager
+from water_column_sonar_processing.utility.constants import BatchShape
 
 
 class DatasetManager:
@@ -55,7 +56,7 @@ class DatasetManager:
         cruise_name: str,
         sensor_name: str,
         endpoint_url: str = None,
-    ):  # -> xbatcher.generators.BatchGenerator:
+    ) -> xbatcher.generators.BatchGenerator:
         try:
             sv_dataset = self.open_xarray_dataset(
                 bucket_name=bucket_name,
@@ -65,22 +66,21 @@ class DatasetManager:
                 endpoint_url=endpoint_url,
             )
 
-            patch_input_dims = dict(depth=16, time=8, frequency=4)
+            patch_input_dims = dict(
+                depth=BatchShape.DEPTH.value,
+                time=BatchShape.TIME.value,
+                frequency=BatchShape.FREQUENCY.value,
+            )
             patch_input_overlap = dict(depth=0, time=0, frequency=0)
 
-            # def preprocess_batch(batch):
-            #     # example: add a new variable to each batch
-            #     # TODO: can i get this to do something
-            #     return batch.Sv  # .Sv.fillna(0)
-
-            batch_generator = xbatcher.BatchGenerator(
+            batch_generator = xbatcher.generators.BatchGenerator(
                 ds=sv_dataset.Sv,  # TODO: need to get the depth out of this somehow?
                 input_dims=patch_input_dims,
                 input_overlap=patch_input_overlap,
                 # batch_dims={ "depth": 8, "time": 8, "frequency": 4 }, # no idea what this is doing
                 concat_input_dims=False,
                 preload_batch=False,  # Load each batch dynamically
-                # cache=None, # TODO: figure this out
+                cache=None,  # TODO: figure this out
                 # cache_preprocess=preprocess_batch,  # https://xbatcher.readthedocs.io/en/latest/user-guide/caching.html
             )
 
@@ -107,26 +107,28 @@ class DatasetManager:
 
         def transform(
             x,
-        ):  # TODO: do normalization here... [-100, 0] w mean at -65, clip?
-            return x + 0.01  # (x + 50.) / 100.
+        ):  # TODO: do clip and normalize here... [-100, 0] w mean at -65, clip?
+            return x + 1e-6  # (x + 50.) / 100.
             # return np.clip(x, -60, -50)
 
-        dataset = xbatcher.loaders.keras.CustomTFDataset(
+        keras_dataset = xbatcher.loaders.keras.CustomTFDataset(
             X_generator=x_batch_generator,
             y_generator=x_batch_generator,
             transform=transform,
             target_transform=transform,
         )
 
-        train_dataloader = tf.data.Dataset.from_generator(
-            generator=lambda: iter(dataset),
-            output_signature=(
-                tf.TensorSpec(
-                    shape=(8, 8, 4), dtype=tf.float32
-                ),  # TODO: parameterize dimension
-                tf.TensorSpec(shape=(8, 8, 4), dtype=tf.float32),
+        output_signature = tensorflow.TensorSpec(
+            shape=(
+                BatchShape.DEPTH.value,
+                BatchShape.TIME.value,
+                BatchShape.FREQUENCY.value,
             ),
+            dtype=tensorflow.float32,
+        )
+        train_dataloader = tensorflow.data.Dataset.from_generator(
+            generator=lambda: iter(keras_dataset),
+            output_signature=(output_signature, output_signature),
         )
 
-        # TODO: somehow skip when all nan here???
-        return train_dataloader.batch(batch_size=batch_size)
+        return train_dataloader.batch(batch_size=BatchShape.BATCH_SIZE.value)

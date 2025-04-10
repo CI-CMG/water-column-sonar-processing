@@ -4,6 +4,7 @@ from typing import Optional
 import s3fs
 
 # TODO: S3FS_LOGGING_LEVEL=DEBUG
+# S3FS_LOGGING_LEVEL=DEBUG
 
 
 class S3FSManager:
@@ -13,15 +14,16 @@ class S3FSManager:
         endpoint_url: Optional[str] = None,
     ):
         self.endpoint_url = endpoint_url
-        # self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
-        # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
+        self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
+        self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
         self.s3_region = os.environ.get("AWS_REGION", default="us-east-1")
         self.s3fs = s3fs.S3FileSystem(
-            # asynchronous=False,
             endpoint_url=endpoint_url,
             key=os.environ.get("OUTPUT_BUCKET_ACCESS_KEY"),
             secret=os.environ.get("OUTPUT_BUCKET_SECRET_ACCESS_KEY"),
+            # asynchronous=True,
         )
+        # self.s3fs.ls("")
 
     # s3_fs = s3fs.S3FileSystem( # TODO: use s3fs_manager?
     #     anon=True,

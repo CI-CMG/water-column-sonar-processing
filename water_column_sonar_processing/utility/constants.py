@@ -82,3 +82,14 @@ class Coordinates(Enum):
     SV_UNITS = "dB"
     SV_LONG_NAME = "Volume backscattering strength (Sv re 1 m-1)"
     SV_STANDARD_NAME = "volume_backscattering_strength"
+
+
+class BatchShape(Enum):
+    """
+    The tensor shape of a machine learning sample.
+    """
+
+    DEPTH = 2
+    TIME = 3
+    FREQUENCY = 4
+    BATCH_SIZE = 5

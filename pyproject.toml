@@ -19,17 +19,15 @@ license = "MIT"
 license-files = ["LICENSE-MIT"]
 
 dependencies = [
-    #"aiobotocore==2.19.0",
-#    "aiobotocore",
+    "aiobotocore==2.21.1", # s3fs
     "boto3==1.37.1",
     "botocore==1.37.1",
     "echopype==0.10.0",
     "fiona==1.10.1",
     "geopandas==1.0.1",
     "mock==5.2.0",
-    "moto[all]==5.1.2",
-    "moto[server]==5.1.2",
-    #"multidict==6.2.0",
+    "moto[all]==5.1.3",
+    "moto[server]==5.1.3",
     "networkx==3.4.2",
     "numcodecs==0.13.1",
     "numpy==1.26.4",
@@ -40,13 +38,11 @@ dependencies = [
     "pykalman==0.10.1",
     "python-dotenv==1.0.1",
     "requests==2.32.3",
-    "s3fs==2024.2.0",
-#    "s3fs==2025.3.2",
+    "s3fs==2025.3.2", # s3fs
     "scipy==1.15.1",
     "setuptools",
     "shapely==2.0.7",
-    "tensorflow==2.18.0",
-    #"typing-extensions==4.10.0",
+    "tensorflow==2.18.0", # 2.16.2
     "xarray==2025.3.1",
     "xbatcher[tensorflow]==0.4.0",
     "zarr==2.18.3",
@@ -63,7 +59,7 @@ dev = [
     "pooch==1.8.2",
     "pre-commit",
     "pyinstaller",
-    "pytest~=8.3.4",
+    "pytest==8.3.5", # s3fs
     "ruff",
     "tqdm",
     "twine",

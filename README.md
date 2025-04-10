@@ -5,7 +5,7 @@ Processing tool for converting Level_0 water column sonar data to Level_1 and Le
 ![PyPI - Implementation](https://img.shields.io/pypi/v/water-column-sonar-processing) ![GitHub License](https://img.shields.io/github/license/CI-CMG/water-column-sonar-processing) ![PyPI - Downloads](https://img.shields.io/pypi/dd/water-column-sonar-processing) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/CI-CMG/water-column-sonar-processing) ![GitHub repo size](https://img.shields.io/github/repo-size/CI-CMG/water-column-sonar-processing)
 
 # Setting up the Python Environment
-> Python 3.12.8
+> Python 3.12.9
 
 # Installing Dependencies
 ```
@@ -81,4 +81,17 @@ uv lock --check
 uv lock
 uv sync --extra dev
 uv run pytest tests
+```
+
+# Fixing S3FS Problems
+```commandline
+To enable/disa asyncio for the debugger, follow the steps:
+Open PyCharm
+Use Shift + Shift (Search Everywhere)
+In the popup type: Registry and press Enter
+Find "Registry" in the list of results and click on it.
+In the new popup find python.debug.asyncio.repl line and check the respective checkbox
+Press Close.
+Restart the IDE.
+The asyncio support will be enabled in the debugger.
 ```

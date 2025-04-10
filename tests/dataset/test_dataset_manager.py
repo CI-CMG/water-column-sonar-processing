@@ -2,14 +2,20 @@ import os
 
 import numpy as np
 import pytest
-import xarray.core.dataset
+import xarray
 import xbatcher.generators
 from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
+# from water_column_sonar_processing.utility import Constants
 from water_column_sonar_processing.aws import S3Manager
 from water_column_sonar_processing.dataset import DatasetManager
+from water_column_sonar_processing.utility.constants import BatchShape
+
+# @pytest.fixture(scope="session")
+# def clear_default_boto3_session():
+#     boto3.DEFAULT_SESSION = None
 
 
 def setup_module():
@@ -48,7 +54,8 @@ def dataset_test_path(test_path):
 #     s3_zarr_store_path = f"{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{zarr_store}"
 #     cruise = xr.open_dataset(f"s3://{s3_zarr_store_path}", engine='zarr', storage_options={'anon': True})
 #     # ~34 kB of dataset
-#     HB1906_loader = cruise.isel(depth=slice(None, 512), time=slice(None, 512), drop=True)
+#     # HB1906_loader = cruise.isel(depth=slice(None, 512), time=slice(None, 512), drop=True)
+#     HB1906_loader = cruise.isel(time=slice(None, 100000), drop=True) # (2507, 4_228_924, 4)
 #     print(HB1906_loader)
 #     #HB1906_loader.to_zarr(store='HB1906.zarr', mode="w", consolidated=True)
 #     print('saved')
@@ -62,7 +69,7 @@ def test_open_xarray_dataset(dataset_test_path, moto_server):
     cruise_name = "HB1906"
     sensor_name = "EK60"
 
-    # --- set up initial resources --- #
+    # # --- set up initial resources --- #
     s3_manager = S3Manager()
     s3_manager.create_bucket(bucket_name=test_bucket_name)
     print(s3_manager.list_buckets())
@@ -92,11 +99,10 @@ def test_open_xarray_dataset(dataset_test_path, moto_server):
     )
 
     # --- verify dataset shape --- #
-    assert isinstance(sv_dataset, xarray.core.dataset.DataArray)
+    assert isinstance(sv_dataset.Sv, xarray.DataArray)
     assert sv_dataset.Sv.values.dtype == "float32"
     assert sv_dataset.Sv.shape == (64, 32, 4)
     assert sv_dataset.Sv.tile_size == 512
-    assert sv_dataset.Sv.values[:2, :2, 0]
 
     # First four values of DataArray first frequency
     # 0,-88.06821,-88.39746
@@ -106,6 +112,7 @@ def test_open_xarray_dataset(dataset_test_path, moto_server):
         np.array([[-88.06821, -88.39746], [-85.19297, -103.90151]]),
     )
     # TODO: verify metrics about depth/time/frequency/etc.
+    print("done")
 
 
 @mock_aws
@@ -150,17 +157,30 @@ def test_setup_xbatcher(dataset_test_path, moto_server):
 
     # Generates batch of Sv DataArray
     for batch in sv_batch_generator:
-        break
+        assert batch.shape == (
+            BatchShape.DEPTH.value,
+            BatchShape.TIME.value,
+            BatchShape.FREQUENCY.value,
+        )
+        assert batch.dtype == "float32"
+        assert np.allclose(batch.depth.values[[0, -1]], np.array([6.2, 6.4]))
+        assert batch.time.values[0] == np.datetime64("2019-09-03T17:19:02.683080960")
+        assert batch.time.values[-1] == np.datetime64("2019-09-03T17:19:04.684547072")
 
-    assert batch.Sv.shape == (8, 8, 4)
-    assert batch.Sv.dtype == "float32"
-    assert np.allclose(batch.depth.values[[0, -1]], np.array([6.2, 7.6]))
-    assert batch.time.values[0] == np.datetime64("2019-09-03T17:19:02.683080960")
-    assert batch.time.values[-1] == np.datetime64("2019-09-03T17:19:09.693223936")
+        assert np.allclose(
+            batch.frequency.values, np.array([18000.0, 38000.0, 120000.0, 200000.0])
+        )
 
-    assert np.allclose(
-        batch.frequency.values, np.array([18000.0, 38000.0, 120000.0, 200000.0])
-    )
+        assert np.allclose(
+            batch.data[:, :, 0],
+            np.array(
+                [[-88.06821, -88.39746, -79.93099], [-85.19297, -103.90151, -84.41688]]
+            ),
+        )
+
+        break  # TODO: only checking first batch, check second
+
+    print("done")
 
 
 @mock_aws
@@ -202,14 +222,22 @@ def test_create_keras_dataloader(dataset_test_path, moto_server):
 
     # Extract a batch from the DataLoader
     for train_features, train_labels in train_dataloader:
-        print(train_features[0, :, :, 0])
-        print(train_labels[0, :, :, 0])
-        if np.isnan(train_features).all():
-            print("_+_+_+_+_ skip, all nan, skip _+_+_+_+_+_+_+_")
-        print("___________________")
-        break
+        # assert train_features.shape = (X, Y, Z, W)
+        assert np.allclose(train_labels.numpy(), train_features.numpy())
+        assert np.allclose(
+            train_features[0, :, :, 0].numpy(),
+            np.array(
+                [[-88.06821, -88.39746, -79.93099], [-85.19297, -103.90151, -84.41688]]
+            ),
+        )
 
-    assert np.isclose(np.mean(train_features), -86.18572)
+        break  # TODO: only testing the first batch
+
+    print("done")
+
+    # 0,-88.06821,-88.39746
+    # 1,-85.19297,-103.90151
+    # assert np.isclose(np.mean(train_features), -86.18572)
 
     # TODO: figure out how to skip when all the data is nan
     # figure out how to pad missing data

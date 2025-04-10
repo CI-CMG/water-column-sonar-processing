@@ -35,7 +35,7 @@ def teardown_module():
 def moto_server():
     """Fixture to run a mocked AWS server for testing."""
     # Note: pass `port=0` to get a random free port.
-    server = ThreadedMotoServer(port=0)
+    server = ThreadedMotoServer(ip_address="127.0.0.1", port=0)
     server.start()
     host, port = server.get_host_and_port()
     yield f"http://{host}:{port}"
@@ -144,7 +144,7 @@ def test_s3_map(moto_server, s3fs_manager_test_path, tmp_path):
     # --- Test S3Map Opening Zarr store with Xarray for Reading --- #
     # TODO: test SYNCHRONIZER as shared file in output bucket mounted via s3fs
     s3_zarr_xr = xr.open_zarr(
-        store=s3_store, consolidated=None
+        store=s3_store, consolidated=True
     )  # synchronizer=SYNCHRONIZER
     print(s3_zarr_xr.info)
 
