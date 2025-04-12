@@ -9,10 +9,14 @@ Processing tool for converting Level_0 water column sonar data to Level_1 and Le
 
 # Installing Dependencies
 ```
-uv pip install --upgrade pip
-uv pip install -r pyproject.toml --all-extras
-```
+source .venv/bin/activate
 
+uv pip install --upgrade pip
+
+uv pip install -r pyproject.toml --all-extras
+
+uv run pre-commit install
+```
 
 # Pytest
 ```
@@ -56,7 +60,6 @@ git push origin --tags
 # To Publish To PROD
 ```commandline
 uv build --no-sources
-#python -m twine upload --repository pypi dist/*
 uv publish
 ```
 
