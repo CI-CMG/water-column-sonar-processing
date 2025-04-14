@@ -58,6 +58,7 @@ def fetch_raw_files():
 def test_path():
     return {
         "RAW_TO_ZARR_TEST_PATH": TEST_DATA_FOLDER / "raw_to_zarr",
+        "RAW_TO_NETCDF_TEST_PATH": TEST_DATA_FOLDER / "raw_to_netcdf",
         "INDEX_TEST_PATH": TEST_DATA_FOLDER / "index",
         "ZARR_MANAGER_TEST_PATH": TEST_DATA_FOLDER / "zarr_manager",
         "PMTILE_GENERATION_TEST_PATH": TEST_DATA_FOLDER / "pmtile",
