@@ -279,7 +279,7 @@ class RawToNetCDF:
             # Create the netcdf
             netcdf_name = f"{Path(raw_file_name).stem}.nc"
             # Xarray Dataset to netcdf
-            ds_sv.to_netcdf(path=netcdf_name, mode="w", engine="h5netcdf")  # "netcdf4"
+            ds_sv.to_netcdf(path=netcdf_name, mode="w", engine="netcdf4")  # "netcdf4"
             gc.collect()
             #################################################################
             # output_netcdf_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"
