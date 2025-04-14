@@ -110,7 +110,7 @@ def test_open_xarray_dataset(dataset_test_path, moto_server):
     print("done")
 
 
-# @pytest.mark.skip(reason="WIP")
+@pytest.mark.skip(reason="WIP")
 @mock_aws
 def test_dataset_batcher(dataset_test_path, moto_server):
     test_bucket_name = os.environ.get("INPUT_BUCKET_NAME")

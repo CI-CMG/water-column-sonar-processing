@@ -33,7 +33,7 @@ class RawToNetCDF:
 
     ############################################################################
     ############################################################################
-    def __zarr_info_to_table(
+    def __netcdf_info_to_table(
         self,
         # output_bucket_name,
         table_name,
@@ -141,6 +141,23 @@ class RawToNetCDF:
         )
         return all_uploads
 
+    def __upload_file_to_output_bucket(
+        self,
+        output_bucket_name,
+        local_directory,
+        object_prefix,
+        endpoint_url,
+    ):
+        # Note: this will be passed credentials if using NODD
+        s3_manager = S3Manager(endpoint_url=endpoint_url)
+        print("Uploading files using thread pool executor.")
+        all_files = [local_directory]
+        all_uploads = s3_manager.upload_files_with_thread_pool_executor(
+            output_bucket_name=output_bucket_name,
+            all_files=all_files,
+        )
+        return all_uploads
+
     ############################################################################
     def raw_to_netcdf(
         self,
@@ -158,11 +175,11 @@ class RawToNetCDF:
         Downloads the raw files, processes them with echopype, and uploads files
         to the nodd bucket.
         """
-        print(f"Opening raw: {raw_file_name} and creating zarr store.")
+        print(f"Opening raw: {raw_file_name} and creating netcdf.")
         geometry_manager = GeometryManager()
         cleaner = Cleaner()
         cleaner.delete_local_files(
-            file_types=["*.zarr", "*.json"]
+            file_types=["*.nc", "*.json"]
         )  # TODO: include bot and raw?
 
         s3_manager = S3Manager(endpoint_url=endpoint_url)
@@ -193,10 +210,12 @@ class RawToNetCDF:
                 raw_file=raw_file_name,
                 sonar_model=sensor_name,
                 include_bot=include_bot,
-                # use_swap=True,
-                # max_chunk_size=300,
-                # storage_options={'anon': True } # 'endpoint_url': self.endpoint_url} # this was creating problems
             )
+            #
+            #
+            # TODO: UPLOAD THE ECHODATA HERE
+            #
+            #
             print("Compute volume backscattering strength (Sv) from raw dataset.")
             ds_sv = ep.calibrate.compute_Sv(echodata)
             ds_sv = ep.consolidate.add_depth(
@@ -257,34 +276,40 @@ class RawToNetCDF:
             channels = list(ds_sv.channel.values)
             #
             #################################################################
-            # Create the zarr store
-            store_name = f"{Path(raw_file_name).stem}.zarr"
-            ds_sv.to_netcdf(store=store_name)
+            # Create the netcdf
+            netcdf_name = f"{Path(raw_file_name).stem}.nc"
+            # Xarray Dataset to netcdf
+            ds_sv.to_netcdf(path=netcdf_name, mode="w", engine="h5netcdf")  # "netcdf4"
             gc.collect()
             #################################################################
-            output_zarr_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"
+            # output_netcdf_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"
             #################################################################
             # If zarr store already exists then delete
             s3_manager = S3Manager(endpoint_url=endpoint_url)
             child_objects = s3_manager.get_child_objects(
                 bucket_name=output_bucket_name,
-                sub_prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{Path(raw_file_name).stem}.zarr",
+                sub_prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{Path(raw_file_name).stem}.nc",
             )
             if len(child_objects) > 0:
                 print(
-                    "Zarr store dataset already exists in s3, deleting existing and continuing."
+                    "NetCDF dataset already exists in s3, deleting existing and continuing."
                 )
                 s3_manager.delete_nodd_objects(
                     bucket_name=output_bucket_name,
                     objects=child_objects,
                 )
             #################################################################
-            self.__upload_files_to_output_bucket(
-                output_bucket_name=output_bucket_name,
-                local_directory=store_name,
-                object_prefix=output_zarr_prefix,
-                endpoint_url=endpoint_url,
+            s3_manager.upload_file(
+                filename=netcdf_name,
+                bucket_name=output_bucket_name,
+                key=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{Path(raw_file_name).stem}.nc",
             )
+            # self.__upload_file_to_output_bucket( # upload files didn't include parent
+            #     output_bucket_name=output_bucket_name,
+            #     local_directory=netcdf_name, # netcdf_name
+            #     object_prefix=output_netcdf_prefix,
+            #     endpoint_url=endpoint_url,
+            # )
             #################################################################
             self.__netcdf_info_to_table(
                 table_name=table_name,
@@ -304,7 +329,7 @@ class RawToNetCDF:
             #######################################################################
             # TODO: verify count of objects matches, publish message, update status
             #######################################################################
-            print("Finished raw-to-zarr conversion.")
+            print("Finished raw-to-netcdf conversion.")
         except Exception as err:
             print(f"Exception encountered creating local netcdf with echopype: {err}")
             raise RuntimeError(f"Problem creating local netcdf, {err}")

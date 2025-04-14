@@ -6,7 +6,7 @@ from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
-from water_column_sonar_processing.aws import DynamoDBManager, S3FSManager, S3Manager
+from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.processing import RawToNetCDF
 
 
@@ -34,7 +34,7 @@ def moto_server():  # TODO: add "async"
 
 @pytest.fixture
 def raw_to_netcdf_test_path(test_path):
-    return test_path["RAW_TO_NETCDF_TEST_PATH"]
+    return test_path["RAW_TO_ZARR_TEST_PATH"]
 
 
 #######################################################
@@ -48,9 +48,7 @@ def raw_to_netcdf_test_path(test_path):
 
 #######################################################
 @mock_aws
-def test_raw_to_netcdf(moto_server, raw_to_netcdf_test_path):
-    # TODO: this should have dynamodb added to it.
-
+def test_raw_to_netcdf(moto_server, raw_to_netcdf_test_path, tmp_path):
     table_name = "water-column-sonar-table"
     s3_manager = S3Manager(endpoint_url=moto_server)
 
@@ -84,13 +82,23 @@ def test_raw_to_netcdf(moto_server, raw_to_netcdf_test_path):
         bucket_name=output_bucket_name,
         key="spatial/geojson/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.json",
     )
-    # Put zarr store there to test delete
+    # Put zarr store there to test does not get deleted
     s3_manager.upload_file(
+        filename=raw_to_netcdf_test_path.joinpath("D20070724-T042400.zarr/.zmetadata"),
+        bucket_name=output_bucket_name,
+        key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zmetadata",
+    )
+    s3_manager.upload_file(
+        filename=raw_to_netcdf_test_path.joinpath("D20070724-T042400.zarr/.zattrs"),
+        bucket_name=output_bucket_name,
+        key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zattrs",
+    )
+    s3_manager.upload_file(  # hack to put something there
         filename=raw_to_netcdf_test_path.joinpath("D20070724-T042400.nc"),
         bucket_name=output_bucket_name,
         key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.nc",
     )
-    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 1
+    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) == 4
 
     assert len(s3_manager.list_buckets()["Buckets"]) == 2
 
@@ -134,13 +142,13 @@ def test_raw_to_netcdf(moto_server, raw_to_netcdf_test_path):
         raw_file_name=raw_file_name,
     )
 
-    # TODO: test if zarr store is accessible in the s3 bucket
+    # Problem: missing nc file
     number_of_files = s3_manager.list_objects(
         bucket_name=output_bucket_name,
         prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
     )
-    # Ensure that all the files were uploaded properly
-    assert len(number_of_files) >= 1
+    # Ensure that all the files were uploaded properly, zarr was undisturbed
+    assert len(number_of_files) == 3
 
     # TODO: check the dynamodb dataframe to see if info is updated there
     # ---Verify Data is Populated in Table--- #
@@ -155,15 +163,23 @@ def test_raw_to_netcdf(moto_server, raw_to_netcdf_test_path):
 
     # mount and verify:
     file_stem = Path(raw_file_name).stem
-    s3fs_manager = S3FSManager(endpoint_url=moto_server)
-    s3_path = f"{output_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_stem}.nc"
-    zarr_store = s3fs_manager.s3_map(s3_path)
+    # s3_path = f"s3://{output_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_stem}.nc"
+
+    s3_manager.download_file(  # TODO: delete file
+        bucket_name=output_bucket_name,
+        key=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_stem}.nc",
+        file_name=tmp_path.joinpath(f"{file_stem}.nc"),
+        # tmp_path.joinpath(f"{file_stem}.nc")
+    )
 
     # --- Open with Xarray --- #
-    ds = xr.open_zarr(zarr_store, consolidated=False)
+    ds = xr.open_dataset(
+        filename_or_obj=tmp_path.joinpath(f"{file_stem}.nc"), engine="netcdf4"
+    )
     print(ds)
     # assert set(list(ds.variables)) == set(['Sv', 'bottom', 'depth', 'frequency', 'latitude', 'longitude', 'time'])
     assert len(list(ds.variables)) == 24
+    # TODO: further verify variables
 
 
 #######################################################
