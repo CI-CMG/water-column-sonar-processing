@@ -19,7 +19,7 @@ license = "MIT"
 license-files = ["LICENSE-MIT"]
 
 dependencies = [
-    "aiobotocore==2.21.1", # s3fs
+    "aiobotocore==2.21.1",
     "aiohttp[speedups]",
     "boto3==1.37.1",
     "botocore==1.37.1",
@@ -35,17 +35,17 @@ dependencies = [
     "numcodecs==0.13.1",
     "numpy==1.26.4",
     "pandas==2.2.3",
-    #"pelicanfs==1.0.2",
+    #"pelicanfs==1.0.2", # TODO: add this
     "pooch==1.8.2",
     "pyarrow==19.0.1",
     "pykalman==0.10.1",
-    "python-dotenv==1.0.1",
+    "python-dotenv==1.1.0",
     "requests==2.32.3",
-    "s3fs==2025.3.2", # s3fs
+    "s3fs==2025.3.2",
     "scipy==1.15.1",
     "setuptools",
-    "shapely==2.0.7",
-    "tensorflow==2.18.0", # 2.16.2
+    "shapely==2.1.0",
+    "tensorflow==2.18.0",
     "xarray==2025.3.1",
     "xbatcher[tensorflow]==0.4.0",
     "zarr==2.18.3",
@@ -55,21 +55,19 @@ dependencies = [
 dev = [
     "bandit[toml]==1.8.0",
     "bandit",
+    "black==25.1.0",
     "build",
-    "flake8==7.1.1",
+#    "flake8==7.2.0",
     "isort",
     "matplotlib",
     "pooch==1.8.2",
     "pre-commit",
     "pyinstaller",
-    "pytest==8.3.5", # s3fs
+    "pytest==8.3.5",
     "ruff",
     "tqdm",
     "twine",
 ]
-#test = [
-#    "pytest-cov",
-#]
 
 [project.urls]
 Homepage = "https://github.com/CI-CMG/water-column-sonar-processing"
@@ -81,20 +79,18 @@ exclude_dirs = ["tests"]
 [tool.pre-commit-hooks.bandit]
 exclude = ["*/tests/*"]
 
-#[tool.black]
-#line-length = 150
-
 [tool.isort]
 known_first_party = "water_column_sonar_processing"
-#known_third_party = ["_echopype_version", "setuptools"]
 multi_line_output = 3
-include_trailing_comma = true
 force_grid_wrap = 0
+include_trailing_comma = true
 combine_as_imports = true
-#line_length = 150
 
-#[[tool.uv.index]]
-#name = "testpypi"
-#url = "https://test.pypi.org/simple/"
-#publish-url = "https://test.pypi.org/legacy/"
-#explicit = true
+#[flake8]
+#max-line-length = 88
+#ignore = E203, E266, E501, W503, F403, F401
+#max-complexity = 18
+#select = B,C,E,F,W,T4,B9
+
+[tool.black]
+line-length = 88

@@ -22,10 +22,18 @@ repos:
         language: system
         stages: [ "pre-commit", "pre-push" ]
 
-#  - repo: https://github.com/psf/black
-#    rev: 25.1.0
+  # Black is a code formatter that automatically formats your code according to a predefined style
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        language_version: python3.12
+
+#  # Flake8 is a linter that checks for style, syntax, and potential bugs
+#  - repo: https://github.com/pycqa/flake8
+#    rev: '7.2.0'  # pick a git hash / tag to point to
 #    hooks:
-#      - id: black
+#      - id: flake8
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.9.4

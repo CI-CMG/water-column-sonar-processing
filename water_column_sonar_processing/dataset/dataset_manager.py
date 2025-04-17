@@ -2,8 +2,10 @@ from typing import Optional
 
 import numpy as np
 import xarray as xr
+import xbatcher
 
 from water_column_sonar_processing.aws import S3FSManager
+from water_column_sonar_processing.utility.constants import BatchShape
 
 
 class DatasetManager:
@@ -117,45 +119,42 @@ class DatasetManager:
             raise RuntimeError(f"Problem defining dataset_batcher, {err}")
 
     # @deprecated("We cannot use xbatcher")
-    # def setup_xbatcher(
-    #     self,
-    #     bucket_name: str,
-    #     ship_name: str,
-    #     cruise_name: str,
-    #     sensor_name: str,
-    #     endpoint_url: str = None,
-    # ):#  -> xbatcher.generators.BatchGenerator:
-    #     pass
-    #     # try:
-    #     #     sv_dataset = self.open_xarray_dataset(
-    #     #         bucket_name=bucket_name,
-    #     #         ship_name=ship_name,
-    #     #         cruise_name=cruise_name,
-    #     #         sensor_name=sensor_name,
-    #     #         endpoint_url=endpoint_url,
-    #     #     )
-    #     #
-    #     #     patch_input_dims = dict(
-    #     #         depth=BatchShape.DEPTH.value,
-    #     #         time=BatchShape.TIME.value,
-    #     #         frequency=BatchShape.FREQUENCY.value,
-    #     #     )
-    #     #     patch_input_overlap = dict(depth=0, time=0, frequency=0)
-    #     #
-    #     #     batch_generator = xbatcher.generators.BatchGenerator(
-    #     #         ds=sv_dataset.Sv,  # TODO: need to get the depth out of this somehow?
-    #     #         input_dims=patch_input_dims,
-    #     #         input_overlap=patch_input_overlap,
-    #     #         # batch_dims={ "depth": 8, "time": 8, "frequency": 4 }, # no idea what this is doing
-    #     #         concat_input_dims=False,
-    #     #         preload_batch=False,  # Load each batch dynamically
-    #     #         cache=None,  # TODO: figure this out
-    #     #         # cache_preprocess=preprocess_batch,  # https://xbatcher.readthedocs.io/en/latest/user-guide/caching.html
-    #     #     )
-    #     #
-    #     #     return batch_generator
-    #     # except Exception as err:
-    #     #     raise RuntimeError(f"Problem setting up xbatcher, {err}")
+    def setup_xbatcher(
+        self,
+        bucket_name: str,
+        ship_name: str,
+        cruise_name: str,
+        sensor_name: str,
+        endpoint_url: str = None,
+    ):
+        #  -> xbatcher.generators.BatchGenerator:
+        try:
+            sv_dataset = self.open_xarray_dataset(
+                bucket_name=bucket_name,
+                ship_name=ship_name,
+                cruise_name=cruise_name,
+                sensor_name=sensor_name,
+                endpoint_url=endpoint_url,
+            )
+            patch_input_dims = dict(
+                depth=BatchShape.DEPTH.value,
+                time=BatchShape.TIME.value,
+                frequency=BatchShape.FREQUENCY.value,
+            )
+            patch_input_overlap = dict(depth=0, time=0, frequency=0)
+            batch_generator = xbatcher.generators.BatchGenerator(
+                ds=sv_dataset.Sv,  # TODO: need to get the depth out of this somehow?
+                input_dims=patch_input_dims,
+                input_overlap=patch_input_overlap,
+                # batch_dims={ "depth": 8, "time": 8, "frequency": 4 }, # no idea what this is doing
+                concat_input_dims=False,
+                preload_batch=False,  # Load each batch dynamically
+                cache=None,  # TODO: figure this out
+                # cache_preprocess=preprocess_batch,  # https://xbatcher.readthedocs.io/en/latest/user-guide/caching.html
+            )
+            return batch_generator
+        except Exception as err:
+            raise RuntimeError(f"Problem setting up xbatcher, {err}")
 
     # @deprecated("We cannot use xbatcher")
     # def create_keras_dataloader(

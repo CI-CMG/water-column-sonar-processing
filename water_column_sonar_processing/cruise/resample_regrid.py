@@ -73,7 +73,9 @@ class ResampleRegrid:
                     + water_level,
                     axis=1,
                 )
-                superset_of_max_depths = set(max_depths)
+                superset_of_max_depths = set(
+                    max_depths
+                )  # HB1501, D20150503-T102035.raw, TypeError: unhashable type: 'numpy.ndarray'
                 set_of_max_depths = list(
                     {x for x in superset_of_max_depths if x == x}
                 )  # removes nan's
@@ -259,7 +261,9 @@ class ResampleRegrid:
                     output_bucket_name=bucket_name,
                 )
 
-                input_xr = input_xr_zarr_store.isel(ping_time=indices)
+                input_xr = input_xr_zarr_store.isel(
+                    ping_time=indices
+                )  # Problem with HB200802-D20080310-T174959.zarr/
 
                 ping_times = input_xr.ping_time.values
                 # Date format: numpy.datetime64('2007-07-20T02:10:25.845073920') converts to "1184897425.845074"

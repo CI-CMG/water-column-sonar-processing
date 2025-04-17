@@ -33,8 +33,14 @@ https://packaging.python.org/en/latest/tutorials/packaging-projects/
 see here for installation: https://pre-commit.com/
 https://dev.to/rafaelherik/using-trufflehog-and-pre-commit-hook-to-prevent-secret-exposure-edo
 ```
-pre-commit install --allow-missing-config
+uv run pre-commit install --allow-missing-config
+# or
+uv run pre-commit install
 ```
+
+# Black and Flake8
+https://ljvmiranda921.github.io/notebook/2018/06/21/precommits-using-black-and-flake8/
+
 
 # Linting
 Ruff
