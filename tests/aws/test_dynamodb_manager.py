@@ -109,10 +109,6 @@ def test_dynamodb_manager():  # PASSING
             ":se": {"S": sensor_name},
             ":sh": {"S": ship_name},
             ":st": {"S": "2006-04-19T18:46:12.564Z"},
-            # ":zb": {"S": "r2d2-dev-echofish2-118234403147-echofish-dev-output"},
-            # ":zp": {
-            #     "S": f"level_1/{ship_name}/{cruise_name}/{sensor_name}/DSJ0604-D20060419-T184612.zarr"
-            # },
             ":wl": {"N": str(np.round(water_level, 2))},
         },
         update_expression=(
