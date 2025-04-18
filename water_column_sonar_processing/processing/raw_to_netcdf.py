@@ -174,34 +174,34 @@ class RawToNetCDF:
         """
         Downloads the raw files, processes them with echopype, and uploads files
         to the nodd bucket.
+
+        Needs to create two files, one echopype opened file, one is Sv calibrated file
         """
         print(f"Opening raw: {raw_file_name} and creating netcdf.")
-        geometry_manager = GeometryManager()
-        cleaner = Cleaner()
-        cleaner.delete_local_files(
-            file_types=["*.nc", "*.json"]
-        )  # TODO: include bot and raw?
-
-        s3_manager = S3Manager(endpoint_url=endpoint_url)
-        s3_file_path = (
-            f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
-        )
-        bottom_file_name = f"{Path(raw_file_name).stem}.bot"
-        s3_bottom_file_path = (
-            f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
-        )
-        s3_manager.download_file(
-            bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name
-        )
-        # TODO: add the bottom file
-        if include_bot:
-            s3_manager.download_file(
-                bucket_name=input_bucket_name,
-                key=s3_bottom_file_path,
-                file_name=bottom_file_name,
-            )
-
         try:
+            geometry_manager = GeometryManager()
+            cleaner = Cleaner()
+            cleaner.delete_local_files(
+                file_types=["*.nc", "*.json"]
+            )  # TODO: include bot and raw?
+
+            s3_manager = S3Manager(endpoint_url=endpoint_url)
+            s3_file_path = (
+                f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
+            )
+            bottom_file_name = f"{Path(raw_file_name).stem}.bot"
+            s3_bottom_file_path = f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
+            s3_manager.download_file(
+                bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name
+            )
+            # TODO: add the bottom file
+            if include_bot:
+                s3_manager.download_file(
+                    bucket_name=input_bucket_name,
+                    key=s3_bottom_file_path,
+                    file_name=bottom_file_name,
+                )
+
             gc.collect()
             print("Opening raw file with echopype.")
             # s3_file_path = f"s3://{bucket_name}/dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
@@ -211,17 +211,21 @@ class RawToNetCDF:
                 sonar_model=sensor_name,
                 include_bot=include_bot,
             )
-            #
-            #
-            # TODO: UPLOAD THE ECHODATA HERE
-            #
-            #
+
+            netcdf_name = f"{Path(raw_file_name).stem}.nc"
+            # Xarray Dataset to netcdf
+            echodata.to_netcdf(
+                save_path=netcdf_name,
+                compress=True,
+                overwrite=True,
+            )
+
             print("Compute volume backscattering strength (Sv) from raw dataset.")
             ds_sv = ep.calibrate.compute_Sv(echodata)
             ds_sv = ep.consolidate.add_depth(
                 ds_sv, echodata
             )  # TODO: consolidate with other depth values
-            water_level = ds_sv["water_level"].values
+            # water_level = ds_sv["water_level"].values
             gc.collect()
             print("Done computing volume backscatter strength (Sv) from raw dataset.")
             # Note: detected_seafloor_depth is located at echodata.vendor.detected_seafloor_depth
@@ -231,9 +235,9 @@ class RawToNetCDF:
                     echodata.vendor.detected_seafloor_depth
                 )
             #
-            frequencies = echodata.environment.frequency_nominal.values
+            # frequencies = echodata.environment.frequency_nominal.values
             #################################################################
-            # Get GPS coordinates
+            # Get GPS coordinates, just overwrite the lat lon values
             gps_data, lat, lon = geometry_manager.read_echodata_gps_data(
                 echodata=echodata,
                 output_bucket_name=output_bucket_name,
@@ -242,7 +246,7 @@ class RawToNetCDF:
                 sensor_name=sensor_name,
                 file_name=raw_file_name,
                 endpoint_url=endpoint_url,
-                write_geojson=True,
+                write_geojson=False,
             )
             ds_sv = ep.consolidate.add_location(ds_sv, echodata)
             ds_sv.latitude.values = (
@@ -250,41 +254,20 @@ class RawToNetCDF:
             )
             ds_sv.longitude.values = lon
             # gps_data, lat, lon = self.__get_gps_data(echodata=echodata)
-            #################################################################
-            # Technically the min_echo_range would be 0 m.
-            # TODO: this var name is supposed to represent minimum resolution of depth measurements
-            # TODO revert this so that smaller diffs can be used
-            # The most minimum the resolution can be is as small as 0.25 meters
-            min_echo_range = np.round(np.nanmin(np.diff(ds_sv.echo_range.values)), 2)
-            # For the HB0710 cruise the depths vary from 499.7215 @19cm to 2999.4805 @ 1cm. Moving that back
-            # inline with the
-            min_echo_range = np.max(
-                [0.20, min_echo_range]
-            )  # TODO: experiment with 0.25 and 0.50
 
-            max_echo_range = float(np.nanmax(ds_sv.echo_range))
-
-            # This is the number of missing values found throughout the lat/lon
-            num_ping_time_dropna = lat[~np.isnan(lat)].shape[0]  # symmetric to lon
-            #
-            start_time = (
-                np.datetime_as_string(ds_sv.ping_time.values[0], unit="ms") + "Z"
-            )
-            end_time = (
-                np.datetime_as_string(ds_sv.ping_time.values[-1], unit="ms") + "Z"
-            )
-            channels = list(ds_sv.channel.values)
-            #
-            #################################################################
             # Create the netcdf
-            netcdf_name = f"{Path(raw_file_name).stem}.nc"
+            netcdf_name_computed_Sv = f"{Path(raw_file_name).stem}_computed_Sv.nc"
+
             # Xarray Dataset to netcdf
-            ds_sv.to_netcdf(path=netcdf_name, mode="w", engine="netcdf4")  # "netcdf4"
+            ds_sv.to_netcdf(
+                path=netcdf_name_computed_Sv,
+                mode="w",
+            )
             gc.collect()
             #################################################################
             # output_netcdf_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"
             #################################################################
-            # If zarr store already exists then delete
+            # If netcdf already exists then delete
             s3_manager = S3Manager(endpoint_url=endpoint_url)
             child_objects = s3_manager.get_child_objects(
                 bucket_name=output_bucket_name,
@@ -298,48 +281,36 @@ class RawToNetCDF:
                     bucket_name=output_bucket_name,
                     objects=child_objects,
                 )
+            child_objects_computed_Sv = s3_manager.get_child_objects(
+                bucket_name=output_bucket_name,
+                sub_prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{Path(raw_file_name).stem}_computed_Sv.nc",
+            )
+            if len(child_objects_computed_Sv) > 0:
+                print("data already exists in s3, deleting existing and continuing.")
+                s3_manager.delete_nodd_objects(
+                    bucket_name=output_bucket_name,
+                    objects=child_objects_computed_Sv,
+                )
             #################################################################
             s3_manager.upload_file(
                 filename=netcdf_name,
                 bucket_name=output_bucket_name,
                 key=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{Path(raw_file_name).stem}.nc",
             )
-            # self.__upload_file_to_output_bucket( # upload files didn't include parent
-            #     output_bucket_name=output_bucket_name,
-            #     local_directory=netcdf_name, # netcdf_name
-            #     object_prefix=output_netcdf_prefix,
-            #     endpoint_url=endpoint_url,
-            # )
-            #################################################################
-            self.__netcdf_info_to_table(
-                table_name=table_name,
-                ship_name=ship_name,
-                cruise_name=cruise_name,
-                sensor_name=sensor_name,
-                file_name=raw_file_name,
-                min_echo_range=min_echo_range,
-                max_echo_range=max_echo_range,
-                num_ping_time_dropna=num_ping_time_dropna,
-                start_time=start_time,
-                end_time=end_time,
-                frequencies=frequencies,
-                channels=channels,
-                water_level=water_level,
+            s3_manager.upload_file(
+                filename=netcdf_name_computed_Sv,
+                bucket_name=output_bucket_name,
+                key=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{Path(raw_file_name).stem}_computed_Sv.nc",
             )
-            #######################################################################
-            # TODO: verify count of objects matches, publish message, update status
-            #######################################################################
-            print("Finished raw-to-netcdf conversion.")
         except Exception as err:
             print(f"Exception encountered creating local netcdf with echopype: {err}")
             raise RuntimeError(f"Problem creating local netcdf, {err}")
         finally:
             gc.collect()
-            print("Finally.")
             cleaner.delete_local_files(
                 file_types=["*.raw", "*.bot", "*.zarr", "*.nc", "*.json"]
             )
-        print("Done creating local zarr store.")
+            print("Done creating local zarr store.")
 
     ############################################################################
 

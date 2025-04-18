@@ -129,7 +129,7 @@ def test_raw_to_netcdf(moto_server, raw_to_netcdf_test_path, tmp_path):
         bucket_name=output_bucket_name,
         prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
     )
-    print(number_of_files_before)
+    assert len(number_of_files_before) == 3
 
     raw_to_netcdf = RawToNetCDF()
     raw_to_netcdf.raw_to_netcdf(
@@ -140,7 +140,7 @@ def test_raw_to_netcdf(moto_server, raw_to_netcdf_test_path, tmp_path):
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         raw_file_name=raw_file_name,
-    )
+    )  # two files are now uploaded
 
     # Problem: missing nc file
     number_of_files = s3_manager.list_objects(
@@ -148,18 +148,18 @@ def test_raw_to_netcdf(moto_server, raw_to_netcdf_test_path, tmp_path):
         prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
     )
     # Ensure that all the files were uploaded properly, zarr was undisturbed
-    assert len(number_of_files) == 3
+    assert len(number_of_files) == 4  # with two .nc files
 
     # TODO: check the dynamodb dataframe to see if info is updated there
     # ---Verify Data is Populated in Table--- #
-    df_after = dynamo_db_manager.get_table_as_df(
-        # ship_name=ship_name,
-        cruise_name=cruise_name,
-        # sensor_name, # TODO: need to add this back for EK80
-        table_name=table_name,
-    )
-    print(df_after)
-    assert df_after.shape == (1, 13)
+    # df_after = dynamo_db_manager.get_table_as_df(
+    #     # ship_name=ship_name,
+    #     cruise_name=cruise_name,
+    #     # sensor_name, # TODO: need to add this back for EK80
+    #     table_name=table_name,
+    # )
+    # print(df_after)
+    # assert df_after.shape == (1, 13)
 
     # mount and verify:
     file_stem = Path(raw_file_name).stem
@@ -176,10 +176,19 @@ def test_raw_to_netcdf(moto_server, raw_to_netcdf_test_path, tmp_path):
     ds = xr.open_dataset(
         filename_or_obj=tmp_path.joinpath(f"{file_stem}.nc"), engine="netcdf4"
     )
+    assert len(ds.attrs) >= 10
+
+    s3_manager.download_file(
+        bucket_name=output_bucket_name,
+        key=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_stem}_computed_Sv.nc",
+        file_name=tmp_path.joinpath(f"{file_stem}_computed_Sv.nc"),
+    )
+    ds = xr.open_dataset(
+        filename_or_obj=tmp_path.joinpath(f"{file_stem}_computed_Sv.nc"),
+        engine="netcdf4",
+    )
     print(ds)
-    # assert set(list(ds.variables)) == set(['Sv', 'bottom', 'depth', 'frequency', 'latitude', 'longitude', 'time'])
-    assert len(list(ds.variables)) == 24
-    # TODO: further verify variables
+    assert ds.Sv.shape == (4, 36, 2604)
 
 
 #######################################################
