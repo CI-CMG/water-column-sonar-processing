@@ -37,8 +37,9 @@ def create_empty_zarr_test_path(test_path):
 
 
 #######################################################
+# TODO: this works but should maybe follow approach where i resample from Level 2 data?
 @mock_aws()
-@pytest.mark.skip(reason="For future implementations")
+# @pytest.mark.skip(reason="For future implementations")
 def test_create_empty_zarr_store_level_3(create_empty_zarr_test_path, moto_server):
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager(endpoint_url=moto_server)
@@ -242,12 +243,12 @@ def test_create_empty_zarr_store_level_3(create_empty_zarr_test_path, moto_serve
     # --- Open with Zarr --- #
     root = zarr.open(store=zarr_store, mode="r")
     print(root.info)
-    assert root.Sv.shape == (1000, 89911, 4)
+    assert root.Sv.shape == (1001, 89911, 4)
 
     # --- Open with Xarray --- #
     ds = xr.open_dataset(zarr_store, engine="zarr")
     print(ds)
-    assert ds.Sv.size == 359644000  # ~0.34 GB ==> 25% of the size
+    assert ds.Sv.size == 360003644  # ~0.34 GB ==> 25% of the size
     assert set(list(ds.variables)) == {
         "Sv",
         "bottom",

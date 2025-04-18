@@ -120,7 +120,7 @@ class CreateEmptyZarrStoreLevel3:
             zarr_manager = ZarrManager()
             new_height = len(
                 zarr_manager.get_depth_values(
-                    min_echo_range=cruise_min_echo_range,
+                    # min_echo_range=cruise_min_echo_range,
                     max_echo_range=cruise_max_echo_range,
                     cruise_min_epsilon=cruise_min_epsilon,
                 )
