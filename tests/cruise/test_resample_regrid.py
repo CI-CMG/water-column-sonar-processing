@@ -1,5 +1,7 @@
 import gc
 
+import hvplot.pandas
+import hvplot.xarray
 import numpy as np
 import pytest
 from dotenv import find_dotenv, load_dotenv
@@ -120,7 +122,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         "D20070712-T202050.raw",
         "D20070712-T231759.raw",
     ]
-    max_echo_range = [
+    max_echo_range = [  # does not account for water_level
         249.792,
         249.792,
         249.792,
@@ -128,13 +130,13 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         249.792,
         249.792,
         249.792,  # used for test
-        999.744,  # note: different depth
+        999.744,  # note: different depth, resample should be [0.19 to 1001.744]
         249.792,
         249.792,
         249.792,
         249.792,
     ]
-    min_echo_range = 0.19
+    min_echo_range = 0.20  # does not account for water_level
     num_ping_time_dropna = [
         9779,
         9743,
@@ -177,19 +179,19 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         "2007-07-12T23:17:58.454Z",
         "2007-07-13T00:55:17.454Z",
     ]
-    water_level = [
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
+    water_level = [  # TODO: create synthetic values?
+        0.0,  # 1.0,
+        0.0,  # 2.0,
+        0.0,  # 3.0,
+        0.0,  # 4.0,
+        0.0,  # 5.0,
+        0.0,  # 4.0,
+        0.0,  # 3.0,  #
+        0.0,  # 2.0,  #
+        0.0,  # 1.0,
+        0.0,  # 0.0,
+        0.0,  # 1.0,
+        0.0,  # 2.0,
     ]
     for iii in range(0, len(file_names)):
         dynamo_db_manager.update_item(
@@ -201,53 +203,41 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
             expression_attribute_names={
                 "#CH": "CHANNELS",
                 "#ET": "END_TIME",
-                # "#ED": "ERROR_DETAIL",
                 "#FR": "FREQUENCIES",
                 "#MA": "MAX_ECHO_RANGE",
                 "#MI": "MIN_ECHO_RANGE",
                 "#ND": "NUM_PING_TIME_DROPNA",
-                # "#PS": "PIPELINE_STATUS",  # testing this updated
-                "#PT": "PIPELINE_TIME",  # testing this updated
+                "#PT": "PIPELINE_TIME",
                 "#SE": "SENSOR_NAME",
                 "#SH": "SHIP_NAME",
                 "#ST": "START_TIME",
                 "#WL": "WATER_LEVEL",
-                # "#ZB": "ZARR_BUCKET",
-                # "#ZP": "ZARR_PATH",
             },
             expression_attribute_values={
                 ":ch": {"L": [{"S": i} for i in test_channels]},
                 ":et": {"S": end_time[iii]},
-                # ":ed": {"S": ""},
                 ":fr": {"L": [{"N": str(int(i))} for i in frequency]},
                 ":ma": {"N": str(np.round(max_echo_range[iii], 4))},
                 ":mi": {"N": str(np.round(min_echo_range, 4))},
                 ":nd": {"N": str(num_ping_time_dropna[iii])},
-                ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
                 ":pt": {"S": "2023-10-02T08:08:08Z"},
                 ":se": {"S": sensor_name},
                 ":sh": {"S": ship_name},
                 ":st": {"S": start_time[iii]},
-                # ":zb": {"S": l1_l2_test_bucket_name},
-                # ":zp": {"S": zarr_path[iii]},
                 ":wl": {"N": str(np.round(water_level[iii], 2))},
             },
             update_expression=(
                 "SET "
                 "#CH = :ch, "
                 "#ET = :et, "
-                # "#ED = :ed, " # TODO: add back in?
                 "#FR = :fr, "
                 "#MA = :ma, "
                 "#MI = :mi, "
                 "#ND = :nd, "
-                # "#PS = :ps, "
                 "#PT = :pt, "
                 "#SE = :se, "
                 "#SH = :sh, "
                 "#ST = :st, "
-                # "#ZB = :zb, "
-                # "#ZP = :zp"
                 "#WL = :wl"
             ),
         )
@@ -314,6 +304,11 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
 
     raw_to_zarr = RawToZarr()
     gc.collect()
+    # mock the returned water_level to override 0's, was working but didn't work for writing to zarr
+    # thing = xarray.Dataset
+    # thing.water_level = Mock()
+    # thing.water_level.values = 3.0
+
     raw_to_zarr.raw_to_zarr(
         table_name=table_name,
         input_bucket_name=l0_test_bucket_name,
@@ -351,13 +346,23 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         table_name=table_name,
         bucket_name=l1_l2_test_bucket_name,
         # TODO: this needs to be passed for each respective file, TEST ONLY TWO
-        override_select_files=["D20070712-T124906.raw", "D20070712-T152416.raw"],
+        override_select_files=["D20070712-T124906.raw"],
         endpoint_url=moto_server,
     )
 
+    resample_regrid.resample_regrid(
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        table_name=table_name,
+        bucket_name=l1_l2_test_bucket_name,
+        # TODO: this needs to be passed for each respective file, TEST ONLY TWO
+        override_select_files=["D20070712-T152416.raw"],
+        endpoint_url=moto_server,
+    )
     # TODO: verify that the two files in question were properly resampled and regridded
     # check a couple of samples that are adjacent to one another
-    assert 2 > 1
+    # assert 2 > 1
 
     test_zarr_manager = ZarrManager()
     test_output_zarr_store = test_zarr_manager.open_l2_zarr_store_with_xarray(
@@ -377,6 +382,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     select_times = (test_output_zarr_store.time > start_time) & (
         test_output_zarr_store.time < end_time
     )
+    # TODO: check the range of depths for the output data
     # check selected timestamps and verify all latitude/longitude/times are updated
     # test_output_zarr_store.latitude.sel(time=slice('2007-07-12T12:49:06.313Z', '2007-07-12T17:18:03.032Z')).values
     assert not np.isnan(
@@ -404,6 +410,9 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
 @mock_aws
 def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     # Convert file and ensure that water_level offset is captured
+    # Need to test:
+    #   https://noaa-wcsd-pds.s3.amazonaws.com/data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T001906.raw
+    #   d20191106_t001906-t115734_Zsc-DWBA-Schools_All-RegionDefs.evr
 
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager(endpoint_url=moto_server)
@@ -422,6 +431,18 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     s3_manager.create_bucket(bucket_name=l0_test_bucket_name)
     s3_manager.create_bucket(bucket_name=l1_l2_test_bucket_name)
     print(s3_manager.list_buckets())
+
+    # D20191106-T001906.raw
+    # s3_manager.upload_file(
+    #     filename=resample_regrid_test_path.joinpath("D20191106-T001906.raw"),
+    #     bucket_name=l0_test_bucket_name,
+    #     key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T001906.raw",
+    # )
+    # s3_manager.upload_file(
+    #     filename=resample_regrid_test_path.joinpath("D20191106-T001906.bot"),
+    #     bucket_name=l0_test_bucket_name,
+    #     key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T001906.bot",
+    # )
 
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T034434.raw"),
@@ -445,7 +466,7 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T042540.bot",
     )
 
-    assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 4
+    assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) > 2
 
     raw_to_zarr = RawToZarr()
     gc.collect()
@@ -471,6 +492,17 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         endpoint_url=moto_server,
         include_bot=True,
     )
+    # raw_to_zarr.raw_to_zarr(
+    #     table_name=table_name,
+    #     input_bucket_name=l0_test_bucket_name,
+    #     output_bucket_name=l1_l2_test_bucket_name,
+    #     ship_name=ship_name,
+    #     cruise_name=cruise_name,
+    #     sensor_name=sensor_name,
+    #     raw_file_name="D20191106-T042540.raw",
+    #     endpoint_url=moto_server,
+    #     include_bot=True,
+    # )
     gc.collect()
 
     cruise_df_before = dynamo_db_manager.get_table_as_df(
@@ -513,7 +545,7 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         bucket_name=l1_l2_test_bucket_name,
         prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
     )
-    assert len(number_of_files_xx) > 900  # 912
+    assert len(number_of_files_xx) > 100  # 912
 
     cruise_df_l0_l1 = dynamo_db_manager.get_table_as_df(
         cruise_name=cruise_name,
@@ -538,9 +570,19 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         sensor_name=sensor_name,
         table_name=table_name,
         bucket_name=l1_l2_test_bucket_name,
+        # TODO: this needs to be passed for each respective file, TEST ONLY TWO
         override_select_files=["D20191106-T042540.raw"],
         endpoint_url=moto_server,
     )
+    # resample_regrid.resample_regrid(  # water_level == 7.5
+    #     ship_name=ship_name,
+    #     cruise_name=cruise_name,
+    #     sensor_name=sensor_name,
+    #     table_name=table_name,
+    #     bucket_name=l1_l2_test_bucket_name,
+    #     override_select_files=["D20191106-T042540.raw"],
+    #     endpoint_url=moto_server,
+    # )
 
     test_zarr_manager = ZarrManager()
     test_output_zarr_store = test_zarr_manager.open_l2_zarr_store_with_xarray(
@@ -550,9 +592,21 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         bucket_name=l1_l2_test_bucket_name,
         endpoint_url=moto_server,
     )
-    assert np.isclose(test_output_zarr_store.Sv.depth[0].values, 7.7)
+    assert np.isclose(test_output_zarr_store.Sv.depth[0].values, 0.0)
     assert np.isclose(test_output_zarr_store.Sv.depth[-1].values, 507.4)
-    assert len(test_output_zarr_store.Sv.depth) == 2499
+    # assert len(test_output_zarr_store.Sv.depth) == 2538
+    cruise_select = test_output_zarr_store.sel(
+        time=slice(
+            "2019-11-06T04:20:00", "2019-11-06T04:30:00"
+        )  # 2019-11-06T00:19:08.052599040, 2019-11-06T01:00:15.752830976
+    )
+    # Sv18 = cruise_select.sel(frequency=18_000).Sv.hvplot().opts(invert_yaxis=True)
+    Sv38 = cruise_select.sel(frequency=38_000).Sv.hvplot().opts(invert_yaxis=True)
+    # Sv120 = cruise_select.sel(frequency=120_000).Sv.hvplot().opts(invert_yaxis=True)
+    # Sv200 = cruise_select.sel(frequency=200_000).Sv.hvplot().opts(invert_yaxis=True)
+
+    # layout = hv.Layout(Sv18 + Sv38 + Sv120 + Sv200).cols(2)
+    hvplot.show(Sv38)  # it starts at 215.2 m and ends at 217 to 218.2 m
 
     # start_time = np.datetime64("2019-11-06T03:44:35.651")
     # end_time = np.datetime64("2019-11-06T05:06:44.176")

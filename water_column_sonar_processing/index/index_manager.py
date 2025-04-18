@@ -99,6 +99,7 @@ class IndexManager:
     ):
         # Same as above but only needs to get the first raw file
         # because we are only interested in the first datagram of one file
+        # TODO: "dataset?"
         prefix = f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/"  # Note no forward slash at beginning
         # page_iterator = self.s3_manager.paginator.paginate(
         #     Bucket=self.input_bucket_name,

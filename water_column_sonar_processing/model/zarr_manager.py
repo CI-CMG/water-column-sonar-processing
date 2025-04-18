@@ -26,26 +26,27 @@ class ZarrManager:
     #######################################################
     def get_depth_values(
         self,
-        min_echo_range: float = 1.0,  # minimum depth measured (zero non-inclusive) from whole cruise
-        max_echo_range: float = 100.0,  # maximum depth measured from whole cruise
+        # min_echo_range: float,  # minimum depth measured (zero non-inclusive) from whole cruise
+        max_echo_range: float,  # maximum depth measured from whole cruise
         cruise_min_epsilon: float = 0.25,  # resolution between subsequent measurements
     ):
         # Gets the set of depth values that will be used when resampling and
         # regridding the dataset to a cruise level model store.
-        # Note: returned values do not start at zero.
+        # Note: returned values start at zero!
         # For more info see here: https://echopype.readthedocs.io/en/stable/data-proc-additional.html
-        print("Getting depth values.")
+        print("Computing depth values.")
         all_cruise_depth_values = np.linspace(  # TODO: PROBLEM HERE
-            start=min_echo_range,
+            start=0,  # just start it at zero
             stop=max_echo_range,
-            num=int((max_echo_range - min_echo_range) / cruise_min_epsilon) + 1,
+            num=int(max_echo_range / cruise_min_epsilon)
+            + 1,  # int(np.ceil(max_echo_range / cruise_min_epsilon))?
             endpoint=True,
         )  # np.arange(min_echo_range, max_echo_range, step=min_echo_range) # this is worse
 
         if np.any(np.isnan(all_cruise_depth_values)):
             raise Exception("Problem depth values returned were NaN.")
 
-        print("Done getting depth values.")
+        print("Done computing depth values.")
         return all_cruise_depth_values.round(decimals=2)
 
     #######################################################
@@ -57,9 +58,9 @@ class ZarrManager:
         sensor_name: str,
         frequencies: list,  # units in Hz
         width: int,  # TODO: needs better name... "ping_time"
-        min_echo_range: float,  # smallest resolution in meters
+        # min_echo_range: float,
         max_echo_range: float,
-        cruise_min_epsilon: float,
+        cruise_min_epsilon: float,  # smallest resolution in meters
         calibration_status: bool = False,  # Assume uncalibrated
     ) -> str:
         try:
@@ -102,7 +103,7 @@ class ZarrManager:
             #####################################################################
             # --- Coordinate: Depth --- #
             depth_values = self.get_depth_values(
-                min_echo_range=min_echo_range,
+                # min_echo_range=min_echo_range,
                 max_echo_range=max_echo_range,
                 cruise_min_epsilon=cruise_min_epsilon,
             )
@@ -299,7 +300,6 @@ class ZarrManager:
         #     cleaner = Cleaner()
         #     cleaner.delete_local_files()
         # TODO: should delete zarr store in temp directory too?
-        return None
 
     #######################################################
     #
@@ -604,11 +604,11 @@ class ZarrManager:
             s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
             store_s3_map = s3fs_manager.s3_map(s3_zarr_store_path=zarr_path)
             ds = xr.open_dataset(filename_or_obj=store_s3_map, engine="zarr", chunks={})
+            return ds
         except Exception as err:
             raise RuntimeError(f"Problem opening Zarr store in S3 as Xarray, {err}")
         finally:
             print("Exiting opening Zarr store in S3 as Xarray.")
-        return ds
 
     def open_l2_zarr_store_with_xarray(
         self,

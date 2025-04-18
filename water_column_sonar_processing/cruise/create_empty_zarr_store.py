@@ -66,6 +66,9 @@ class CreateEmptyZarrStore:
         sensor_name: str,
         table_name: str,
     ) -> None:
+        """
+        Initialize zarr store. The water_level needs to be integrated.
+        """
         tempdir = tempfile.TemporaryDirectory()
         try:
             # HB0806 - 123, HB0903 - 220
@@ -93,20 +96,18 @@ class CreateEmptyZarrStore:
             )
 
             # [3] calculate the max/min measurement resolutions for the whole cruise
-            cruise_min_echo_range = np.min(
-                (df["MIN_ECHO_RANGE"] + df["WATER_LEVEL"]).dropna().astype(float)
-            )
+            # cruise_min_echo_range = np.min(
+            #     (df["MIN_ECHO_RANGE"] + df["WATER_LEVEL"]).dropna().astype(float)
+            # )
 
-            # [4] calculate the maximum of the max depth values
+            # [4] calculate the np.max(max_echo_range + water_level)
             cruise_max_echo_range = np.max(
                 (df["MAX_ECHO_RANGE"] + df["WATER_LEVEL"]).dropna().astype(float)
             )
 
             cruise_min_epsilon = np.min(df["MIN_ECHO_RANGE"].dropna().astype(float))
 
-            print(
-                f"cruise_min_echo_range: {cruise_min_echo_range}, cruise_max_echo_range: {cruise_max_echo_range}"
-            )
+            print(f"cruise_max_echo_range: {cruise_max_echo_range}")
 
             # [5] get number of channels
             cruise_frequencies = [
@@ -134,9 +135,9 @@ class CreateEmptyZarrStore:
             ################################################################
             # Create new model store
             zarr_manager = ZarrManager()
-            new_height = len(
-                zarr_manager.get_depth_values(
-                    min_echo_range=cruise_min_echo_range,
+            new_height = len(  # [0.19m down to 1001.744m] = 5272 samples, 10.3 tiles @ 512
+                zarr_manager.get_depth_values(  # these depths should be from min_epsilon to max_range+water_level
+                    # min_echo_range=cruise_min_echo_range,
                     max_echo_range=cruise_max_echo_range,
                     cruise_min_epsilon=cruise_min_epsilon,
                 )
@@ -150,7 +151,7 @@ class CreateEmptyZarrStore:
                 sensor_name=sensor_name,
                 frequencies=cruise_frequencies,
                 width=new_width,
-                min_echo_range=cruise_min_echo_range,
+                # min_echo_range=cruise_min_echo_range,
                 max_echo_range=cruise_max_echo_range,
                 cruise_min_epsilon=cruise_min_epsilon,
                 calibration_status=True,

@@ -37,9 +37,12 @@ class ResampleRegrid:
         self,
         input_xr,
         ping_times,
-        all_cruise_depth_values,
-        water_level,
+        all_cruise_depth_values,  # includes water_level offset
+        water_level,  # this is the offset that will be added to each respective file
     ) -> np.ndarray:
+        """
+        What gets passed into interpolate data
+        """
         print("Interpolating dataset.")
         try:
             data = np.empty(
@@ -53,15 +56,20 @@ class ResampleRegrid:
 
             data[:] = np.nan
 
-            regrid_resample = xr.DataArray(
+            regrid_resample = xr.DataArray(  # where data will be written to
                 data=data,
                 dims=("depth", "time", "frequency"),
                 coords={
-                    "depth": all_cruise_depth_values,  # TODO: these should be on interval from 7.7 meters to 507 meters
+                    "depth": all_cruise_depth_values,
                     "time": ping_times,
                     "frequency": input_xr.frequency_nominal.values,
                 },
             )
+
+            # shift the input data by water_level
+            input_xr.echo_range.values = (
+                input_xr.echo_range.values + water_level
+            )  # water_level # TODO: change
 
             channels = input_xr.channel.values
             for channel in range(
@@ -69,8 +77,8 @@ class ResampleRegrid:
             ):  # ?TODO: leaving off here, need to subset for just indices in time axis
                 gc.collect()
                 max_depths = np.nanmax(
-                    a=input_xr.echo_range.sel(channel=input_xr.channel[channel]).values
-                    + water_level,
+                    a=input_xr.echo_range.sel(channel=input_xr.channel[channel]).values,
+                    # + water_level,
                     axis=1,
                 )
                 superset_of_max_depths = set(
@@ -136,8 +144,7 @@ class ResampleRegrid:
         cruise_name,
         sensor_name,
         table_name,
-        # TODO: file_name?,
-        bucket_name,  # TODO: this is the same bucket
+        bucket_name,
         override_select_files=None,
         endpoint_url=None,
     ) -> None:
@@ -196,7 +203,7 @@ class ResampleRegrid:
                     ]
                 )
 
-                # Get input store
+                # Get input store — this is unadjusted for water_level
                 input_xr_zarr_store = zarr_manager.open_s3_zarr_store_with_xarray(
                     ship_name=ship_name,
                     cruise_name=cruise_name,
@@ -206,11 +213,14 @@ class ResampleRegrid:
                     endpoint_url=endpoint_url,
                 )
 
-                # This is the horizontal offset of the measurement.
+                # This is the vertical offset of the sensor related to the ocean surface
                 # See https://echopype.readthedocs.io/en/stable/data-proc-additional.html
-                water_level = input_xr_zarr_store.water_level.values
+                if "water_level" in input_xr_zarr_store.keys():
+                    water_level = input_xr_zarr_store.water_level.values
+                else:
+                    water_level = 0.0
                 #########################################################################
-                # [3] Get needed indices
+                # [3] Get needed time indices — along the x-axis
                 # Offset from start index to insert new dataset. Note that missing values are excluded.
                 ping_time_cumsum = np.insert(
                     np.cumsum(
@@ -222,11 +232,6 @@ class ResampleRegrid:
                 start_ping_time_index = ping_time_cumsum[index]
                 end_ping_time_index = ping_time_cumsum[index + 1]
 
-                min_echo_range = np.min(
-                    (cruise_df["MIN_ECHO_RANGE"] + cruise_df["WATER_LEVEL"])
-                    .dropna()
-                    .astype(float)
-                )
                 max_echo_range = np.max(
                     (cruise_df["MAX_ECHO_RANGE"] + cruise_df["WATER_LEVEL"])
                     .dropna()
@@ -237,9 +242,9 @@ class ResampleRegrid:
                 )
 
                 # Note: cruise dims (depth, time, frequency)
-                all_cruise_depth_values = zarr_manager.get_depth_values(
-                    min_echo_range=min_echo_range,
-                    max_echo_range=max_echo_range,
+                all_cruise_depth_values = zarr_manager.get_depth_values(  # needs to integrate water_level
+                    # min_echo_range=min_echo_range,
+                    max_echo_range=max_echo_range,  # does it here
                     cruise_min_epsilon=cruise_min_epsilon,  # remove this & integrate into min_echo_range
                 )  # with offset of 7.5 meters, 0 meter measurement should now start at 7.5 meters
 
@@ -276,13 +281,11 @@ class ResampleRegrid:
                 )
 
                 # --- UPDATING --- #
-                regrid_resample = (
-                    self.interpolate_data(  # TODO: need to add water_level here
-                        input_xr=input_xr,
-                        ping_times=ping_times,
-                        all_cruise_depth_values=all_cruise_depth_values,
-                        water_level=water_level,
-                    )
+                regrid_resample = self.interpolate_data(
+                    input_xr=input_xr,
+                    ping_times=ping_times,
+                    all_cruise_depth_values=all_cruise_depth_values,  # should accommodate the water_level already
+                    water_level=water_level,  # not applied to anything yet
                 )
 
                 print(
