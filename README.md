@@ -89,7 +89,7 @@ https://hb0707.s3.us-east-1.amazonaws.com/index.html
 uv lock --check
 uv lock
 uv sync --extra dev
-uv run pytest tests
+#uv run pytest tests
 ```
 
 # Fixing S3FS Problems
