@@ -1,7 +1,7 @@
 import gc
 
-import hvplot.pandas
-import hvplot.xarray
+# import hvplot.pandas
+# import hvplot.xarray
 import numpy as np
 import pytest
 from dotenv import find_dotenv, load_dotenv
@@ -492,17 +492,6 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         endpoint_url=moto_server,
         include_bot=True,
     )
-    # raw_to_zarr.raw_to_zarr(
-    #     table_name=table_name,
-    #     input_bucket_name=l0_test_bucket_name,
-    #     output_bucket_name=l1_l2_test_bucket_name,
-    #     ship_name=ship_name,
-    #     cruise_name=cruise_name,
-    #     sensor_name=sensor_name,
-    #     raw_file_name="D20191106-T042540.raw",
-    #     endpoint_url=moto_server,
-    #     include_bot=True,
-    # )
     gc.collect()
 
     cruise_df_before = dynamo_db_manager.get_table_as_df(
@@ -574,15 +563,6 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         override_select_files=["D20191106-T042540.raw"],
         endpoint_url=moto_server,
     )
-    # resample_regrid.resample_regrid(  # water_level == 7.5
-    #     ship_name=ship_name,
-    #     cruise_name=cruise_name,
-    #     sensor_name=sensor_name,
-    #     table_name=table_name,
-    #     bucket_name=l1_l2_test_bucket_name,
-    #     override_select_files=["D20191106-T042540.raw"],
-    #     endpoint_url=moto_server,
-    # )
 
     test_zarr_manager = ZarrManager()
     test_output_zarr_store = test_zarr_manager.open_l2_zarr_store_with_xarray(
@@ -594,25 +574,30 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     )
     assert np.isclose(test_output_zarr_store.Sv.depth[0].values, 0.0)
     assert np.isclose(test_output_zarr_store.Sv.depth[-1].values, 507.4)
-    # assert len(test_output_zarr_store.Sv.depth) == 2538
-    cruise_select = test_output_zarr_store.sel(
-        time=slice(
-            "2019-11-06T04:20:00", "2019-11-06T04:30:00"
-        )  # 2019-11-06T00:19:08.052599040, 2019-11-06T01:00:15.752830976
-    )
-    # Sv18 = cruise_select.sel(frequency=18_000).Sv.hvplot().opts(invert_yaxis=True)
-    Sv38 = cruise_select.sel(frequency=38_000).Sv.hvplot().opts(invert_yaxis=True)
-    # Sv120 = cruise_select.sel(frequency=120_000).Sv.hvplot().opts(invert_yaxis=True)
-    # Sv200 = cruise_select.sel(frequency=200_000).Sv.hvplot().opts(invert_yaxis=True)
-
-    # layout = hv.Layout(Sv18 + Sv38 + Sv120 + Sv200).cols(2)
-    hvplot.show(Sv38)  # it starts at 215.2 m and ends at 217 to 218.2 m
-
-    # start_time = np.datetime64("2019-11-06T03:44:35.651")
-    # end_time = np.datetime64("2019-11-06T05:06:44.176")
-    # select_times = (test_output_zarr_store.time > start_time) & (
-    #     test_output_zarr_store.time < end_time
+    assert len(test_output_zarr_store.Sv.depth) == 2538
+    # cruise_select = test_output_zarr_store.sel(
+    #     time=slice(
+    #         "2019-11-06T04:20:00", "2019-11-06T04:30:00"
+    #     )  # 2019-11-06T00:19:08.052599040, 2019-11-06T01:00:15.752830976
     # )
+
+    # To plot for diagnostics
+    # Sv38 = cruise_select.sel(frequency=38_000).Sv.hvplot().opts(invert_yaxis=True)
+    # hvplot.show(Sv38)  # it starts at 215.2 m and ends at 217 to 218.2 m
+
+    select_in_noise = test_output_zarr_store.sel(
+        time=slice("2019-11-06T04:24:44", "2019-11-06T04:25:14"),
+        frequency=38_000,
+        depth=slice(215, 218),  # slice across ctd sidescan
+    )  # noise inside is ~-53.13 dB
+    assert np.isclose(int(np.nanmean(select_in_noise.Sv)), -53)
+
+    select_outside_noise = test_output_zarr_store.sel(
+        time=slice("2019-11-06T04:24:44", "2019-11-06T04:25:14"),
+        frequency=38_000,
+        depth=slice(212, 215),  # slice across ctd sidescan
+    )  # noise outside is ~-80.59 dB
+    assert np.isclose(int(np.nanmean(select_outside_noise.Sv)), -80)
 
 
 @mock_aws

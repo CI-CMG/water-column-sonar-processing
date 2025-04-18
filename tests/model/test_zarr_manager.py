@@ -71,7 +71,7 @@ def test_zarr_manager():
         sensor_name=sensor_name,
         frequencies=frequencies,
         width=1201,  # number of ping samples recorded
-        min_echo_range=0.50,
+        # min_echo_range=0.50,
         max_echo_range=250.00,  # maximum depth found in cruise
         cruise_min_epsilon=0.50,
         calibration_status=True,
@@ -91,7 +91,7 @@ def test_zarr_manager():
     print(cruise_zarr.info)
 
     assert cruise_zarr.Sv.shape == (
-        500,
+        501,
         1201,
         len(frequencies),
     )  # (depth, time, frequency)
@@ -114,7 +114,7 @@ def test_zarr_manager():
 
     # TODO: test to ensure the dimensions are in proper order
     assert file_xr.Sv.dims == ("depth", "time", "frequency")
-    assert file_xr.Sv.shape == (500, 1201, 4)
+    assert file_xr.Sv.shape == (501, 1201, 4)
 
     assert file_xr.attrs["processing_software_name"] == "echofish"
     assert file_xr.attrs[
@@ -165,7 +165,7 @@ def test_open_zarr_with_zarr_read_write():
         sensor_name=sensor_name,
         frequencies=[18_000, 38_000, 70_000, 120_000],
         width=1201,  # number of ping samples recorded
-        min_echo_range=0.5,
+        # min_echo_range=0.5,
         max_echo_range=250.0,  # maximum depth found in cruise
         cruise_min_epsilon=0.5,
         calibration_status=True,
@@ -218,7 +218,7 @@ def test_open_zarr_with_xarray():
         frequencies=[18_000, 38_000, 70_000, 120_000],
         width=1201,  # number of ping samples recorded
         # height=height,  # TODO: is this redundant with the min & max echo range?
-        min_echo_range=min_echo_range,
+        # min_echo_range=min_echo_range,
         max_echo_range=max_echo_range,
         cruise_min_epsilon=min_echo_range,  # TODO: test further
         calibration_status=True,
@@ -234,6 +234,7 @@ def test_open_zarr_with_xarray():
     # open model store with model
 
     # assert root.Sv.shape == (501, 1201, 4)
+    print("done")
 
 
 #######################################################
@@ -247,12 +248,11 @@ def test_open_zarr_with_xarray():
 def test_get_depth_values_shallow_and_small_epsilon():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
-        min_echo_range=0.17,
         max_echo_range=101,
         cruise_min_epsilon=0.17,
     )
-    assert len(depths) == 594
-    assert depths[0] == 0.17
+    assert len(depths) == 595
+    assert depths[0] == 0.0
     assert depths[-1] == 101
 
 
@@ -260,12 +260,11 @@ def test_get_depth_values_shallow_and_small_epsilon():
 def test_get_depth_values_shallow_and_large_epsilon():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
-        min_echo_range=1.31,
         max_echo_range=24,
         cruise_min_epsilon=1.31,
     )
-    assert len(depths) == 18
-    assert depths[0] == 1.31
+    assert len(depths) == 19
+    assert depths[0] == 0.0  # 1.31
     assert depths[-1] == 24
 
 
@@ -273,12 +272,11 @@ def test_get_depth_values_shallow_and_large_epsilon():
 def test_get_depth_values_deep_and_small_epsilon():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
-        min_echo_range=0.11,
         max_echo_range=221.1,
         cruise_min_epsilon=0.11,
     )
-    assert len(depths) == 2009
-    assert depths[0] == 0.11
+    assert len(depths) == 2011
+    assert depths[0] == 0.0
     assert depths[-1] == 221.1  # TODO: do we want this to be np.ceil(x)
 
 
@@ -286,12 +284,11 @@ def test_get_depth_values_deep_and_small_epsilon():
 def test_get_depth_values_deep_and_large_epsilon():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
-        min_echo_range=1.31,
         max_echo_range=222.2,
         cruise_min_epsilon=1.31,  # int((222.2 - 1.31) / 1.31) + 1 = 169
     )  # 1.31 + 169*1.31 = 222.70
-    assert len(depths) == 169
-    assert depths[0] == 1.31
+    assert len(depths) == 170
+    assert depths[0] == 0
     # TODO: would it be better to have whole numbers?
     assert depths[-1] == 222.20
 
@@ -300,24 +297,22 @@ def test_get_depth_values_deep_and_large_epsilon():
 def test_get_depth_values_half_meter():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
-        min_echo_range=0.50,
         max_echo_range=250.0,
         cruise_min_epsilon=0.50,
     )
-    assert len(depths) == 500
-    assert depths[0] == 0.50
+    assert len(depths) == 501
+    assert depths[0] == 0
     assert depths[-1] == 250
 
 
 def test_get_depth_values_half_meter_shallow():
     zarr_manager = ZarrManager()
     depths = zarr_manager.get_depth_values(
-        min_echo_range=0.50,
         max_echo_range=2.0,
         cruise_min_epsilon=0.50,
     )
-    assert len(depths) == 4
-    assert depths[0] == 0.50
+    assert len(depths) == 5
+    assert depths[0] == 0
     assert depths[-1] == 2.0
 
 

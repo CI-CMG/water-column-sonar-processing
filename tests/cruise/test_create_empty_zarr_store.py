@@ -151,20 +151,6 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
         "2007-07-12T23:17:58.454Z",
         "2007-07-13T00:55:17.454Z",
     ]
-    # zarr_path = [
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070711-T182032.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070711-T210709.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T004447.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T033431.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T061745.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T100505.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T171804.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T201647.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T202050.zarr",
-    #     "level_1/Henry_B._Bigelow/HB0707/EK60/D20070712-T231759.zarr",
-    # ]
     water_level = 0.0
 
     for iii in range(0, len(file_name)):
@@ -177,53 +163,41 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
             expression_attribute_names={
                 "#CH": "CHANNELS",
                 "#ET": "END_TIME",
-                # "#ED": "ERROR_DETAIL",
                 "#FR": "FREQUENCIES",
                 "#MA": "MAX_ECHO_RANGE",
                 "#MI": "MIN_ECHO_RANGE",
                 "#ND": "NUM_PING_TIME_DROPNA",
-                # "#PS": "PIPELINE_STATUS",  # testing this updated
                 "#PT": "PIPELINE_TIME",  # testing this updated
                 "#SE": "SENSOR_NAME",
                 "#SH": "SHIP_NAME",
                 "#ST": "START_TIME",
-                # "#ZB": "ZARR_BUCKET",
-                # "#ZP": "ZARR_PATH",
                 "#WL": "WATER_LEVEL",
             },
             expression_attribute_values={
                 ":ch": {"L": [{"S": i} for i in test_channels]},
                 ":et": {"S": end_time[iii]},
-                # ":ed": {"S": ""},
                 ":fr": {"L": [{"N": str(i)} for i in frequency]},
                 ":ma": {"N": str(np.round(max_echo_range[iii], 4))},
                 ":mi": {"N": str(np.round(min_echo_range, 4))},
                 ":nd": {"N": str(num_ping_time_dropna[iii])},
-                # ":ps": {"S": "PROCESSING_RESAMPLE_AND_WRITE_TO_ZARR_STORE"},
                 ":pt": {"S": "2023-10-02T08:08:08Z"},
                 ":se": {"S": sensor_name},
                 ":sh": {"S": ship_name},
                 ":st": {"S": start_time[iii]},
-                # ":zb": {"S": output_bucket_name},
-                # ":zp": {"S": zarr_path[iii]},
                 ":wl": {"N": str(np.round(water_level, 2))},
             },
             update_expression=(
                 "SET "
                 "#CH = :ch, "
                 "#ET = :et, "
-                # "#ED = :ed, "
                 "#FR = :fr, "
                 "#MA = :ma, "
                 "#MI = :mi, "
                 "#ND = :nd, "
-                # "#PS = :ps, "
                 "#PT = :pt, "
                 "#SE = :se, "
                 "#SH = :sh, "
                 "#ST = :st, "
-                # "#ZB = :zb, "
-                # "#ZP = :zp"
                 "#WL = :wl"
             ),
         )
@@ -266,12 +240,12 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     # --- Open with Zarr --- #
     root = zarr.open(store=zarr_store, mode="r")
     print(root.info)
-    assert root.Sv.shape == (3998, 89911, 4)
+    assert root.Sv.shape == (3999, 89911, 4)
 
     # --- Open with Xarray --- #
     ds = xr.open_dataset(zarr_store, engine="zarr")
     print(ds)
-    assert ds.Sv.size == 1437856712  # ~1.44 GB
+    assert ds.Sv.size == 1438216356  # ~1.4 GB
     assert set(list(ds.variables)) == {
         "Sv",
         "bottom",
