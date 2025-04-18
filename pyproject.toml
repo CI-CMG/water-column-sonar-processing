@@ -57,7 +57,6 @@ dev = [
     "bandit",
     "black==25.1.0",
     "build",
-#    "flake8==7.2.0",
     "isort",
     "matplotlib",
     "pooch==1.8.2",
@@ -85,12 +84,6 @@ multi_line_output = 3
 force_grid_wrap = 0
 include_trailing_comma = true
 combine_as_imports = true
-
-#[flake8]
-#max-line-length = 88
-#ignore = E203, E266, E501, W503, F403, F401
-#max-complexity = 18
-#select = B,C,E,F,W,T4,B9
 
 [tool.black]
 line-length = 88

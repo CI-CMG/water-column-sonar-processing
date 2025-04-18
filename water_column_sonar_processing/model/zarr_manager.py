@@ -303,7 +303,7 @@ class ZarrManager:
 
     #######################################################
     #
-    # LEVEL 3 - LEVEL 3 - LEVEL 3 - LEVEL 3
+    # LEVEL 3 - LEVEL 3 - LEVEL 3 - LEVEL 3 # TODO: move to separate project for zarr 3?
     #
     def create_zarr_store_level_3(
         self,
@@ -371,7 +371,7 @@ class ZarrManager:
                 shape=len(depth_values),
                 chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
                 dtype=np.dtype(
-                    Coordinates.DEPTH_DTYPE.value
+                    Coordinates.DEPTH_DTYPE.value  # TODO: convert to integers and only get whole number depths
                 ),  # float16 == 2 significant digits would be ideal
                 compressor=compressor,
                 # fill_value=np.nan,
@@ -438,7 +438,9 @@ class ZarrManager:
                 data=np.repeat(0.0, width),  # root.longitude[:] = np.nan
                 shape=width,
                 chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
-                dtype=np.dtype(Coordinates.BOTTOM_DTYPE.value),
+                dtype=np.dtype(
+                    Coordinates.BOTTOM_DTYPE.value
+                ),  # TODO: should also only be integers
                 compressor=compressor,
                 fill_value=0.0,
                 overwrite=self.__overwrite,
@@ -458,7 +460,7 @@ class ZarrManager:
                 data=np.repeat(np.nan, width),  # root.longitude[:] = np.nan
                 shape=width,
                 chunks=Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,
-                dtype=np.dtype(Coordinates.SPEED_DTYPE.value),
+                dtype=np.dtype(Coordinates.SPEED_DTYPE.value),  # TODO: also round?
                 compressor=compressor,
                 fill_value=np.nan,
                 overwrite=self.__overwrite,
@@ -504,7 +506,7 @@ class ZarrManager:
                     len(frequencies),
                 ),
                 dtype=np.dtype("int8"),  # Coordinates.SV_DTYPE.value
-                compressor=compressor,
+                compressor=compressor,  # TODO: get compression working?!
                 # fill_value=np.nan,
                 overwrite=self.__overwrite,
             )
@@ -531,6 +533,8 @@ class ZarrManager:
             )
             root.attrs["processing_software_version"] = current_project_version
             root.attrs["processing_software_time"] = Timestamp.get_timestamp()
+            #
+            # TODO: add level somewhere?
             #
             root.attrs["calibration_status"] = calibration_status
             root.attrs["tile_size"] = TILE_SIZE

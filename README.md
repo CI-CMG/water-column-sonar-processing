@@ -40,7 +40,12 @@ uv run pre-commit install
 
 # Black
 https://ljvmiranda921.github.io/notebook/2018/06/21/precommits-using-black-and-flake8/
-
+```
+Settings > Black
+Execution mode: Package
+Python Interpreter: .../.venv/bin/python
+Use Black Formatter: X On Code reformat, X On Save
+```
 
 # Linting
 Ruff
@@ -50,11 +55,7 @@ https://plugins.jetbrains.com/plugin/20574-ruff
 https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scrollTo=AayVyvpBdfIZ
 
 # Test Coverage
-20241124
-8 failed, 32 passed, 3 skipped, 1 warning in 6.92s
-20241125
-5 failed, 35 passed, 3 skipped, 1 warning in 9.71s
-3 failed, 38 passed, 3 skipped, 1 warning in 7.24s
+TODO
 
 # Tag a Release
 Step 1 --> increment the semantic version in the zarr_manager.py "metadata" & the "pyproject.toml"
