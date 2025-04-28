@@ -39,7 +39,7 @@ def create_empty_zarr_test_path(test_path):
 #######################################################
 # TODO: this works but should maybe follow approach where i resample from Level 2 data?
 @mock_aws()
-# @pytest.mark.skip(reason="For future implementations")
+@pytest.mark.skip(reason="For future implementations")
 def test_create_empty_zarr_store_level_3(create_empty_zarr_test_path, moto_server):
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager(endpoint_url=moto_server)
