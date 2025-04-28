@@ -2,9 +2,9 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
       - id: detect-aws-credentials
+      - id: trailing-whitespace
+      #- id: end-of-file-fixer
       #- id: check-docstring-first
       - id: check-json
       - id: check-toml

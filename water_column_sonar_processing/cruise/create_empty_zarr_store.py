@@ -127,6 +127,7 @@ class CreateEmptyZarrStore:
                 bucket_name=output_bucket_name,
                 sub_prefix=zarr_prefix,
             )
+            #
             if len(child_objects) > 0:
                 s3_manager.delete_nodd_objects(
                     bucket_name=output_bucket_name,

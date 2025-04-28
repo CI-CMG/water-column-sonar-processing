@@ -117,16 +117,20 @@ class RawToZarr:
     ############################################################################
     def __upload_files_to_output_bucket(
         self,
-        output_bucket_name,
-        local_directory,
-        object_prefix,
+        output_bucket_name: str,
+        local_directory: str,  # e.g. 'D20070724-T042400.zarr'  # TODO: problem: if this is not in the current directory
+        object_prefix: str,  # e.g. "level_1/Henry_B._Bigelow/HB0706/EK60/"
         endpoint_url,
     ):
         # Note: this will be passed credentials if using NODD
+        # TODO: this will not work if the local_directory is anywhere other than the current folder
+        # see test_s3_manager test_upload...pool_executor for solution
         s3_manager = S3Manager(endpoint_url=endpoint_url)
         print("Uploading files using thread pool executor.")
         all_files = []
-        for subdir, dirs, files in os.walk(local_directory):
+        for subdir, dirs, files in os.walk(
+            local_directory
+        ):  # os.path.basename(s3_manager_test_path.joinpath("HB0707.zarr/"))
             for file in files:
                 local_path = os.path.join(subdir, file)
                 s3_key = os.path.join(object_prefix, local_path)

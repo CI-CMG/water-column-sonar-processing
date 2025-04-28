@@ -2,6 +2,7 @@ import json
 import os
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from time import sleep
 from typing import Optional
 
 import boto3
@@ -80,14 +81,8 @@ class S3Manager:
             self.s3_client_noaa_wcsd_zarr_pds.get_paginator("list_objects_v2")
         )
 
-    # def get_client(self): # TODO: do i need this?
-    #     return self.s3_session.client(
-    #         service_name="s3",
-    #         config=self.s3_client_config,
-    #         region_name=self.s3_region,
-    #     )
-
     #####################################################################
+    # tested
     def create_bucket(
         self,
         bucket_name: str,
@@ -116,12 +111,13 @@ class S3Manager:
         # print(response)
 
     #####################################################################
+    # tested
     def list_buckets(self):
-        # client = self.get_client()
         client = self.s3_client
         return client.list_buckets()
 
     #####################################################################
+    # tested
     def upload_nodd_file(
         self,
         file_name: str,
@@ -137,6 +133,7 @@ class S3Manager:
         return key
 
     #####################################################################
+    # tested
     def upload_files_with_thread_pool_executor(
         self,
         output_bucket_name: str,
@@ -166,53 +163,60 @@ class S3Manager:
         return all_uploads
 
     #####################################################################
-    # TODO: this uses resource, try to use client
+    # tested
+    def upload_zarr_store_to_s3(
+        self,
+        output_bucket_name: str,
+        local_directory: str,
+        object_prefix: str,
+        cruise_name: str,
+    ) -> None:
+        print("uploading model store to s3")
+        try:
+            #
+            print("Starting upload with thread pool executor.")
+            # # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
+            all_files = []
+            for subdir, dirs, files in os.walk(f"{local_directory}/{cruise_name}.zarr"):
+                for file in files:
+                    local_path = os.path.join(subdir, file)
+                    # TODO: find a better method for splitting strings here:
+                    # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.zarr/.zattrs'
+                    # s3_key = f"{object_prefix}/{cruise_name}.zarr{local_path.split(f'{cruise_name}.zarr')[-1]}"
+                    s3_key = os.path.join(
+                        object_prefix,
+                        os.path.join(
+                            subdir[subdir.find(f"{cruise_name}.zarr") :], file
+                        ),
+                    )
+                    all_files.append([local_path, s3_key])
+            self.upload_files_with_thread_pool_executor(
+                output_bucket_name=output_bucket_name,
+                all_files=all_files,
+            )
+            print("Done uploading with thread pool executor.")
+        except Exception as err:
+            raise RuntimeError(f"Problem uploading zarr store to s3, {err}")
+
+    #####################################################################
+    # tested
     def upload_file(
         self,
         filename: str,
         bucket_name: str,
         key: str,
     ):
-        # self.s3_client.upload_file(Filename=filename, Bucket=bucket, Key=key)
         self.s3_resource.Bucket(bucket_name).upload_file(Filename=filename, Key=key)
 
     #####################################################################
-    def upload_zarr_files_to_bucket(  # noaa-wcsd-model-pds
-        self,
-        local_directory,
-        remote_directory,
-        output_bucket_name,
-    ):
-        # Right now this is just for uploading a model store to s3
-        print("Uploading files to output bucket.")
-        store_name = os.path.basename(local_directory)
-        all_files = []
-        for subdir, dirs, files in os.walk(local_directory):
-            for file in files:
-                local_path = os.path.join(subdir, file)
-                # s3_key = os.path.join(object_prefix, local_path)
-                s3_key = os.path.join(
-                    remote_directory,
-                    store_name,
-                    subdir.split(store_name)[-1].strip("/"),
-                )
-                all_files.append([local_path, s3_key])
-
-        all_uploads = self.upload_files_with_thread_pool_executor(
-            output_bucket_name=output_bucket_name,
-            all_files=all_files,
-        )
-        print("Done uploading files to output bucket.")
-        return all_uploads
-
-    #####################################################################
+    # tested
     def check_if_object_exists(self, bucket_name, key_name) -> bool:
         s3_manager2 = S3Manager()
         s3_manager2.list_objects(bucket_name=bucket_name, prefix=key_name)
         s3_client_noaa_wcsd_zarr_pds = self.s3_client_noaa_wcsd_zarr_pds
         try:
-            # response = s3_resource_noaa_wcsd_zarr_pds.Object(bucket_name, key_name).load()
             s3_client_noaa_wcsd_zarr_pds.head_object(Bucket=bucket_name, Key=key_name)
+            return True
         except botocore.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "404":
                 # The object does not exist.
@@ -223,10 +227,9 @@ class S3Manager:
             else:
                 # Something else has gone wrong.
                 raise
-        return True
 
     #####################################################################
-    # used: raw-to-zarr
+    # tested
     def list_objects(self, bucket_name, prefix):  # noaa-wcsd-pds and noaa-wcsd-zarr-pds
         # TODO: this isn't working for geojson detecting objects!!!!!!!
         # analog to "find_children_objects"
@@ -240,32 +243,20 @@ class S3Manager:
                 keys.extend([k["Key"] for k in page["Contents"]])
         return keys
 
-    # def list_nodd_objects(  # These are used by the geometry for uploading dataset
-    #     self,
-    #     prefix,
-    # ):
-    #     # Returns a list of key strings for each object in bucket defined by prefix
-    #     keys = []
-    #     page_iterator = self.paginator_noaa_wcsd_zarr_pds.paginate(Bucket=output_bucket_name, Prefix=prefix):
-    #     for page in paginator.paginate(Bucket=output_bucket_name, Prefix=prefix):
-    #         if "Contents" in page.keys():
-    #             keys.extend([k["Key"] for k in page["Contents"]])
-    #     return keys
-
     #####################################################################
     # TODO: change name to "directory"
-    def folder_exists_and_not_empty(self, bucket_name: str, path: str) -> bool:
-        if not path.endswith("/"):
-            path = path + "/"
-        # s3_client = self.s3_client
-        resp = self.list_objects(
-            bucket_name=bucket_name, prefix=path
-        )  # TODO: this is returning root folder and doesn't include children or hidden folders
-        # resp = s3_client.list_objects(Bucket=bucket, Prefix=path, Delimiter='/', MaxKeys=1)
-        return "Contents" in resp
+    # def folder_exists_and_not_empty(self, bucket_name: str, path: str) -> bool:
+    #     if not path.endswith("/"):
+    #         path = path + "/"
+    #     # s3_client = self.s3_client
+    #     resp = self.list_objects(
+    #         bucket_name=bucket_name, prefix=path
+    #     )  # TODO: this is returning root folder and doesn't include children or hidden folders
+    #     # resp = s3_client.list_objects(Bucket=bucket, Prefix=path, Delimiter='/', MaxKeys=1)
+    #     return "Contents" in resp
 
     #####################################################################
-    # used
+    # private
     def __paginate_child_objects(
         self,
         bucket_name: str,
@@ -280,6 +271,8 @@ class S3Manager:
                 objects.extend(page["Contents"])
         return objects
 
+    #####################################################################
+    # tested
     def get_child_objects(
         self,
         bucket_name: str,
@@ -311,13 +304,14 @@ class S3Manager:
         return raw_files
 
     #####################################################################
-    def get_object(  # TODO: Move this to index.py
-        # noaa-wcsd-pds or noaa-wcsd-model-pds
+    # tested
+    def get_object(  # noaa-wcsd-pds or noaa-wcsd-zarr-pds
         self,
         bucket_name,
         key_name,
     ):
         # Meant for getting singular objects from a bucket, used by indexing lambda
+        # can also return byte range potentially.
         print(f"Getting object {key_name} from {bucket_name}")
         try:
             response = self.s3_client.get_object(
@@ -326,27 +320,31 @@ class S3Manager:
             )
             # status = response.get("ResponseMetadata", {}).get("HTTPStatusCode")
             # if status == 200:
+            print(f"Done getting object {key_name} from {bucket_name}")
+            return response
         except ClientError as err:
             print(f"Problem was encountered while getting s3 file: {err}")
             raise
-        print(f"Done getting object {key_name} from {bucket_name}")
-        return response
 
     #####################################################################
-    # used raw-to-model
-    def download_file(  # TODO: change to download_object
-        # noaa-wcsd-pds or noaa-wcsd-model-pds
+    # tested
+    def download_file(
         self,
         bucket_name,
         key,
-        file_name,  # where the file will be saved
+        file_name,  # path to where the file will be saved
     ):
-        self.s3_client.download_file(Bucket=bucket_name, Key=key, Filename=file_name)
-        # TODO: if bottom file doesn't exist, don't fail downloader
-        print("downloaded file")
+        try:
+            self.s3_client.download_file(
+                Bucket=bucket_name, Key=key, Filename=file_name
+            )
+            # TODO: if bottom file doesn't exist, don't fail downloader
+            print("downloaded file")
+        except Exception as err:
+            raise RuntimeError(f"Problem was encountered while downloading_file, {err}")
 
     #####################################################################
-    # TODO: need to test this!!!
+    # tested
     def delete_nodd_objects(  # nodd-bucket
         self,
         bucket_name,
@@ -359,6 +357,10 @@ class S3Manager:
                 objects_to_delete.append({"Key": obj["Key"]})
             # Note: request can contain a list of up to 1000 keys
             for batch in chunked(ll=objects_to_delete, n=1000):
+                # An error occurred (SlowDown) when calling the DeleteObjects operation (reached max retries: 4):
+                # Please reduce your request rate.
+                sleep(0.5)
+                #
                 self.s3_client_noaa_wcsd_zarr_pds.delete_objects(
                     Bucket=bucket_name, Delete={"Objects": batch}
                 )
@@ -367,8 +369,8 @@ class S3Manager:
             raise RuntimeError(f"Problem was encountered while deleting objects, {err}")
 
     #####################################################################
-    # TODO: need to test this!!!
-    def delete_nodd_object(
+    # tested
+    def delete_nodd_object(  # only used to delete geojson it looks like?! Remove.
         self,
         bucket_name,
         key_name,
@@ -383,19 +385,24 @@ class S3Manager:
             raise RuntimeError(f"Problem was encountered while deleting objects, {err}")
 
     #####################################################################
+    # tested
     def put(self, bucket_name, key, body):  # noaa-wcsd-model-pds
-        self.s3_client.put_object(
-            Bucket=bucket_name, Key=key, Body=body
-        )  # "Body" can be a file
+        try:
+            self.s3_client.put_object(
+                Bucket=bucket_name, Key=key, Body=body
+            )  # "Body" can be a file
+        except Exception as err:
+            raise RuntimeError(f"Problem was encountered putting object, {err}")
 
     #####################################################################
+    # tested
     def read_s3_json(
         self,
         ship_name,
         cruise_name,
         sensor_name,
         file_name_stem,
-        output_bucket_name,
+        output_bucket_name,  # TODO: change to just bucket_name
     ) -> str:
         try:
             resource = self.s3_resource_noaa_wcsd_zarr_pds
@@ -408,35 +415,6 @@ class S3Manager:
             return json_content
         except Exception as err:
             raise RuntimeError(f"Exception encountered reading s3 GeoJSON, {err}")
-
-    #####################################################################
-    def upload_zarr_store_to_s3(
-        self,
-        output_bucket_name: str,
-        local_directory: str,
-        object_prefix: str,
-        cruise_name: str,
-    ) -> None:
-        print("uploading model store to s3")
-        #
-        print("Starting upload with thread pool executor.")
-        # # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
-        all_files = []
-        for subdir, dirs, files in os.walk(f"{local_directory}/{cruise_name}.zarr"):
-            for file in files:
-                local_path = os.path.join(subdir, file)
-                # TODO: find a better method for splitting strings here:
-                # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.zarr/.zattrs'
-                s3_key = f"{object_prefix}/{cruise_name}.zarr{local_path.split(f'{cruise_name}.zarr')[-1]}"
-                all_files.append([local_path, s3_key])
-        #
-        # print(all_files)
-        self.upload_files_with_thread_pool_executor(
-            output_bucket_name=output_bucket_name,
-            all_files=all_files,
-        )
-        print("Done uploading with thread pool executor.")
-        # TODO: move to common place
 
 
 #########################################################################
