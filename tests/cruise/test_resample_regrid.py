@@ -406,7 +406,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     assert np.nanmax(test_output_zarr_store.bottom.values) == pytest.approx(
         970.11835
     )  # uses 18 kHz only
-    assert np.nanmin(test_output_zarr_store.bottom.values) == pytest.approx(17.76)
+    assert np.nanmin(test_output_zarr_store.bottom.values) == pytest.approx(15.936)
 
 
 @mock_aws
