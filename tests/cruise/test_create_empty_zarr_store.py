@@ -108,7 +108,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
         249.792,
         249.792,
     ]
-    min_echo_range = 0.25
+    min_echo_range = 0.25  # TODO: vary the values
     num_ping_time_dropna = [
         9778,
         9742,

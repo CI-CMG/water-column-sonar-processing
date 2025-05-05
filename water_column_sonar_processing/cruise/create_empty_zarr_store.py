@@ -65,6 +65,7 @@ class CreateEmptyZarrStore:
         cruise_name: str,
         sensor_name: str,
         table_name: str,
+        # override_cruise_min_epsilon=None,
     ) -> None:
         """
         Initialize zarr store. The water_level needs to be integrated.
@@ -105,6 +106,7 @@ class CreateEmptyZarrStore:
                 (df["MAX_ECHO_RANGE"] + df["WATER_LEVEL"]).dropna().astype(float)
             )
 
+            # TODO: set this to either 1 or 0.5 meters
             cruise_min_epsilon = np.min(df["MIN_ECHO_RANGE"].dropna().astype(float))
 
             print(f"cruise_max_echo_range: {cruise_max_echo_range}")

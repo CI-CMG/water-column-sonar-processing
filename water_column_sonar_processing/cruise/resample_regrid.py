@@ -146,6 +146,7 @@ class ResampleRegrid:
         table_name,
         bucket_name,
         override_select_files=None,
+        # override_cruise_min_epsilon=None,
         endpoint_url=None,
     ) -> None:
         """
@@ -312,14 +313,9 @@ class ResampleRegrid:
                     detected_seafloor_depth[detected_seafloor_depth == 0.0] = np.nan
                     # TODO: problem here: Processing file: D20070711-T210709.
 
-                    # RuntimeWarning: Mean of empty slice
-                    with warnings.catch_warnings():
-                        warnings.simplefilter("ignore", category=RuntimeWarning)
-                        detected_seafloor_depths = np.nanmean(
-                            a=detected_seafloor_depth, axis=0
-                        )
+                    # Use the lowest frequencies to determine bottom
+                    detected_seafloor_depths = detected_seafloor_depth[0, :]
 
-                    # RuntimeWarning: Mean of empty slice detected_seafloor_depths = np.nanmean(detected_seafloor_depth, 0)
                     detected_seafloor_depths[detected_seafloor_depths == 0.0] = np.nan
                     print(f"min depth measured: {np.nanmin(detected_seafloor_depths)}")
                     print(f"max depth measured: {np.nanmax(detected_seafloor_depths)}")

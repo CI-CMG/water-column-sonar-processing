@@ -403,7 +403,9 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # TODO: assert that the test_output_zarr_store.Sv at specific depth equals the input files
 
     # TODO: check the bottom values were written correctly
-    assert np.nanmax(test_output_zarr_store.bottom.values) == pytest.approx(949.5535)
+    assert np.nanmax(test_output_zarr_store.bottom.values) == pytest.approx(
+        970.11835
+    )  # uses 18 kHz only
     assert np.nanmin(test_output_zarr_store.bottom.values) == pytest.approx(17.76)
 
 
