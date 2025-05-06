@@ -3253,7 +3253,7 @@ wheels = [
 
 [[package]]
 name = "water-column-sonar-processing"
-version = "25.4.5"
+version = "25.4.6"
 source = { editable = "." }
 dependencies = [
     { name = "aiobotocore" },
