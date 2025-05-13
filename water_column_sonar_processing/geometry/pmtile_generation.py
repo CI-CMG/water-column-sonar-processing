@@ -138,6 +138,7 @@ class PMTileGeneration(object):
             engine="fiona",  # or "pyogrio"
             layer_options={"ID_GENERATE": "YES"},
             crs="EPSG:4326",
+            id_generate=True,  # required for the feature click selection
         )
         print(gps_gdf)
 
