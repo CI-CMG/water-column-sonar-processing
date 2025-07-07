@@ -278,7 +278,7 @@ class ZarrManager:
             root.attrs["processing_software_name"] = Coordinates.PROJECT_NAME.value
 
             current_project_version = importlib.metadata.version(
-                "water_column_sonar_processing"
+                "ci-cmg-water-column-sonar-processing"
             )
             root.attrs["processing_software_version"] = current_project_version
             root.attrs["processing_software_time"] = Timestamp.get_timestamp()

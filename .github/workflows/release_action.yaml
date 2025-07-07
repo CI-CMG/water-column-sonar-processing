@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/water-column-sonar-processing
+#      url: https://pypi.org/p/water-column-sonar-processing
     permissions:
       id-token: write  # mandatory for trusted publishing
     steps:
