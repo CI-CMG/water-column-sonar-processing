@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ci-cmg-water-column-sonar-processing"
 #name = "water_column_sonar_processing"
-version = "25.7.2"
+version = "25.7.3"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
@@ -39,7 +39,7 @@ dependencies = [
     "pandas==2.2.3",
     #"pelicanfs==1.0.2", # TODO: add this
     "pooch==1.8.2",
-    "pyarrow==19.0.1",
+    "pyarrow==20.0.0",
     "pykalman==0.10.1",
     "python-dotenv==1.1.1",
     "requests==2.32.4",
@@ -57,17 +57,16 @@ dependencies = [
 dev = [
     "bandit[toml]==1.8.0",
     "bandit",
-    "black==25.1.0",
+    "black",
     "build",
     "isort",
     "matplotlib",
     "pooch==1.8.2",
     "pre-commit",
     "pyinstaller",
-    "pytest==8.3.5",
+    "pytest",
     "ruff",
     "tqdm",
-    "twine",
 ]
 
 [project.urls]

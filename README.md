@@ -2,7 +2,7 @@
 Processing tool for converting Level_0 water column sonar data to Level_1 and Level_2 derived data sets as well as generating geospatial information.
 
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CI-CMG/water-column-sonar-processing/test_action.yaml)
-![PyPI - Implementation](https://img.shields.io/pypi/v/water-column-sonar-processing) ![GitHub License](https://img.shields.io/github/license/CI-CMG/water-column-sonar-processing) ![PyPI - Downloads](https://img.shields.io/pypi/dd/water-column-sonar-processing) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/CI-CMG/water-column-sonar-processing) ![GitHub repo size](https://img.shields.io/github/repo-size/CI-CMG/water-column-sonar-processing)
+![PyPI - Implementation](https://img.shields.io/pypi/v/ci-cmg-water-column-sonar-processing) ![GitHub License](https://img.shields.io/github/license/CI-CMG/water-column-sonar-processing) ![PyPI - Downloads](https://img.shields.io/pypi/dd/ci-cmg-water-column-sonar-processing) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/CI-CMG/water-column-sonar-processing) ![GitHub repo size](https://img.shields.io/github/repo-size/CI-CMG/water-column-sonar-processing)
 
 # Setting up the Python Environment
 > Python 3.12.11
@@ -60,7 +60,7 @@ TODO
 # Tag a Release
 Step 1 --> increment the semantic version in the zarr_manager.py "metadata" & the "pyproject.toml"
 ```commandline
-git tag -a v25.7.0 -m "Releasing v25.7.0"
+git tag -a v25.7.2 -m "Releasing v25.7.2"
 git push origin --tags
 ```
 
@@ -90,7 +90,6 @@ https://hb0707.s3.us-east-1.amazonaws.com/index.html
 uv lock --check
 uv lock
 uv sync --extra dev
-#uv run pytest tests
 ```
 
 # Fixing S3FS Problems
