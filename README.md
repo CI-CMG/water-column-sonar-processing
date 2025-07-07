@@ -60,7 +60,7 @@ TODO
 # Tag a Release
 Step 1 --> increment the semantic version in the zarr_manager.py "metadata" & the "pyproject.toml"
 ```commandline
-git tag -a v25.4.5 -m "Releasing v25.4.5"
+git tag -a v25.7.0 -m "Releasing v25.7.0"
 git push origin --tags
 ```
 

@@ -48,7 +48,7 @@ class RawToZarr:
         table_name,
         ship_name,
         cruise_name,
-        sensor_name,
+        sensor_name,  # : Constants, TODO: convert to enum
         file_name,
         min_echo_range,
         max_echo_range,

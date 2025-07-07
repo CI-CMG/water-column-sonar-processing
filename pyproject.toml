@@ -3,8 +3,8 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "water_column_sonar_processing"
-version = "25.5.0"
+name = "ci-cmg-water-column-sonar-processing"
+version = "25.7.0"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
@@ -70,8 +70,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/CI-CMG/water-column-sonar-processing"
+Homepage = "https://echo.fish"
+Repository = "https://github.com/CI-CMG/water-column-sonar-processing"
 Issues = "https://github.com/CI-CMG/water-column-sonar-processing/issues"
+
 
 [tool.bandit]
 exclude_dirs = ["tests"]

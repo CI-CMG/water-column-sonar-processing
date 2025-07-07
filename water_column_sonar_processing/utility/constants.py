@@ -1,8 +1,15 @@
-from enum import Enum, Flag, unique
+from enum import Enum, unique
 
 
 @unique
-class Constants(Flag):
+class Instruments(Enum):
+    # Values are determined using scan of the fist byte of data
+    EK60 = "EK60"
+    EK80 = "EK80"
+
+
+# @unique
+class Constants(Enum):
     TILE_SIZE = 512
 
     # Average https://noaa-wcsd-zarr-pds.s3.us-east-1.amazonaws.com/level_2/Henry_B._Bigelow/HB0902/EK60/HB0902.zarr/time/927
@@ -19,6 +26,7 @@ class Constants(Flag):
 
     EK60 = "EK60"  # TODO: use for "instrument"
     EK80 = "EK80"
+    # INSTRUMENT = EK60 | EK80
 
 
 class Coordinates(Enum):
