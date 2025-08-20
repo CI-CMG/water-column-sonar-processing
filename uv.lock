@@ -438,97 +438,6 @@ wheels = [
 ]
 
 [[package]]
-name = "ci-cmg-water-column-sonar-processing"
-version = "25.7.3"
-source = { editable = "." }
-dependencies = [
-    { name = "aiobotocore" },
-    { name = "boto3" },
-    { name = "botocore" },
-    { name = "echopype" },
-    { name = "fiona" },
-    { name = "geopandas" },
-    { name = "mock" },
-    { name = "moto", extra = ["all", "server"] },
-    { name = "multidict" },
-    { name = "netcdf4" },
-    { name = "networkx" },
-    { name = "numcodecs" },
-    { name = "numpy" },
-    { name = "pandas" },
-    { name = "pooch" },
-    { name = "pyarrow" },
-    { name = "pykalman" },
-    { name = "python-dotenv" },
-    { name = "requests" },
-    { name = "s3fs" },
-    { name = "scipy" },
-    { name = "setuptools" },
-    { name = "shapely" },
-    { name = "xarray" },
-    { name = "xbatcher", extra = ["tensorflow"] },
-    { name = "zarr" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "bandit" },
-    { name = "black" },
-    { name = "build" },
-    { name = "isort" },
-    { name = "matplotlib" },
-    { name = "pooch" },
-    { name = "pre-commit" },
-    { name = "pyinstaller" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "tqdm" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aiobotocore", specifier = "==2.23.0" },
-    { name = "bandit", marker = "extra == 'dev'" },
-    { name = "bandit", extras = ["toml"], marker = "extra == 'dev'", specifier = "==1.8.0" },
-    { name = "black", marker = "extra == 'dev'" },
-    { name = "boto3", specifier = "==1.38.23" },
-    { name = "botocore", specifier = "==1.38.23" },
-    { name = "build", marker = "extra == 'dev'" },
-    { name = "echopype", specifier = "==0.10.1" },
-    { name = "fiona", specifier = "==1.10.1" },
-    { name = "geopandas", specifier = "==1.1.1" },
-    { name = "isort", marker = "extra == 'dev'" },
-    { name = "matplotlib", marker = "extra == 'dev'" },
-    { name = "mock", specifier = "==5.2.0" },
-    { name = "moto", extras = ["all"], specifier = "==5.1.8" },
-    { name = "moto", extras = ["server"], specifier = "==5.1.8" },
-    { name = "multidict", specifier = "==6.6.3" },
-    { name = "netcdf4", specifier = "==1.6.5" },
-    { name = "networkx", specifier = "==3.5.0" },
-    { name = "numcodecs", specifier = "==0.15.1" },
-    { name = "numpy", specifier = "==1.26.4" },
-    { name = "pandas", specifier = "==2.3.0" },
-    { name = "pooch", specifier = "==1.8.2" },
-    { name = "pooch", marker = "extra == 'dev'", specifier = "==1.8.2" },
-    { name = "pre-commit", marker = "extra == 'dev'" },
-    { name = "pyarrow", specifier = "==20.0.0" },
-    { name = "pyinstaller", marker = "extra == 'dev'" },
-    { name = "pykalman", specifier = "==0.10.1" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "python-dotenv", specifier = "==1.1.1" },
-    { name = "requests", specifier = "==2.32.4" },
-    { name = "ruff", marker = "extra == 'dev'" },
-    { name = "s3fs", specifier = "==2025.5.1" },
-    { name = "scipy", specifier = "==1.15.1" },
-    { name = "setuptools", specifier = "==80.9.0" },
-    { name = "shapely", specifier = "==2.1.1" },
-    { name = "tqdm", marker = "extra == 'dev'" },
-    { name = "xarray", specifier = "==2025.7.0" },
-    { name = "xbatcher", extras = ["tensorflow"], specifier = "==0.4.0" },
-    { name = "zarr", specifier = "==2.18.7" },
-]
-
-[[package]]
 name = "click"
 version = "8.1.8"
 source = { registry = "https://pypi.org/simple" }
@@ -3053,6 +2962,97 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/38/e0/633e369b91bbc664df47dcb5454b6c7cf441e8f5b9d0c250ce9f0546401e/virtualenv-20.30.0.tar.gz", hash = "sha256:800863162bcaa5450a6e4d721049730e7f2dae07720e0902b0e4040bd6f9ada8", size = 4346945 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4c/ed/3cfeb48175f0671ec430ede81f628f9fb2b1084c9064ca67ebe8c0ed6a05/virtualenv-20.30.0-py3-none-any.whl", hash = "sha256:e34302959180fca3af42d1800df014b35019490b119eba981af27f2fa486e5d6", size = 4329461 },
+]
+
+[[package]]
+name = "water-column-sonar-processing"
+version = "25.8.0"
+source = { editable = "." }
+dependencies = [
+    { name = "aiobotocore" },
+    { name = "boto3" },
+    { name = "botocore" },
+    { name = "echopype" },
+    { name = "fiona" },
+    { name = "geopandas" },
+    { name = "mock" },
+    { name = "moto", extra = ["all", "server"] },
+    { name = "multidict" },
+    { name = "netcdf4" },
+    { name = "networkx" },
+    { name = "numcodecs" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "pooch" },
+    { name = "pyarrow" },
+    { name = "pykalman" },
+    { name = "python-dotenv" },
+    { name = "requests" },
+    { name = "s3fs" },
+    { name = "scipy" },
+    { name = "setuptools" },
+    { name = "shapely" },
+    { name = "xarray" },
+    { name = "xbatcher", extra = ["tensorflow"] },
+    { name = "zarr" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "bandit" },
+    { name = "black" },
+    { name = "build" },
+    { name = "isort" },
+    { name = "matplotlib" },
+    { name = "pooch" },
+    { name = "pre-commit" },
+    { name = "pyinstaller" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "tqdm" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiobotocore", specifier = "==2.23.0" },
+    { name = "bandit", marker = "extra == 'dev'" },
+    { name = "bandit", extras = ["toml"], marker = "extra == 'dev'", specifier = "==1.8.0" },
+    { name = "black", marker = "extra == 'dev'" },
+    { name = "boto3", specifier = "==1.38.23" },
+    { name = "botocore", specifier = "==1.38.23" },
+    { name = "build", marker = "extra == 'dev'" },
+    { name = "echopype", specifier = "==0.10.1" },
+    { name = "fiona", specifier = "==1.10.1" },
+    { name = "geopandas", specifier = "==1.1.1" },
+    { name = "isort", marker = "extra == 'dev'" },
+    { name = "matplotlib", marker = "extra == 'dev'" },
+    { name = "mock", specifier = "==5.2.0" },
+    { name = "moto", extras = ["all"], specifier = "==5.1.8" },
+    { name = "moto", extras = ["server"], specifier = "==5.1.8" },
+    { name = "multidict", specifier = "==6.6.3" },
+    { name = "netcdf4", specifier = "==1.6.5" },
+    { name = "networkx", specifier = "==3.5.0" },
+    { name = "numcodecs", specifier = "==0.15.1" },
+    { name = "numpy", specifier = "==1.26.4" },
+    { name = "pandas", specifier = "==2.3.0" },
+    { name = "pooch", specifier = "==1.8.2" },
+    { name = "pooch", marker = "extra == 'dev'", specifier = "==1.8.2" },
+    { name = "pre-commit", marker = "extra == 'dev'" },
+    { name = "pyarrow", specifier = "==20.0.0" },
+    { name = "pyinstaller", marker = "extra == 'dev'" },
+    { name = "pykalman", specifier = "==0.10.1" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "python-dotenv", specifier = "==1.1.1" },
+    { name = "requests", specifier = "==2.32.4" },
+    { name = "ruff", marker = "extra == 'dev'" },
+    { name = "s3fs", specifier = "==2025.5.1" },
+    { name = "scipy", specifier = "==1.15.1" },
+    { name = "setuptools", specifier = "==80.9.0" },
+    { name = "shapely", specifier = "==2.1.1" },
+    { name = "tqdm", marker = "extra == 'dev'" },
+    { name = "xarray", specifier = "==2025.7.0" },
+    { name = "xbatcher", extras = ["tensorflow"], specifier = "==0.4.0" },
+    { name = "zarr", specifier = "==2.18.7" },
 ]
 
 [[package]]

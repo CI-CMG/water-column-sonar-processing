@@ -124,7 +124,7 @@ def test_zarr_manager():
     assert file_xr.attrs["cruise_name"] == "test_cruise"
     assert file_xr.attrs["sensor_name"] == "EK60"
     current_project_version = importlib.metadata.version(
-        "ci-cmg-water-column-sonar-processing"
+        "water-column-sonar-processing"
     )
     assert file_xr.attrs["processing_software_version"] == current_project_version
 

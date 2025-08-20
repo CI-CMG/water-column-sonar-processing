@@ -12,7 +12,7 @@ maintainers = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
 description = "Processing tool for water column sonar data."
-keywords = ["ocean", "sonar", "water column"]
+keywords = ["ocean", "sonar", "water column", "zarr"]
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
