@@ -2,7 +2,7 @@
 Processing tool for converting Level_0 water column sonar data to Level_1 and Level_2 derived data sets as well as generating geospatial information.
 
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CI-CMG/water-column-sonar-processing/test_action.yaml)
-![PyPI - Implementation](https://img.shields.io/pypi/v/ci-cmg-water-column-sonar-processing) ![GitHub License](https://img.shields.io/github/license/CI-CMG/water-column-sonar-processing) ![PyPI - Downloads](https://img.shields.io/pypi/dd/ci-cmg-water-column-sonar-processing) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/CI-CMG/water-column-sonar-processing) ![GitHub repo size](https://img.shields.io/github/repo-size/CI-CMG/water-column-sonar-processing)
+![PyPI - Implementation](https://img.shields.io/pypi/v/water-column-sonar-processing) ![GitHub License](https://img.shields.io/github/license/CI-CMG/water-column-sonar-processing) ![PyPI - Downloads](https://img.shields.io/pypi/dd/water-column-sonar-processing) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/CI-CMG/water-column-sonar-processing) ![GitHub repo size](https://img.shields.io/github/repo-size/CI-CMG/water-column-sonar-processing)
 
 # Setting up the Python Environment
 > Python 3.12.11
