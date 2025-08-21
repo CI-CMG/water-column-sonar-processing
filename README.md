@@ -104,3 +104,6 @@ Press Close.
 Restart the IDE.
 The asyncio support will be enabled in the debugger.
 ```
+# Fixing windows/wsl/ubuntu/mac git compatability
+> git config --global core.filemode false
+> git config --global core.autocrlf true
