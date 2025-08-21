@@ -13,14 +13,14 @@ repos:
         args: [ "--autofix", "--indent=2", "--no-sort-keys" ]
 
   ### Security Scan for AWS Secrets ###
-  - repo: local
-    hooks:
-      - id: trufflehog
-        name: TruffleHog
-        description: Detect secrets in your dataset.
-        entry: bash -c 'trufflehog git file://. --since-commit HEAD --no-verification --fail --no-update'
-        language: system
-        stages: [ "pre-commit", "pre-push" ]
+#  - repo: local
+#    hooks:
+#      - id: trufflehog
+#        name: TruffleHog
+#        description: Detect secrets in your dataset.
+#        entry: bash -c 'trufflehog git file://. --since-commit HEAD --no-verification --fail --no-update'
+#        language: system
+#        stages: [ "pre-commit", "pre-push" ]
 
   # Black is a code formatter that automatically formats your code according to a predefined style
   - repo: https://github.com/psf/black

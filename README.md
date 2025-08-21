@@ -10,6 +10,7 @@ Processing tool for converting Level_0 water column sonar data to Level_1 and Le
 # Installing Dependencies
 ```
 source .venv/bin/activate
+# or ".venv\Scripts\activate" in windows
 
 uv pip install --upgrade pip
 
