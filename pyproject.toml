@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "water-column-sonar-processing"
-version = "25.8.0"
+version = "25.9.0"
 authors = [
   { name="Rudy Klucik", email="rudy.klucik@noaa.gov" },
 ]
