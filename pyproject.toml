@@ -52,9 +52,10 @@ dependencies = [
     "zarr==2.18.7",
 ]
 
+# uv pip install -r pyproject.toml --all-extras
 [project.optional-dependencies]
 dev = [
-    "bandit[toml]==1.8.0",
+    "bandit[toml]==1.8.6",
     "bandit",
     "black",
     "build",

@@ -85,6 +85,12 @@ class Coordinates(Enum):
     SPEED_LONG_NAME = "Nautical miles per hour"
     SPEED_STANDARD_NAME = "speed"
 
+    DISTANCE = "distance"
+    DISTANCE_DTYPE = "float32"
+    DISTANCE_UNITS = "m"
+    DISTANCE_LONG_NAME = "Length across water column"
+    DISTANCE_STANDARD_NAME = "distance"
+
     SV = "Sv"
     SV_DTYPE = "float32"  # int64
     SV_UNITS = "dB"
