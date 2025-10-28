@@ -16,7 +16,11 @@ class Constants(Enum):
     # chunk size is ~1.3 kB, HB0902 cruise takes ~30 seconds to load all time/lat/lon dataset
     # NOTE: larger value here will speed up the TurfJS download of dataset in the UI
     # Problem interpolating the dataset: cannot reshape array of size 65536 into shape...
-    SPATIOTEMPORAL_CHUNK_SIZE = int(2**16) - 1024  # e.g. int(2**14)
+    # TODO: needs to be enum
+    SPATIOTEMPORAL_CHUNK_SIZE = int(2**16) - 1024
+    # int(2**16) - 1024,
+    # int(2**16) - 1024,
+    # e.g. int(2**14)
     # TODO: create test for SPATIOTEMPORAL_CHUNK_SIZE with requirement!
 
     LEVEL_0 = "raw"
@@ -88,7 +92,7 @@ class Coordinates(Enum):
     DISTANCE = "distance"
     DISTANCE_DTYPE = "float32"
     DISTANCE_UNITS = "m"
-    DISTANCE_LONG_NAME = "Length across water column"
+    DISTANCE_LONG_NAME = "GPS distance"
     DISTANCE_STANDARD_NAME = "distance"
 
     SV = "Sv"

@@ -223,10 +223,10 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
                 prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
             )
         )
-        > 1
+        == 13
     )
     assert (
-        "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata"
+        "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"
         in s3_manager.list_objects(
             bucket_name=output_bucket_name,
             prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
@@ -240,11 +240,11 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     # --- Open with Zarr --- #
     root = zarr.open(store=zarr_store, mode="r")
     print(root.info)
-    assert root.Sv.shape == (3999, 89911, 4)
+    assert root["Sv"].shape == (3999, 89911, 4)
 
     # --- Open with Xarray --- #
     ds = xr.open_dataset(zarr_store, engine="zarr")
-    print(ds)
+    # print(ds)
     assert ds.Sv.size == 1438216356  # ~1.4 GB
     assert set(list(ds.variables)) == {
         "Sv",
@@ -262,6 +262,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
         "units": "Knots",
     }
     assert set(ds.speed.dims) == {"time"}
+    assert set(ds.Sv.dims) == {"depth", "frequency", "time"}
 
 
 #######################################################

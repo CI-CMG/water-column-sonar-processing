@@ -85,7 +85,7 @@ def test_s3_map(moto_server, s3fs_manager_test_path, tmp_path):
 
     # --- Create Local Zarr Store --- #
     # temporary_directory = "/tmp"  # str(tmp_path)
-    zarr_path = f"{tmp_path}/example.model"
+    zarr_path = f"{tmp_path}/example.zarr"
     ds = xr.Dataset(
         {
             "a": (("y", "x"), np.random.rand(6).reshape(2, 3)),
@@ -94,7 +94,7 @@ def test_s3_map(moto_server, s3fs_manager_test_path, tmp_path):
         coords={"y": [0, 1], "x": [10, 20, 30]},
     )
     # TODO: write zarr store directly to the s3 bucket?!
-    ds.to_zarr(zarr_path)  # , zarr_format=2)
+    ds.to_zarr(zarr_path)
 
     # --- Upload to S3 --- #
     # TODO: just copy from a to b
@@ -119,18 +119,18 @@ def test_s3_map(moto_server, s3fs_manager_test_path, tmp_path):
         bucket_name=test_bucket, file_path=zarr_path, prefix="ship/cruise/sensor"
     )
 
-    assert s3fs_manager.exists(f"s3://{test_bucket}/ship/cruise/sensor/example.model")
+    assert s3fs_manager.exists(f"s3://{test_bucket}/ship/cruise/sensor/example.zarr")
 
-    found = s3_manager.list_objects(test_bucket, "ship/cruise/sensor/example.model")
+    found = s3_manager.list_objects(test_bucket, "ship/cruise/sensor/example.zarr")
     print(found)
-    s3_object = s3_manager.get_object(
-        bucket_name=test_bucket, key_name="ship/cruise/sensor/example.model/.zgroup"
+    s3_object = s3_manager.get_object(  # TODO: change from just group to something else
+        bucket_name=test_bucket, key_name="ship/cruise/sensor/example.zarr/zarr.json"
     )
     body = s3_object.get("Body").read().decode("utf-8")
-    print(body)
+    assert "zarr_format" in body
 
     s3_store = s3fs_manager.s3_map(
-        s3_zarr_store_path=f"s3://{test_bucket}/ship/cruise/sensor/example.model"
+        s3_zarr_store_path=f"s3://{test_bucket}/ship/cruise/sensor/example.zarr"
     )
 
     # --- Test S3Map Opening Zarr store with Zarr for Writing --- #
@@ -151,7 +151,7 @@ def test_s3_map(moto_server, s3fs_manager_test_path, tmp_path):
     assert s3_zarr_xr.a.shape == (2, 3)
 
     # Write new dataset to subset
-    cruise_zarr.a[0, 1] = 42
+    cruise_zarr["a"][0, 1] = 42
 
     assert s3_zarr_xr.a[0, 1].values == 42
 
