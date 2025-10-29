@@ -127,6 +127,7 @@ def test_s3_map(moto_server, s3fs_manager_test_path, tmp_path):
         bucket_name=test_bucket, key_name="ship/cruise/sensor/example.zarr/zarr.json"
     )
     body = s3_object.get("Body").read().decode("utf-8")
+
     assert "zarr_format" in body
 
     s3_store = s3fs_manager.s3_map(
