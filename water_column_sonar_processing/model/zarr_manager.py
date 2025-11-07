@@ -15,6 +15,7 @@ from water_column_sonar_processing.utility import Constants, Coordinates, Timest
 
 # Blosc.use_threads = True
 # compressor = Blosc(cname="zstd", clevel=9)
+# TODO: change clevel to 9?!
 compressor = BloscCodec(
     cname="zstd", clevel=3, shuffle=zarr.codecs.BloscShuffle.shuffle
 )
@@ -88,7 +89,8 @@ class ZarrManager:
             ### https://zarr.readthedocs.io/en/latest/user-guide/groups/ ###
             # store = zarr.group(path=zarr_path)
             root = zarr.group(
-                store=zarr_path, overwrite=self.__overwrite, cache_attrs=True
+                store=zarr_path,
+                overwrite=self.__overwrite,  # cache_attrs=True
             )
 
             #####################################################################
@@ -103,7 +105,7 @@ class ZarrManager:
                 # shape=width,
                 chunks=(Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,),
                 # dtype=np.dtype(Coordinates.TIME_DTYPE.value),
-                compressor=compressor,
+                compressors=compressor,
                 fill_value=np.nan,
                 overwrite=self.__overwrite,
                 dimension_names=(Coordinates.TIME.value,),
@@ -123,7 +125,9 @@ class ZarrManager:
                 max_echo_range=max_echo_range,
                 cruise_min_epsilon=cruise_min_epsilon,
             )
-            depth_data.astype(np.dtype(Coordinates.DEPTH_DTYPE.value), copy=False)
+            depth_data = np.array(
+                depth_data, dtype=np.dtype(Coordinates.DEPTH_DTYPE.value)
+            )
 
             depth = root.create_array(
                 name=Coordinates.DEPTH.value,
@@ -134,7 +138,7 @@ class ZarrManager:
                 # dtype=np.dtype(
                 #     Coordinates.DEPTH_DTYPE.value
                 # ),  # float16 == 2 significant digits would be ideal
-                compressor=compressor,
+                compressors=compressor,
                 fill_value=np.nan,
                 overwrite=self.__overwrite,
                 dimension_names=(Coordinates.DEPTH.value,),
@@ -151,8 +155,10 @@ class ZarrManager:
 
             #####################################################################
             # --- Coordinate: Latitude --- #
-            gps_data = np.repeat(np.nan, width)
-            gps_data.astype(np.dtype(Coordinates.LATITUDE_DTYPE.value), copy=False)
+            gps_data = np.array(
+                np.repeat(np.nan, width),
+                dtype=np.dtype(Coordinates.LATITUDE_DTYPE.value),
+            )
 
             latitude = root.create_array(
                 name=Coordinates.LATITUDE.value,
@@ -161,7 +167,7 @@ class ZarrManager:
                 # shape=width,
                 chunks=(Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,),
                 # dtype=np.dtype(Coordinates.LATITUDE_DTYPE.value),
-                compressor=compressor,
+                compressors=compressor,
                 fill_value=np.nan,
                 overwrite=self.__overwrite,
                 dimension_names=(Coordinates.TIME.value,),
@@ -183,7 +189,7 @@ class ZarrManager:
                 # shape=width,
                 chunks=(Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,),
                 # dtype=np.dtype(Coordinates.LONGITUDE_DTYPE.value),
-                compressor=compressor,
+                compressors=compressor,
                 fill_value=np.nan,
                 overwrite=self.__overwrite,
                 dimension_names=(Coordinates.TIME.value,),
@@ -199,8 +205,9 @@ class ZarrManager:
             #####################################################################
             # TODO: verify adding this variable for where the bottom was detected
             # --- Coordinate: Bottom --- #
-            bottom_data = np.repeat(0.0, width)
-            bottom_data.astype(np.dtype(Coordinates.BOTTOM_DTYPE.value), copy=False)
+            bottom_data = np.array(
+                np.repeat(np.nan, width), dtype=np.dtype(Coordinates.BOTTOM_DTYPE.value)
+            )
 
             bottom = root.create_array(
                 name=Coordinates.BOTTOM.value,
@@ -208,8 +215,8 @@ class ZarrManager:
                 # shape=width,
                 chunks=(Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,),
                 # dtype=np.dtype(Coordinates.BOTTOM_DTYPE.value),
-                compressor=compressor,
-                fill_value=0.0,
+                compressors=compressor,
+                fill_value=np.nan,
                 overwrite=self.__overwrite,
                 dimension_names=(Coordinates.TIME.value,),
             )
@@ -233,7 +240,7 @@ class ZarrManager:
                 # shape=width,
                 chunks=(Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,),
                 # dtype=np.dtype(Coordinates.SPEED_DTYPE.value),
-                compressor=compressor,
+                compressors=compressor,
                 fill_value=np.nan,
                 overwrite=self.__overwrite,
                 dimension_names=(Coordinates.TIME.value,),
@@ -248,7 +255,9 @@ class ZarrManager:
 
             #####################################################################
             # --- Coordinate: Frequency --- #
-            frequency_data = np.array(frequencies)
+            frequency_data = np.array(
+                frequencies, dtype=np.dtype(Coordinates.FREQUENCY_DTYPE.value)
+            )
             # frequency_data.astype(np.dtype(Coordinates.FREQUENCY_DTYPE.value), copy=False)
 
             frequency = root.create_array(
@@ -257,7 +266,7 @@ class ZarrManager:
                 # shape=len(frequencies),
                 chunks=(len(frequencies),),
                 # dtype=np.dtype(Coordinates.FREQUENCY_DTYPE.value),
-                compressor=compressor,
+                compressors=compressor,
                 fill_value=0.0,
                 overwrite=self.__overwrite,
                 dimension_names=(Coordinates.FREQUENCY.value,),
@@ -281,7 +290,7 @@ class ZarrManager:
                     1,
                 ),
                 dtype=np.dtype(Coordinates.SV_DTYPE.value),
-                compressor=compressor,
+                compressors=compressor,
                 fill_value=np.nan,
                 overwrite=self.__overwrite,
                 dimension_names=(
@@ -663,7 +672,7 @@ class ZarrManager:
             zarr_path = f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
             s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
             store_s3_map = s3fs_manager.s3_map(s3_zarr_store_path=zarr_path)
-            ds = xr.open_zarr(store=store_s3_map, consolidated=None)
+            ds = xr.open_zarr(store=store_s3_map)
         except Exception as err:
             raise RuntimeError(f"Problem opening Zarr store in S3 as Xarray, {err}")
         print("Done opening Zarr store in S3 as Xarray.")

@@ -21,7 +21,7 @@ uv run pre-commit install
 
 # Pytest
 ```
-uv run pytest --cache-clear tests -W ignore::DeprecationWarning
+uv run pytest --cache-clear tests # -W ignore::DeprecationWarning
 ```
 or
 > pytest --cache-clear --cov=src tests/ --cov-report=xml

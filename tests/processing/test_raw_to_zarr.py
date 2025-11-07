@@ -149,7 +149,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     )
     # Ensure that all the files were uploaded properly
     # assert len(number_of_files) == 72
-    assert len(number_of_files) >= 96  # 86 files
+    assert len(number_of_files) == 69  # 86 files
 
     # TODO: check the dynamodb dataframe to see if info is updated there
     # ---Verify Data is Populated in Table--- #
@@ -169,7 +169,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     zarr_store = s3fs_manager.s3_map(s3_path)
 
     # --- Open with Xarray --- #
-    ds = xr.open_zarr(zarr_store, consolidated=False)
+    ds = xr.open_zarr(zarr_store)
     print(ds)
     # assert set(list(ds.variables)) == set(['Sv', 'bottom', 'depth', 'frequency', 'latitude', 'longitude', 'time'])
     assert len(list(ds.variables)) == 24
@@ -177,7 +177,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     # --- Open with Zarr --- #
     root = zarr.open(store=zarr_store, mode="r")  # , storage_options={'anon': True})
     print(root)
-    assert root.Sv.shape == (4, 36, 2604)
+    assert root["Sv"].shape == (4, 36, 2604)
 
 
 #######################################################

@@ -144,9 +144,7 @@ def test_s3_map(moto_server, s3fs_manager_test_path, tmp_path):
 
     # --- Test S3Map Opening Zarr store with Xarray for Reading --- #
     # TODO: test SYNCHRONIZER as shared file in output bucket mounted via s3fs
-    s3_zarr_xr = xr.open_zarr(
-        store=s3_store, consolidated=True
-    )  # synchronizer=SYNCHRONIZER
+    s3_zarr_xr = xr.open_zarr(store=s3_store)
     print(s3_zarr_xr.info)
 
     assert s3_zarr_xr.a.shape == (2, 3)

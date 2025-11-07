@@ -60,7 +60,7 @@ class Coordinates(Enum):
     # TODO: create test for reading out timestamps in Xarray
 
     FREQUENCY = "frequency"
-    FREQUENCY_DTYPE = "uint"
+    FREQUENCY_DTYPE = "uint64"
     FREQUENCY_UNITS = "Hz"
     FREQUENCY_LONG_NAME = "Transducer frequency"
     FREQUENCY_STANDARD_NAME = "sound_frequency"

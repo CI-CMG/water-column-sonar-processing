@@ -263,10 +263,10 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
                 prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
             )
         )
-        > 1
+        == 13
     )
     assert (
-        "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata"
+        "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"
         in s3_manager.list_objects(
             bucket_name=l1_l2_test_bucket_name,
             prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
@@ -401,8 +401,6 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # assert not np.isnan(np.sum(test_output_zarr_store.where(cond=(select_times), drop=True).time.values))
 
     # TODO: assert that the test_output_zarr_store.Sv at specific depth equals the input files
-
-    # TODO: check the bottom values were written correctly
     assert np.nanmax(test_output_zarr_store.bottom.values) == pytest.approx(
         970.11835
     )  # uses 18 kHz only
@@ -525,7 +523,7 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         > 1
     )
     assert (
-        "level_2/Henry_B._Bigelow/HB1906/EK60/HB1906.zarr/.zmetadata"
+        "level_2/Henry_B._Bigelow/HB1906/EK60/HB1906.zarr/zarr.json"
         in s3_manager.list_objects(
             bucket_name=l1_l2_test_bucket_name,
             prefix="level_2/Henry_B._Bigelow/HB1906/EK60/HB1906.zarr/",

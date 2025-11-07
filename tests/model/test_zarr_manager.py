@@ -3,7 +3,6 @@ import os
 import tempfile
 from tempfile import TemporaryDirectory
 
-import numcodecs
 import numpy as np
 import pytest
 import xarray as xr
@@ -80,8 +79,8 @@ def test_zarr_manager():
     assert os.path.exists(f"{tempdir.name}/{cruise_name}.zarr")
 
     # TODO: copy to s3 bucket...
-    numcodecs.blosc.use_threads = False
-    numcodecs.blosc.set_nthreads(1)
+    # numcodecs.blosc.use_threads = False
+    # numcodecs.blosc.set_nthreads(1)
 
     # synchronizer = model.ProcessSynchronizer(f"/mnt/model/{ship_name}_{cruise_name}.sync")
 
@@ -90,12 +89,12 @@ def test_zarr_manager():
     )  # synchronizer=synchronizer)
     print(cruise_zarr.info)
 
-    assert cruise_zarr.Sv.shape == (
+    assert cruise_zarr["Sv"].shape == (
         501,
         1201,
         len(frequencies),
     )  # (depth, time, frequency)
-    assert cruise_zarr.Sv.chunks == (
+    assert cruise_zarr["Sv"].chunks == (
         Constants.TILE_SIZE.value,
         Constants.TILE_SIZE.value,
         1,
@@ -103,9 +102,7 @@ def test_zarr_manager():
 
     # Open Zarr store with Xarray
     # TODO: move to separate test
-    file_xr = xr.open_zarr(
-        store=f"{tempdir.name}/{cruise_name}.zarr", consolidated=None
-    )  # synchronizer=SYNCHRONIZER)
+    file_xr = xr.open_zarr(store=f"{tempdir.name}/{cruise_name}.zarr")
     print(file_xr)
 
     # for newly initialized model store all the timestamps will be 0 epoch time
@@ -133,7 +130,7 @@ def test_zarr_manager():
     assert file_xr.longitude.dtype == "float32"
     assert file_xr.depth.dtype == "float32"
     assert file_xr.time.dtype == "<M8[ns]"
-    assert file_xr.frequency.dtype == "float64"  # TODO: There is a problem here
+    assert file_xr.frequency.dtype == "uint64"
     assert file_xr.bottom.dtype == "float32"
 
     # TODO: test depths
@@ -216,11 +213,9 @@ def test_open_zarr_with_xarray():
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         frequencies=[18_000, 38_000, 70_000, 120_000],
-        width=1201,  # number of ping samples recorded
-        # height=height,  # TODO: is this redundant with the min & max echo range?
-        # min_echo_range=min_echo_range,
+        width=1201,
         max_echo_range=max_echo_range,
-        cruise_min_epsilon=min_echo_range,  # TODO: test further
+        cruise_min_epsilon=min_echo_range,
         calibration_status=True,
     )
 

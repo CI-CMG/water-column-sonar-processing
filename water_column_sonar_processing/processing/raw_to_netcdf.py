@@ -4,9 +4,8 @@ from datetime import datetime
 from pathlib import Path  # , PurePath
 
 import echopype as ep
-import numcodecs
 import numpy as np
-from numcodecs import Blosc
+from zarr.codecs import Blosc
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.geometry import GeometryManager
@@ -23,9 +22,9 @@ class RawToNetCDF:
         # # overwrite_existing_zarr_store,
     ):
         # TODO: revert to Blosc.BITSHUFFLE, troubleshooting misc error
-        self.__compressor = Blosc(cname="zstd", clevel=2)  # shuffle=Blosc.NOSHUFFLE
+        self.__compressor = Blosc(cname="zstd", clevel=9)  # shuffle=Blosc.NOSHUFFLE
         self.__overwrite = True
-        self.__num_threads = numcodecs.blosc.get_nthreads()
+        # self.__num_threads = numcodecs.blosc.get_nthreads()
         # self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
         # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
         # self.__table_name = table_name
