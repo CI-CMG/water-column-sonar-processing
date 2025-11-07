@@ -11,6 +11,7 @@ from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.geometry import GeometryManager
 from water_column_sonar_processing.utility import Cleaner
 
+
 # from numcodecs import Blosc
 
 
@@ -198,6 +199,7 @@ class RawToZarr:
                 raw_file=raw_file_name,
                 sonar_model=sensor_name,
                 include_bot=include_bot,
+                # include_idx=?
                 # use_swap=True,
                 # max_chunk_size=300,
                 # storage_options={'anon': True } # 'endpoint_url': self.endpoint_url} # this was creating problems

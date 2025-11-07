@@ -11,61 +11,61 @@ jobs:
     name: Build 🐍 project
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-      with:
-        persist-credentials: false
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v5
-      with:
-        enable-cache: true
-        version: "0.5.25"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: "0.5.25"
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version-file: ".python-version"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
 
-    - name: Install the project
-      run: uv sync --all-extras --dev
+      - name: Install the project
+        run: uv sync --all-extras --dev
 
-    - name: Run tests
-      run: uv run pytest tests
+      - name: Run tests
+        run: uv run pytest tests
 
-    - name: Build a binary wheel and a source tarball
-      run: uv build --no-sources
+      - name: Build a binary wheel and a source tarball
+        run: uv build --no-sources
 
-    - name: Store the distribution packages
-      uses: actions/upload-artifact@v4
-      with:
-        name: python-package-distributions
-        path: dist/
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
 
   publish-to-pypi:
     name: Publish 📦 to PyPI
     if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
     needs:
-    - build
+      - build
     runs-on: ubuntu-latest
     environment:
       name: pypi
-#      url: https://pypi.org/p/water-column-sonar-processing
+    #      url: https://pypi.org/p/water-column-sonar-processing
     permissions:
       id-token: write  # mandatory for trusted publishing
     steps:
-    - name: Install uv
-      uses: astral-sh/setup-uv@v5
-      with:
-        version: "0.5.25"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.5.25"
 
-    - name: Download all the dists
-      uses: actions/download-artifact@v4
-      with:
-        name: python-package-distributions
-        path: dist/
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
 
-    - name: Publish distribution 📦 to PyPI
-      run: uv publish --trusted-publishing always
+      - name: Publish distribution 📦 to PyPI
+        run: uv publish --trusted-publishing always
 
 #  github-release:
 #    name: Sign the Python 🐍 distribution 📦 with Sigstore and upload them to GitHub Release

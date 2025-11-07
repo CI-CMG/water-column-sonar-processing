@@ -96,9 +96,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
         bucket_name=output_bucket_name,
         key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zattrs",
     )
-    assert (
-        len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 1
-    )  # TODO: ==3
+    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) == 3
 
     assert len(s3_manager.list_buckets()["Buckets"]) == 2
 
@@ -169,7 +167,8 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     zarr_store = s3fs_manager.s3_map(s3_path)
 
     # --- Open with Xarray --- #
-    ds = xr.open_zarr(zarr_store)
+    kwargs = {"consolidated": False}
+    ds = xr.open_dataset(filename_or_obj=zarr_store, engine="zarr", **kwargs)
     print(ds)
     # assert set(list(ds.variables)) == set(['Sv', 'bottom', 'depth', 'frequency', 'latitude', 'longitude', 'time'])
     assert len(list(ds.variables)) == 24

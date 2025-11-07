@@ -238,7 +238,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     zarr_store = s3fs_manager.s3_map(s3_path)
 
     # --- Open with Zarr --- #
-    root = zarr.open(store=zarr_store, mode="r")
+    root = zarr.open(store=zarr_store, mode="r", zarr_format=3)
     print(root.info)
     assert root["Sv"].shape == (3999, 89911, 4)
 
