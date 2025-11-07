@@ -3,25 +3,16 @@ import importlib.metadata
 import numpy as np
 import xarray as xr
 import zarr
-from zarr.codecs import BloscCodec
+from zarr.codecs import BloscCodec, BloscShuffle
+from zarr.storage import LocalStore
 
 from water_column_sonar_processing.aws import S3FSManager
 from water_column_sonar_processing.utility import Constants, Coordinates, Timestamp
 
-# from zarr import Blosc
-
-# from numcodecs import Blosc
-
-
-# Blosc.use_threads = True
-# compressor = Blosc(cname="zstd", clevel=9)
 # TODO: change clevel to 9?!
-compressor = BloscCodec(
-    cname="zstd", clevel=3, shuffle=zarr.codecs.BloscShuffle.shuffle
-)
+compressor = BloscCodec(cname="zstd", clevel=3, shuffle=BloscShuffle.shuffle)
 
 # TODO: when ready switch to version 3 of model spec
-# ZARR_V3_EXPERIMENTAL_API = 1
 
 
 # creates the latlon dataset: foo = ep.consolidate.add_location(ds_Sv, echodata)
@@ -88,9 +79,11 @@ class ZarrManager:
             # store = zarr.DirectoryStore(path=zarr_path, normalize_keys=False)
             ### https://zarr.readthedocs.io/en/latest/user-guide/groups/ ###
             # store = zarr.group(path=zarr_path)
+            store = LocalStore(root=zarr_path)
             root = zarr.group(
-                store=zarr_path,
+                store=store,  # zarr_path,
                 overwrite=self.__overwrite,  # cache_attrs=True
+                zarr_format=3,
             )
 
             #####################################################################
@@ -331,7 +324,8 @@ class ZarrManager:
             root.attrs["calibration_status"] = calibration_status
             root.attrs["tile_size"] = Constants.TILE_SIZE.value
 
-            # zarr.consolidate_metadata(store)
+            # TODO: ZarrUserWarning: Consolidated metadata is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+            # zarr.consolidate_metadata(zarr_path)
             #####################################################################
             """
             # zzz = zarr.open('https://echofish-dev-master-118234403147-echofish-zarr-store.s3.us-west-2.amazonaws.com/GU1002_resample.zarr')

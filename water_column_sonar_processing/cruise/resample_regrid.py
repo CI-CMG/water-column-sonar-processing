@@ -2,7 +2,6 @@ import gc
 import warnings
 from pathlib import Path
 
-# import numcodecs
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -13,12 +12,8 @@ from water_column_sonar_processing.model import ZarrManager
 
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
-# numcodecs.blosc.use_threads = False
-# numcodecs.blosc.set_nthreads(1)
-
 
 # TODO: when ready switch to version 3 of model spec
-#  ZARR_V3_EXPERIMENTAL_API = 1
 #  creates the latlon dataset: foo = ep.consolidate.add_location(ds_Sv, echodata)
 
 

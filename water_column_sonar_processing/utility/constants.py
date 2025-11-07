@@ -10,6 +10,10 @@ class Instruments(Enum):
 
 # @unique
 class Constants(Enum):
+    """
+    See here for data type support: https://github.com/zarr-developers/zarr-extensions/tree/main/data-types
+    """
+
     TILE_SIZE = 512
 
     # Average https://noaa-wcsd-zarr-pds.s3.us-east-1.amazonaws.com/level_2/Henry_B._Bigelow/HB0902/EK60/HB0902.zarr/time/927

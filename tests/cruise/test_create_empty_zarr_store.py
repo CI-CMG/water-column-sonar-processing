@@ -243,7 +243,8 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     assert root["Sv"].shape == (3999, 89911, 4)
 
     # --- Open with Xarray --- #
-    ds = xr.open_dataset(zarr_store, engine="zarr")
+    kwargs = {"consolidated": False}
+    ds = xr.open_dataset(filename_or_obj=zarr_store, engine="zarr", **kwargs)
     # print(ds)
     assert ds.Sv.size == 1438216356  # ~1.4 GB
     assert set(list(ds.variables)) == {
