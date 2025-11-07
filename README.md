@@ -111,9 +111,9 @@ https://hb0707.s3.us-east-1.amazonaws.com/index.html
 uv pip install --upgrade pip
 uv pip install -r pyproject.toml --all-extras
 uv run pre-commit install
-uv lock
+uv lock --check
+uv sync --all-groups
 uv run pytest --cache-clear tests
-uv sync --extra dev
 ```
 
 # Fixing S3FS Problems

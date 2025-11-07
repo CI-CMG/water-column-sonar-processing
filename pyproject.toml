@@ -46,18 +46,23 @@ dependencies = [
 ]
 
 # uv pip install -r pyproject.toml --all-extras
-[project.optional-dependencies]
+# uv sync --all-groups
+[dependency-groups]
 dev = [
     "bandit[toml]==1.8.6",
     "bandit",
-    "black",
-    "build",
+    "black==25.9.0",
+    #    "build",
     "pooch==1.8.2",
-    "pre-commit",
-    "pyinstaller",
-    "pytest",
-    "ruff==0.14.4",
+    "pre-commit==4.3.0",
+    "pyinstaller==6.16.0",
     "tqdm",
+]
+lint = [
+    "ruff==0.14.4",
+]
+test = [
+    "pytest==8.4.2",
 ]
 
 [project.urls]
