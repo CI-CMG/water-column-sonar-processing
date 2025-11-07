@@ -123,11 +123,15 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     # s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
     # s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
 
-    number_of_files_before = s3_manager.list_objects(
-        bucket_name=output_bucket_name,
-        prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
+    assert (
+        len(
+            s3_manager.list_objects(
+                bucket_name=output_bucket_name,
+                prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
+            )
+        )
+        == 2
     )
-    print(number_of_files_before)
 
     raw_to_zarr = RawToZarr()
     raw_to_zarr.raw_to_zarr(
@@ -169,8 +173,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     # --- Open with Xarray --- #
     kwargs = {"consolidated": False}
     ds = xr.open_dataset(filename_or_obj=zarr_store, engine="zarr", **kwargs)
-    print(ds)
-    # assert set(list(ds.variables)) == set(['Sv', 'bottom', 'depth', 'frequency', 'latitude', 'longitude', 'time'])
+    # print(ds)
     assert len(list(ds.variables)) == 24
 
     # --- Open with Zarr --- #

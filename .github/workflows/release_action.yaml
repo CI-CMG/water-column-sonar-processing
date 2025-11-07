@@ -16,13 +16,13 @@ jobs:
           persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-          version: "0.5.25"
+          version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version-file: ".python-version"
 
@@ -30,7 +30,7 @@ jobs:
         run: uv sync --all-extras --dev
 
       - name: Run tests
-        run: uv run pytest tests
+        run: uv run pytest --cache-clear tests
 
       - name: Build a binary wheel and a source tarball
         run: uv build --no-sources
@@ -40,6 +40,7 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
+          compression-level: 9
 
   publish-to-pypi:
     name: Publish 📦 to PyPI

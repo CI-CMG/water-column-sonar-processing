@@ -270,13 +270,12 @@ class RawToZarr:
             store_name = f"{Path(raw_file_name).stem}.zarr"
             # Sv = ds_sv.Sv
             # ds_sv['Sv'] = Sv.astype('int32', copy=False)
-            print("foo")
             ds_sv.to_zarr(
                 store=store_name,
-                # consolidated=False,
                 zarr_format=3,
+                consolidated=False,
+                write_empty_chunks=False,
             )  # ds_sv.Sv.sel(channel=ds_sv.channel.values[0]).shape
-            print("bar")
             gc.collect()
             #################################################################
             output_zarr_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"

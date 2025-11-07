@@ -8,7 +8,7 @@ generating geospatial information.
 
 # Setting up the Python Environment
 
-> Python 3.12.11
+> Python 3.12.12
 
 # Installing Dependencies
 
@@ -108,10 +108,12 @@ https://hb0707.s3.us-east-1.amazonaws.com/index.html
 # UV Debugging
 
 ```
+uv pip install --upgrade pip
 uv pip install -r pyproject.toml --all-extras
-uv sync --extra dev
+uv run pre-commit install
 uv lock
 uv run pytest --cache-clear tests
+uv sync --extra dev
 ```
 
 # Fixing S3FS Problems
