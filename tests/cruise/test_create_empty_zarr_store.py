@@ -264,6 +264,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     }
     assert set(ds.speed.dims) == {"time"}
     assert set(ds.Sv.dims) == {"depth", "frequency", "time"}
+    assert ds.attrs["processing_software_name"] == "echofish"
 
 
 #######################################################
