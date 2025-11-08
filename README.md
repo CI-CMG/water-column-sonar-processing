@@ -112,6 +112,7 @@ uv pip install --upgrade pip
 uv pip install -r pyproject.toml --all-extras
 uv run pre-commit install
 uv lock --check
+uv lock
 uv sync --all-groups
 uv run pytest --cache-clear tests
 ```
