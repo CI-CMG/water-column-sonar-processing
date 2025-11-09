@@ -263,7 +263,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
                 prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
             )
         )
-        == 13
+        == 14
     )
     assert (
         "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"

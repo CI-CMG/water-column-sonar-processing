@@ -173,7 +173,6 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     # --- Open with Xarray --- #
     kwargs = {"consolidated": False}
     ds = xr.open_dataset(filename_or_obj=zarr_store, engine="zarr", **kwargs)
-    # print(ds)
     assert len(list(ds.variables)) == 24
 
     # --- Open with Zarr --- #

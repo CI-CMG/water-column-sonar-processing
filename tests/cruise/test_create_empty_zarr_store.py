@@ -223,7 +223,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
                 prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
             )
         )
-        == 13
+        == 14
     )
     assert (
         "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"
@@ -256,6 +256,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
         "latitude",
         "longitude",
         "time",
+        "distance",
     }
     assert ds.speed.attrs == {
         "long_name": "Nautical miles per hour",

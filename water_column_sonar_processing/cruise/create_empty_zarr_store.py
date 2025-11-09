@@ -1,12 +1,12 @@
 import os
 import tempfile
 
-# import numcodecs
 import numpy as np
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.model import ZarrManager
 from water_column_sonar_processing.utility import Cleaner
+
 
 # numcodecs.blosc.use_threads = False
 # numcodecs.blosc.set_nthreads(1)

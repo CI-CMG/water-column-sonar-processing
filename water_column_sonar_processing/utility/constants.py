@@ -93,6 +93,7 @@ class Coordinates(Enum):
     SPEED_LONG_NAME = "Nautical miles per hour"
     SPEED_STANDARD_NAME = "speed"
 
+    # This is the width of each slice of the water columns
     DISTANCE = "distance"
     DISTANCE_DTYPE = "float32"
     DISTANCE_UNITS = "m"

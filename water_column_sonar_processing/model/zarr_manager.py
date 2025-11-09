@@ -1,3 +1,5 @@
+import importlib.metadata
+
 import numpy as np
 import xarray as xr
 import zarr
@@ -8,7 +10,7 @@ from water_column_sonar_processing.aws import S3FSManager
 from water_column_sonar_processing.utility import Constants, Coordinates, Timestamp
 
 # TODO: change clevel to 9?!
-compressor = BloscCodec(cname="zstd", clevel=3, shuffle=BloscShuffle.shuffle)
+compressor = BloscCodec(cname="zstd", clevel=9, shuffle=BloscShuffle.shuffle)
 
 # TODO: when ready switch to version 3 of model spec
 
@@ -234,7 +236,7 @@ class ZarrManager:
                 compressors=compressor,
                 fill_value=np.nan,
                 overwrite=self.__overwrite,
-                dimension_names=(Coordinates.TIME.value,),
+                dimension_names=(Coordinates.TIME.value,),  # NOTE: 'TIME'
             )
 
             # SPEED is indexed by TIME
@@ -243,6 +245,31 @@ class ZarrManager:
             speed.attrs["units"] = Coordinates.SPEED_UNITS.value
             speed.attrs["long_name"] = Coordinates.SPEED_LONG_NAME.value
             speed.attrs["standard_name"] = Coordinates.SPEED_STANDARD_NAME.value
+
+            #####################################################################
+            # TODO: verify adding this variable with test
+            # --- Coordinate: Speed --- #
+            distance_data = np.repeat(np.nan, width)
+            distance_data.astype(np.dtype(Coordinates.DISTANCE_DTYPE.value), copy=False)
+
+            distance = root.create_array(
+                name=Coordinates.DISTANCE.value,
+                data=np.repeat(np.nan, width),  # root.longitude[:] = np.nan
+                # shape=width,
+                chunks=(Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,),
+                # dtype=np.dtype(Coordinates.SPEED_DTYPE.value),
+                compressors=compressor,
+                fill_value=np.nan,
+                overwrite=self.__overwrite,
+                dimension_names=(Coordinates.TIME.value,),  # NOTE: 'TIME'
+            )
+
+            # DISTANCE is indexed by TIME
+            # distance.metadata.dimension_names = (Coordinates.TIME.value,)
+
+            distance.attrs["units"] = Coordinates.DISTANCE_UNITS.value
+            distance.attrs["long_name"] = Coordinates.DISTANCE_LONG_NAME.value
+            distance.attrs["standard_name"] = Coordinates.DISTANCE_STANDARD_NAME.value
 
             #####################################################################
             # --- Coordinate: Frequency --- #
@@ -313,9 +340,14 @@ class ZarrManager:
             #
             root.attrs["processing_software_name"] = Coordinates.PROJECT_NAME.value
 
-            # current_project_version = version("water_column_sonar_processing")
-            # print(current_project_version)
-            # root.attrs["processing_software_version"] = current_project_version
+            # TODO: need to get this working :(
+            # current_project_version = importlib.metadata.version(
+            #     "water_column_sonar_processing"
+            # )
+            current_project_version = importlib.metadata.version(
+                "water-column-sonar-processing"
+            )
+            root.attrs["processing_software_version"] = current_project_version
             root.attrs["processing_software_time"] = Timestamp.get_timestamp()
             #
             root.attrs["calibration_status"] = calibration_status
