@@ -8,14 +8,6 @@ from water_column_sonar_processing.model import ZarrManager
 from water_column_sonar_processing.utility import Cleaner
 
 
-# numcodecs.blosc.use_threads = False
-# numcodecs.blosc.set_nthreads(1)
-
-# TODO: when ready switch to version 3 of model spec
-# ZARR_V3_EXPERIMENTAL_API = 1
-# creates the latlon dataset: foo = ep.consolidate.add_location(ds_Sv, echodata)
-
-
 # TODO: change name to "CreateLocalEmptyZarrStore"
 class CreateEmptyZarrStore:
     #######################################################

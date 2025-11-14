@@ -340,10 +340,8 @@ class ZarrManager:
             #
             root.attrs["processing_software_name"] = Coordinates.PROJECT_NAME.value
 
-            # TODO: need to get this working :(
-            # current_project_version = importlib.metadata.version(
-            #     "water_column_sonar_processing"
-            # )
+            # NOTE: for the version to be parsable you need to build the python package
+            #  locally first.
             current_project_version = importlib.metadata.version(
                 "water-column-sonar-processing"
             )
@@ -695,7 +693,10 @@ class ZarrManager:
             zarr_path = f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
             s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
             store_s3_map = s3fs_manager.s3_map(s3_zarr_store_path=zarr_path)
-            ds = xr.open_zarr(store=store_s3_map)
+            ds = xr.open_dataset(
+                filename_or_obj=store_s3_map,
+                engine="zarr",
+            )
         except Exception as err:
             raise RuntimeError(f"Problem opening Zarr store in S3 as Xarray, {err}")
         print("Done opening Zarr store in S3 as Xarray.")

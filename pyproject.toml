@@ -1,7 +1,3 @@
-#[build-system]
-#requires = ["setuptools"]
-#build-backend = "setuptools.build_meta"
-
 [project]
 name = "water-column-sonar-processing"
 version = "25.11.0"
@@ -41,7 +37,6 @@ dependencies = [
     "pooch==1.8.2",
     "pyarrow==22.0.0",
     "pykalman==0.10.2",
-    "pytest==8.4.2",
     "python-dotenv==1.2.1",
     "requests==2.32.5",
     "s3fs==2025.10.0",
@@ -59,7 +54,6 @@ dependencies = [
 dev = [
     "bandit[toml]==1.8.6",
     "bandit",
-    "black==25.9.0",
     "build",
     "pooch==1.8.2",
     "pre-commit==4.3.0",

@@ -13,10 +13,6 @@ from water_column_sonar_processing.model import ZarrManager
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
 
-# TODO: when ready switch to version 3 of model spec
-#  creates the latlon dataset: foo = ep.consolidate.add_location(ds_Sv, echodata)
-
-
 class ResampleRegrid:
     #######################################################
     def __init__(

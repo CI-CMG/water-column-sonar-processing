@@ -8,10 +8,11 @@ on:
 
 jobs:
   build:
-    name: Build 🐍 project
+    name: Build python project 🐍
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - name: Check out
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
 
@@ -27,13 +28,13 @@ jobs:
           python-version-file: ".python-version"
 
       - name: Install the project
-        run: uv sync --all-extras --dev
-
-      - name: Run tests
-        run: uv run pytest --cache-clear tests
+        run: uv sync --all-groups
 
       - name: Build a binary wheel and a source tarball
         run: uv build --no-sources
+
+      - name: Run tests
+        run: uv run pytest --cache-clear tests
 
       - name: Store the distribution packages
         uses: actions/upload-artifact@v4
@@ -55,9 +56,10 @@ jobs:
       id-token: write  # mandatory for trusted publishing
     steps:
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
-          version: "0.5.25"
+          enable-cache: true
+          version: "latest"
 
       - name: Download all the dists
         uses: actions/download-artifact@v4
@@ -67,68 +69,3 @@ jobs:
 
       - name: Publish distribution 📦 to PyPI
         run: uv publish --trusted-publishing always
-
-#  github-release:
-#    name: Sign the Python 🐍 distribution 📦 with Sigstore and upload them to GitHub Release
-#    needs:
-#    - publish-to-pypi
-#    runs-on: ubuntu-latest
-#
-#    permissions:
-#      contents: write  # IMPORTANT: mandatory for making GitHub Releases
-#      id-token: write  # IMPORTANT: mandatory for sigstore
-#
-#    steps:
-#    - name: Download all the dists
-#      uses: actions/download-artifact@v4
-#      with:
-#        name: python-package-distributions
-#        path: dist/
-#    - name: Sign the dists with Sigstore
-#      uses: sigstore/gh-action-sigstore-python@v3.0.0
-#      with:
-#        inputs: >-
-#          ./dist/*.tar.gz
-#          ./dist/*.whl
-#    - name: Create GitHub Release
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
-#      run: >-
-#        gh release create
-#        "$GITHUB_REF_NAME"
-#        --repo "$GITHUB_REPOSITORY"
-#        --notes ""
-#    - name: Upload artifact signatures to GitHub Release
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
-#      # Upload to GitHub Release using the `gh` CLI.
-#      # `dist/` contains the built packages, and the
-#      # sigstore-produced signatures and certificates.
-#      run: >-
-#        gh release upload
-#        "$GITHUB_REF_NAME" dist/**
-#        --repo "$GITHUB_REPOSITORY"
-
-#  publish-to-testpypi:
-#    name: Publish Python 🐍 distribution 📦 to TestPyPI
-#    needs:
-#    - build
-#    runs-on: ubuntu-latest
-#
-#    environment:
-#      name: testpypi
-#      url: https://test.pypi.org/p/water-column-sonar-processing
-#
-#    permissions:
-#      id-token: write  # IMPORTANT: mandatory for trusted publishing
-#
-#    steps:
-#    - name: Download all the dists
-#      uses: actions/download-artifact@v4
-#      with:
-#        name: python-package-distributions
-#        path: dist/
-#    - name: Publish distribution 📦 to TestPyPI
-#      uses: pypa/gh-action-pypi-publish@release/v1
-#      with:
-#        repository-url: https://test.pypi.org/legacy/
