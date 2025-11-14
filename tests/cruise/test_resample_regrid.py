@@ -282,23 +282,23 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20070712-T124906.raw"),
         bucket_name=l0_test_bucket_name,
-        key="dataset/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.raw",
+        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.raw",
     )
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20070712-T124906.bot"),
         bucket_name=l0_test_bucket_name,
-        key="dataset/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.bot",
+        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T124906.bot",
     )
 
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20070712-T152416.raw"),
         bucket_name=l0_test_bucket_name,
-        key="dataset/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.raw",
+        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.raw",
     )
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20070712-T152416.bot"),
         bucket_name=l0_test_bucket_name,
-        key="dataset/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.bot",
+        key="data/raw/Henry_B._Bigelow/HB0707/EK60/D20070712-T152416.bot",
     )
     assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 4
 
@@ -436,34 +436,34 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     # s3_manager.upload_file(
     #     filename=resample_regrid_test_path.joinpath("D20191106-T001906.raw"),
     #     bucket_name=l0_test_bucket_name,
-    #     key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T001906.raw",
+    #     key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T001906.raw",
     # )
     # s3_manager.upload_file(
     #     filename=resample_regrid_test_path.joinpath("D20191106-T001906.bot"),
     #     bucket_name=l0_test_bucket_name,
-    #     key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T001906.bot",
+    #     key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T001906.bot",
     # )
 
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T034434.raw"),
         bucket_name=l0_test_bucket_name,
-        key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T034434.raw",
+        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T034434.raw",
     )
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T034434.bot"),
         bucket_name=l0_test_bucket_name,
-        key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T034434.bot",
+        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T034434.bot",
     )
 
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T042540.raw"),
         bucket_name=l0_test_bucket_name,
-        key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T042540.raw",
+        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T042540.raw",
     )
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T042540.bot"),
         bucket_name=l0_test_bucket_name,
-        key="dataset/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T042540.bot",
+        key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T042540.bot",
     )
 
     assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) > 2

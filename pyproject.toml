@@ -12,11 +12,12 @@ keywords = ["ocean", "sonar", "water column", "zarr"]
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-license-files = ["LICENSE-MIT"]
+license-files = ["LICENSE"]
 
 # uv pip install -r pyproject.toml --all-extras
 dependencies = [
     "bandit==1.8.6",
+    "black>=25.11.0",
     "boto3==1.40.49",
     "boto3-stubs==1.40.49",
     "botocore==1.40.49",
@@ -61,6 +62,7 @@ dev = [
 ]
 # uv sync --all-groups
 lint = [
+    "black",
     "ruff==0.14.5",
 ]
 test = [

@@ -67,16 +67,20 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
             "D20070724-T042400.raw"
         ),  # "./test_resources/D20070724-T042400.raw",
         bucket_name=input_bucket_name,
-        key="dataset/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.raw",
+        key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.raw",
     )
     s3_manager.upload_file(  # TODO: this uses resource, try to use client
         filename=raw_to_zarr_test_path.joinpath(
             "D20070724-T042400.bot"
         ),  # "test_resources/raw_to_zarr/D20070724-T042400.bot",
         bucket_name=input_bucket_name,
-        key="dataset/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.bot",
+        key="data/raw/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.bot",
     )
     assert len(s3_manager.list_objects(bucket_name=input_bucket_name, prefix="")) == 2
+    assert (
+        "data/raw/Henry_B._Bigelow"
+        in s3_manager.list_objects(bucket_name=input_bucket_name, prefix="")[0]
+    )
 
     # Put stale geojson to test deleting
     s3_manager.create_bucket(bucket_name=output_bucket_name)
@@ -118,8 +122,8 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     # bottom_file_name = f"{Path(raw_file_name).stem}.bot"
 
     # TODO: move this into the raw_to_zarr function
-    # s3_file_path = f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
-    # s3_bottom_file_path = f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
+    # s3_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
+    # s3_bottom_file_path = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
     # s3_manager.download_file(bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name)
     # s3_manager.download_file(bucket_name=input_bucket_name, key=s3_bottom_file_path, file_name=bottom_file_name)
 

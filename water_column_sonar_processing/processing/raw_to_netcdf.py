@@ -186,10 +186,12 @@ class RawToNetCDF:
 
             s3_manager = S3Manager(endpoint_url=endpoint_url)
             s3_file_path = (
-                f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
+                f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
             )
             bottom_file_name = f"{Path(raw_file_name).stem}.bot"
-            s3_bottom_file_path = f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
+            s3_bottom_file_path = (
+                f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
+            )
             s3_manager.download_file(
                 bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name
             )
@@ -203,8 +205,8 @@ class RawToNetCDF:
 
             gc.collect()
             print("Opening raw file with echopype.")
-            # s3_file_path = f"s3://{bucket_name}/dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
-            # s3_file_path = Path(f"s3://noaa-wcsd-pds/dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}")
+            # s3_file_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
+            # s3_file_path = Path(f"s3://noaa-wcsd-pds/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}")
             echodata = ep.open_raw(
                 raw_file=raw_file_name,
                 sonar_model=sensor_name,

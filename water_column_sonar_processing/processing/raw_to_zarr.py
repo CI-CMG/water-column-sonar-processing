@@ -173,11 +173,11 @@ class RawToZarr:
 
         s3_manager = S3Manager(endpoint_url=endpoint_url)
         s3_file_path = (
-            f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
+            f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}"
         )
         bottom_file_name = f"{Path(raw_file_name).stem}.bot"
         s3_bottom_file_path = (
-            f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
+            f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{bottom_file_name}"
         )
         s3_manager.download_file(
             bucket_name=input_bucket_name, key=s3_file_path, file_name=raw_file_name
@@ -193,8 +193,8 @@ class RawToZarr:
         try:
             gc.collect()
             print("Opening raw file with echopype.")
-            # s3_file_path = f"s3://{bucket_name}/dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
-            # s3_file_path = Path(f"s3://noaa-wcsd-pds/dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}")
+            # s3_file_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
+            # s3_file_path = Path(f"s3://noaa-wcsd-pds/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}")
             echodata = ep.open_raw(
                 raw_file=raw_file_name,
                 sonar_model=sensor_name,
@@ -351,7 +351,7 @@ class RawToZarr:
     #         #######################################################################
     #         store_name = f"{os.path.splitext(input_file_name)[0]}.zarr"
     #         output_zarr_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}"
-    #         bucket_key = f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/{input_file_name}"
+    #         bucket_key = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/{input_file_name}"
     #         zarr_prefix = os.path.join("level_1", ship_name, cruise_name, sensor_name)
     #         #
     #         os.chdir(TEMPDIR)  # Lambdas require use of temp directory

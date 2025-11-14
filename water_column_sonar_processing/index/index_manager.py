@@ -28,7 +28,7 @@ class IndexManager:
     #################################################################
     def list_ships(
         self,
-        prefix="dataset/raw/",
+        prefix="data/raw/",
     ):
         page_iterator = self.s3_manager.paginator.paginate(
             Bucket=self.input_bucket_name, Prefix=prefix, Delimiter="/"
@@ -44,7 +44,7 @@ class IndexManager:
     #################################################################
     def list_cruises(
         self,
-        ship_prefixes,  # e.g. 'dataset/raw/Alaska_Knight/'
+        ship_prefixes,  # e.g. 'data/raw/Alaska_Knight/'
     ):
         cruises = []
         for ship_prefix in ship_prefixes:
@@ -81,7 +81,7 @@ class IndexManager:
         sensor_name,
     ):
         # Gets all raw files for a cruise under the given prefix
-        prefix = f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/"  # Note no forward slash at beginning
+        prefix = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/"  # Note no forward slash at beginning
         page_iterator = self.s3_manager.paginator.paginate(
             Bucket=self.input_bucket_name, Prefix=prefix, Delimiter="/"
         )
@@ -100,7 +100,7 @@ class IndexManager:
         # Same as above but only needs to get the first raw file
         # because we are only interested in the first datagram of one file
         # TODO: "dataset?"
-        prefix = f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/"  # Note no forward slash at beginning
+        prefix = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/"  # Note no forward slash at beginning
         # page_iterator = self.s3_manager.paginator.paginate(
         #     Bucket=self.input_bucket_name,
         #     Prefix=prefix,
@@ -131,7 +131,7 @@ class IndexManager:
         sensor_name,
     ):
         # THIS isn't used, just playing with JMES paths spec
-        prefix = f"dataset/raw/{ship_name}/{cruise_name}/{sensor_name}/"
+        prefix = f"data/raw/{ship_name}/{cruise_name}/{sensor_name}/"
         ### filter with JMESPath expressions ###
         page_iterator = self.s3_manager.paginator.paginate(
             Bucket=self.input_bucket_name,
@@ -212,8 +212,8 @@ class IndexManager:
                         re.search("[D](\\d{8})", filename) is not None
                         and re.search("[T](\\d{6})", filename) is not None
                     ):
-                        # Parse date if possible e.g.: 'dataset/raw/Henry_B._Bigelow/HB1006/EK60/HBB-D20100723-T025105.raw'
-                        # and 'dataset/raw/Henry_B._Bigelow/HB1802/EK60/D20180513-T150250.raw'
+                        # Parse date if possible e.g.: 'data/raw/Henry_B._Bigelow/HB1006/EK60/HBB-D20100723-T025105.raw'
+                        # and 'data/raw/Henry_B._Bigelow/HB1802/EK60/D20180513-T150250.raw'
                         date_substring = re.search("[D](\\d{8})", filename).group(1)
                         time_substring = re.search("[T](\\d{6})", filename).group(1)
                         date_string = datetime.strptime(
@@ -239,7 +239,7 @@ class IndexManager:
     def scan_datagram(self, select_key: str) -> list:
         # Reads the first 8 bytes of S3 file. Used to determine if ek60 or ek80
         # Note: uses boto3 session instead of boto3 client: https://github.com/boto/boto3/issues/801
-        # select_key = 'dataset/raw/Albatross_Iv/AL0403/EK60/L0005-D20040302-T200108-EK60.raw'
+        # select_key = 'data/raw/Albatross_Iv/AL0403/EK60/L0005-D20040302-T200108-EK60.raw'
         s3_resource = self.s3_manager.s3_resource
         obj = s3_resource.Object(
             bucket_name=self.input_bucket_name, key=select_key
@@ -351,8 +351,8 @@ class IndexManager:
         ship_name = "Henry_B._Bigelow"
         cruise_name = "HB0707"
         # cruise_name = "HB0805"
-        prefix = f"dataset/raw/{ship_name}/{cruise_name}/"
-        # prefix = f"dataset/raw/{ship_name}/"
+        prefix = f"data/raw/{ship_name}/{cruise_name}/"
+        # prefix = f"data/raw/{ship_name}/"
         page_iterator = self.s3_manager.paginator.paginate(
             Bucket=self.input_bucket_name,
             Prefix=prefix,
