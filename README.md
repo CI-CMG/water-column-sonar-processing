@@ -131,6 +131,12 @@ Restart the IDE.
 The asyncio support will be enabled in the debugger.
 ```
 
+Another useful trick is to turn off "gevent" to speed up debugging:
+
+```commandline
+Python > Debugger > "Gevent Compatible"
+```
+
 # Fixing windows/wsl/ubuntu/mac git compatability
 
 > git config --global core.filemode false

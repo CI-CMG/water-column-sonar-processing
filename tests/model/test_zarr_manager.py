@@ -83,9 +83,9 @@ def test_zarr_manager():
 
     # synchronizer = model.ProcessSynchronizer(f"/mnt/model/{ship_name}_{cruise_name}.sync")
 
-    cruise_zarr = zarr.open(
-        store=f"{tempdir.name}/{cruise_name}.zarr", mode="r"
-    )  # synchronizer=synchronizer)
+    cruise_zarr = zarr.open_group(
+        store=f"{tempdir.name}/{cruise_name}.zarr", mode="r+", zarr_format=3
+    )
     print(cruise_zarr.info)
 
     assert cruise_zarr["Sv"].shape == (

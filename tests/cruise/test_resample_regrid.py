@@ -242,36 +242,6 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
             ),
         )
 
-    # [3] create new zarr store and upload
-    create_empty_zarr_store = CreateEmptyZarrStore()
-    # TODO: this is out of order, needs to happen after raw-to-zarr L0-to-L1
-    create_empty_zarr_store.create_cruise_level_zarr_store(
-        output_bucket_name=l1_l2_test_bucket_name,
-        ship_name=ship_name,
-        cruise_name=cruise_name,
-        sensor_name=sensor_name,
-        table_name=table_name,
-        # tempdir="/tmp", # TODO: create better tmp directory for testing
-    )
-
-    # Assert dataset is in the bucket
-    # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
-    assert (
-        len(
-            s3_manager.list_objects(
-                bucket_name=l1_l2_test_bucket_name,
-                prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
-            )
-        )
-        == 14
-    )
-    assert (
-        "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"
-        in s3_manager.list_objects(
-            bucket_name=l1_l2_test_bucket_name,
-            prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
-        )
-    )
     # mount and verify:
     # s3fs_manager = S3FSManager(endpoint_url=moto_server)
     # s3_path = f"{output_bucket_name}/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr"
@@ -337,6 +307,36 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
     )
     assert len(number_of_files_xx) > 72  # 1402
+
+    # [3] create new zarr store and upload
+    create_empty_zarr_store = CreateEmptyZarrStore()
+    # TODO: this is out of order, needs to happen after raw-to-zarr L0-to-L1
+    create_empty_zarr_store.create_cruise_level_zarr_store(
+        output_bucket_name=l1_l2_test_bucket_name,
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        table_name=table_name,
+        # tempdir="/tmp", # TODO: create better tmp directory for testing
+    )
+    # Assert dataset is in the bucket
+    # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
+    assert (
+        len(
+            s3_manager.list_objects(
+                bucket_name=l1_l2_test_bucket_name,
+                prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
+            )
+        )
+        == 14
+    )
+    assert (
+        "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"
+        in s3_manager.list_objects(
+            bucket_name=l1_l2_test_bucket_name,
+            prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
+        )
+    )
 
     resample_regrid = ResampleRegrid()
     resample_regrid.resample_regrid(

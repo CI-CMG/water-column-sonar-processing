@@ -648,7 +648,8 @@ class ZarrManager:
             root = f"{output_bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
             store = s3fs_manager.s3_map(s3_zarr_store_path=root)
             # synchronizer = model.ProcessSynchronizer(f"/tmp/{ship_name}_{cruise_name}.sync")
-            cruise_zarr = zarr.open(store=store, mode="r+")
+            cruise_zarr = zarr.open_group(store=store, mode="r+", zarr_format=3)
+            print(cruise_zarr["Sv"].info)
         except Exception as err:  # Failure
             raise RuntimeError(
                 f"Exception encountered opening Zarr store with Zarr, {err}"
