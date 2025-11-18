@@ -1,5 +1,7 @@
 from enum import Enum, unique
 
+import numpy as np
+
 
 @unique
 class Instruments(Enum):
@@ -54,65 +56,68 @@ class Coordinates(Enum):
     DEPTH_LONG_NAME = "Depth below surface"
     DEPTH_STANDARD_NAME = "depth"
 
+    # https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#table-supported-units
     TIME = "time"
-    TIME_DTYPE = "float64"
+    TIME_DTYPE = "datetime64[ns]"
     # Note: units and calendar are used downstream by Xarray
-    TIME_UNITS = "seconds since 1970-01-01 00:00:00"
+    TIME_UNITS = "nanoseconds since 1970-01-01"
+    # TIME_UNITS = "seconds since 1970-01-01 00:00:00"
     TIME_LONG_NAME = "Timestamp of each ping"
     TIME_STANDARD_NAME = "time"
-    TIME_CALENDAR = "proleptic_gregorian"
+    # TIME_CALENDAR = "proleptic_gregorian"
     # TODO: create test for reading out timestamps in Xarray
 
     FREQUENCY = "frequency"
-    FREQUENCY_DTYPE = "uint64"
+    FREQUENCY_DTYPE = np.uint64  # "uint64"
     FREQUENCY_UNITS = "Hz"
     FREQUENCY_LONG_NAME = "Transducer frequency"
     FREQUENCY_STANDARD_NAME = "sound_frequency"
 
     LATITUDE = "latitude"
-    LATITUDE_DTYPE = "float32"
+    LATITUDE_DTYPE = np.float32  # "float32"
     LATITUDE_UNITS = "degrees_north"
     LATITUDE_LONG_NAME = "Latitude"
     LATITUDE_STANDARD_NAME = "latitude"
 
     LONGITUDE = "longitude"
-    LONGITUDE_DTYPE = "float32"
+    LONGITUDE_DTYPE = np.float32  # "float32"
     LONGITUDE_UNITS = "degrees_east"
     LONGITUDE_LONG_NAME = "Longitude"
     LONGITUDE_STANDARD_NAME = "longitude"
 
     BOTTOM = "bottom"
-    BOTTOM_DTYPE = "float32"
+    BOTTOM_DTYPE = np.float32  # "float32"
     BOTTOM_UNITS = "m"
     BOTTOM_LONG_NAME = "Detected sea floor depth"
     BOTTOM_STANDARD_NAME = "bottom"
 
     SPEED = "speed"
-    SPEED_DTYPE = "float32"
+    SPEED_DTYPE = np.float32  # "float32"
     SPEED_UNITS = "Knots"
     SPEED_LONG_NAME = "Nautical miles per hour"
     SPEED_STANDARD_NAME = "speed"
 
     # This is the width of each slice of the water columns
     DISTANCE = "distance"
-    DISTANCE_DTYPE = "float32"
+    DISTANCE_DTYPE = np.float32  # "float32"
     DISTANCE_UNITS = "m"
     DISTANCE_LONG_NAME = "GPS distance"
     DISTANCE_STANDARD_NAME = "distance"
 
     SV = "Sv"
-    SV_DTYPE = "float32"  # int64
+    SV_DTYPE = np.float32  # "float32"  # int64
     SV_UNITS = "dB"
     SV_LONG_NAME = "Volume backscattering strength (Sv re 1 m-1)"
     SV_STANDARD_NAME = "volume_backscattering_strength"
 
 
-class BatchShape(Enum):
-    """
-    The tensor shape of a machine learning sample.
-    """
-
-    DEPTH = 2
-    TIME = 3
-    FREQUENCY = 4
-    BATCH_SIZE = 5
+# TODO: delete this
+# class BatchShape(Enum):
+#     """
+#     The tensor shape of a machine learning sample.
+#     """
+#
+#     DEPTH = 2
+#     TIME = 3
+#     FREQUENCY = 4
+#     BATCH_SIZE = 5

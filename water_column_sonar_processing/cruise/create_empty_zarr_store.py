@@ -19,37 +19,6 @@ class CreateEmptyZarrStore:
         # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 
     #######################################################
-    # TODO: moved this to the s3_manager
-    # def upload_zarr_store_to_s3(
-    #     self,
-    #     output_bucket_name: str,
-    #     local_directory: str,
-    #     object_prefix: str,
-    #     cruise_name: str,
-    # ) -> None:
-    #     print("uploading model store to s3")
-    #     s3_manager = S3Manager()
-    #     #
-    #     print("Starting upload with thread pool executor.")
-    #     # # 'all_files' is passed a list of lists: [[local_path, s3_key], [...], ...]
-    #     all_files = []
-    #     for subdir, dirs, files in os.walk(f"{local_directory}/{cruise_name}.zarr"):
-    #         for file in files:
-    #             local_path = os.path.join(subdir, file)
-    #             # TODO: find a better method for splitting strings here:
-    #             # 'level_2/Henry_B._Bigelow/HB0806/EK60/HB0806.zarr/.zattrs'
-    #             s3_key = f"{object_prefix}/{cruise_name}.zarr{local_path.split(f'{cruise_name}.zarr')[-1]}"
-    #             all_files.append([local_path, s3_key])
-    #     #
-    #     # print(all_files)
-    #     s3_manager.upload_files_with_thread_pool_executor(
-    #         output_bucket_name=output_bucket_name,
-    #         all_files=all_files,
-    #     )
-    #     print("Done uploading with thread pool executor.")
-    #     # TODO: move to common place
-
-    #######################################################
     def create_cruise_level_zarr_store(
         self,
         output_bucket_name: str,
@@ -140,21 +109,21 @@ class CreateEmptyZarrStore:
             print(f"new_height: {new_height}")
 
             zarr_manager.create_zarr_store(
-                path=tempdir.name,  # TODO: need to use .name or problem
+                path=tempdir.name,
                 ship_name=ship_name,
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
                 frequencies=cruise_frequencies,
                 width=new_width,
-                # min_echo_range=cruise_min_echo_range,
                 max_echo_range=cruise_max_echo_range,
                 cruise_min_epsilon=cruise_min_epsilon,
                 calibration_status=True,
             )
             #################################################################
+            # TODO: would be more elegant to create directly into s3 bucket?
             s3_manager.upload_zarr_store_to_s3(
                 output_bucket_name=output_bucket_name,
-                local_directory=tempdir.name,  # TODO: need to use .name or problem
+                local_directory=tempdir.name,
                 object_prefix=zarr_prefix,
                 cruise_name=cruise_name,
             )

@@ -223,7 +223,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
                 prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
             )
         )
-        == 14
+        == 5651  # 5651
     )
     assert (
         "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"
@@ -239,13 +239,26 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
 
     # --- Open with Zarr --- #
     root = zarr.open(store=zarr_store, mode="r", zarr_format=3)
-    print(root.info)
+    # print(root.info)
     assert root["Sv"].shape == (3999, 89911, 4)
+    assert root["time"].attrs["units"] == "nanoseconds since 1970-01-01"
+    assert root["time"].attrs["calendar"] == "proleptic_gregorian"
+    assert (
+        root["Sv"].metadata.attributes["standard_name"]
+        == "volume_backscattering_strength"
+    )
+    assert (
+        root["Sv"].metadata.attributes["standard_name"]
+        == "volume_backscattering_strength"
+    )
+    assert root["Sv"].metadata.dimension_names == ("depth", "time", "frequency")
 
     # --- Open with Xarray --- #
     kwargs = {"consolidated": False}
-    ds = xr.open_dataset(filename_or_obj=zarr_store, engine="zarr", **kwargs)
-    assert ds.Sv.size == 1438216356  # ~1.4 GB
+    ds = xr.open_dataset(
+        filename_or_obj=zarr_store, engine="zarr", zarr_format=3, **kwargs
+    )
+    # assert ds.Sv.size == 1438216356  # ~1.4 GB
     assert set(list(ds.variables)) == {
         "Sv",
         "bottom",
