@@ -25,6 +25,17 @@ def teardown_module():
     print("teardown")
 
 
+# @pytest.fixture(scope="module")
+# def moto_server():
+#     """Fixture to run a mocked AWS server for testing."""
+#     # Note: pass `port=0` to get a random free port.
+#     server = ThreadedMotoServer(port=0)
+#     server.start()
+#     host, port = server.get_host_and_port()
+#     yield f"http://{host}:{port}"
+#     server.stop()
+
+
 # The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future.
 # Valid fixture loop scopes are: "function", "class", "module", "package", "session"
 @pytest.fixture(scope="function")
@@ -49,6 +60,7 @@ def zarr_manager_tmp_path(test_path):
 #     pass
 
 
+# TODO: this does not test opening a zarr store in s3, add a test
 @mock_aws
 def test_zarr_manager():
     # create in a temporary directory and then check there
@@ -78,13 +90,14 @@ def test_zarr_manager():
     assert os.path.exists(f"{tempdir.name}/{cruise_name}.zarr")
 
     # TODO: copy to s3 bucket...
-    # numcodecs.blosc.use_threads = False
-    # numcodecs.blosc.set_nthreads(1)
 
-    # synchronizer = model.ProcessSynchronizer(f"/mnt/model/{ship_name}_{cruise_name}.sync")
-
-    cruise_zarr = zarr.open_group(
-        store=f"{tempdir.name}/{cruise_name}.zarr", mode="r+", zarr_format=3
+    cruise_zarr = zarr.open(
+        store=f"{tempdir.name}/{cruise_name}.zarr",
+        mode="r+",
+        zarr_format=3,
+        # storage_options={
+        #     "endpoint_url": moto_server,
+        # },
     )
     print(cruise_zarr.info)
 

@@ -3,6 +3,7 @@ from typing import Optional
 
 import s3fs
 
+
 # TODO: S3FS_LOGGING_LEVEL=DEBUG
 # S3FS_LOGGING_LEVEL=DEBUG
 
@@ -21,17 +22,8 @@ class S3FSManager:
             endpoint_url=endpoint_url,
             key=os.environ.get("OUTPUT_BUCKET_ACCESS_KEY"),
             secret=os.environ.get("OUTPUT_BUCKET_SECRET_ACCESS_KEY"),
-            # asynchronous=True,
         )
-        # self.s3fs.ls("")
 
-    # s3_fs = s3fs.S3FileSystem( # TODO: use s3fs_manager?
-    #     anon=True,
-    #     client_kwargs={
-    #         "endpoint_url": moto_server,
-    #         "region_name": "us-east-1",
-    #     },
-    # )
     #####################################################################
     def s3_map(
         self,
