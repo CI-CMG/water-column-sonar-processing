@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "25.11.4"
+version = "25.11.3"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
@@ -16,7 +16,6 @@ license-files = ["LICENSE"]
 
 # uv pip install -r pyproject.toml --all-extras
 dependencies = [
-    "bandit==1.9.1",
     "black>=25.11.0",
     "boto3==1.40.70",
     "boto3-stubs==1.40.70",
@@ -52,8 +51,7 @@ dependencies = [
 # uv sync --all-groups
 [dependency-groups]
 dev = [
-    "bandit[toml]==1.8.6",
-    "bandit",
+    "bandit[toml]==1.9.1",
     "build",
     "pooch==1.8.2",
     "pre-commit==4.4.0",
