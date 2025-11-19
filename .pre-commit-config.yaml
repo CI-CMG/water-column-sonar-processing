@@ -20,7 +20,7 @@ repos:
   ### Static Security Scan ###
   # To run manually you can do: "bandit -c pyproject.toml -r ."
   - repo: https://github.com/PyCQA/bandit
-    rev: '1.8.6'
+    rev: '1.9.1'
     hooks:
       - id: bandit
         args: [ "-c", "pyproject.toml" ]

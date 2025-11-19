@@ -8,16 +8,21 @@ from zarr.codecs import BloscCodec, BloscShuffle
 from water_column_sonar_processing.aws import S3FSManager
 from water_column_sonar_processing.utility import Constants, Coordinates, Timestamp
 
-compressor = BloscCodec(cname="zstd", clevel=5, shuffle=BloscShuffle.shuffle)
+compressor = BloscCodec(  # https://zarr-specs.readthedocs.io/en/latest/v3/codecs/blosc/index.html
+    typesize=4,
+    cname="zstd",
+    clevel=5,
+    shuffle=BloscShuffle.shuffle,
+    blocksize=0,
+)
 
 
 # creates the latlon dataset: foo = ep.consolidate.add_location(ds_Sv, echodata)
 class ZarrManager:
     #######################################################
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         self.__overwrite = True
+        # self.ship_name = ship_name
 
     #######################################################
     def get_depth_values(
@@ -690,7 +695,7 @@ class ZarrManager:
                 zarr_format=3,
                 use_consolidated=False,
             )
-            print(cruise_zarr["Sv"].info)
+            # print(cruise_zarr["Sv"].info)
         except Exception as err:  # Failure
             raise RuntimeError(
                 f"Exception encountered opening Zarr store with Zarr, {err}"

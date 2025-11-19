@@ -101,7 +101,8 @@ def test_zarr_manager():
 
     # Open Zarr store with Xarray
     # TODO: move to separate test
-    file_xr = xr.open_zarr(store=f"{tempdir.name}/{cruise_name}.zarr")
+    kwargs = {"consolidated": False}
+    file_xr = xr.open_zarr(store=f"{tempdir.name}/{cruise_name}.zarr", **kwargs)
     print(file_xr)
 
     # for newly initialized model store all the timestamps will be 0 epoch time
