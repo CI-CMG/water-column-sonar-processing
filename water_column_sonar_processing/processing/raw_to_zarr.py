@@ -2,6 +2,7 @@ import gc
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 import echopype as ep
 import numpy as np
@@ -157,7 +158,7 @@ class RawToZarr:
         cruise_name,
         sensor_name,
         raw_file_name,
-        endpoint_url=None,
+        endpoint_url: Optional[str] = None,
         include_bot=True,
     ):
         """

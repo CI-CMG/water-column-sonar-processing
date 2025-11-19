@@ -43,10 +43,12 @@ class PMTileGeneration(object):
             try:
                 zarr_store = f"{cruise_name}.zarr"
                 s3_zarr_store_path = f"{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{zarr_store}"
+                kwargs = {"consolidated": False}
                 cruise = xr.open_dataset(
                     filename_or_obj=f"s3://{s3_zarr_store_path}",
                     engine="zarr",
                     storage_options={"anon": True},
+                    **kwargs,
                 )
                 width = cruise.Sv.shape[1]
                 height = cruise.Sv.shape[0]

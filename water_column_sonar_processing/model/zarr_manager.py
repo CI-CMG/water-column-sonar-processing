@@ -7,7 +7,6 @@ import xarray as xr
 import zarr
 from zarr.codecs import BloscCodec, BloscShuffle
 
-from water_column_sonar_processing.aws import S3FSManager
 from water_column_sonar_processing.utility import Constants, Coordinates, Timestamp
 
 compressor = BloscCodec(  # https://zarr-specs.readthedocs.io/en/latest/v3/codecs/blosc/index.html
@@ -380,18 +379,13 @@ class ZarrManager:
         cruise_name: str,
         sensor_name: str,
         output_bucket_name: str,
-        endpoint_url=None,
-    ):  #  -> zarr.hierarchy.Group:
+        endpoint_url: Optional[str] = None,
+    ) -> zarr.core.group.Group:
         # Mounts a Zarr store using pythons Zarr implementation. The mounted store
         #  will have read/write privileges so that store can be updated.
         print("Opening L2 Zarr store with Zarr for writing.")
         try:
-            # s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
             store = f"s3://{output_bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
-            # store = s3fs_manager.s3_map(s3_zarr_store_path=root)
-            # synchronizer = model.ProcessSynchronizer(f"/tmp/{ship_name}_{cruise_name}.sync")
-            # use_consolidated = (False,)
-            # kwargs = {"use_consolidated": False}
             print(f"endpoint url: {endpoint_url}")
             cruise_zarr = zarr.open(
                 store=store,
@@ -403,15 +397,12 @@ class ZarrManager:
                     "secret": self.secret,
                 },
             )
-            print(cruise_zarr["Sv"].info)
+            print("Done opening store with Zarr.")
+            return cruise_zarr
         except Exception as err:  # Failure
-            raise RuntimeError(
-                f"Exception encountered opening Zarr store with Zarr, {err}"
-            )
-        print("Done opening Zarr store with Zarr.")
-        return cruise_zarr
+            raise RuntimeError(f"Exception encountered opening store with Zarr, {err}")
 
-    ############################################################################
+    ###########################################################################
     def open_s3_zarr_store_with_xarray(
         self,
         ship_name: str,
@@ -419,63 +410,95 @@ class ZarrManager:
         sensor_name: str,
         file_name_stem: str,
         input_bucket_name: str,
-        endpoint_url=None,
+        # level: str, # TODO: add level
+        endpoint_url: Optional[str] = None,  # needed for moto testing
     ) -> xr.Dataset:
         print(
             "Opening L1 Zarr store in S3 with Xarray."
-        )  # TODO: Is this only used for reading from?
+        )  # TODO: Is this only used for reading from... yes.
         try:
             zarr_path = f"s3://{input_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr"
-            s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
-            store_s3_map = s3fs_manager.s3_map(s3_zarr_store_path=zarr_path)
+            # ds = xr.open_zarr(
+            #     store=zarr_path,
+            #     consolidated=False,
+            #     zarr_format=3,
+            #     storage_options={
+            #         "endpoint_url": endpoint_url,
+            #         # "key": self.key,
+            #         # "secret": self.secret,
+            #     },
+            # )
             kwargs = {"consolidated": False}
-            ds = xr.open_dataset(filename_or_obj=store_s3_map, engine="zarr", **kwargs)
+            ds = xr.open_dataset(
+                filename_or_obj=zarr_path,
+                engine="zarr",
+                backend_kwargs={
+                    "storage_options": {
+                        "endpoint_url": endpoint_url,
+                    }
+                },
+                **kwargs,
+            )
             return ds
         except Exception as err:
             raise RuntimeError(f"Problem opening Zarr store in S3 as Xarray, {err}")
-        finally:
-            print("Exiting opening Zarr store in S3 as Xarray.")
+        # finally:
+        #     print("Exiting opening Zarr store in S3 as Xarray.")
 
-    ############################################################################
+    ###########################################################################
+    # TODO: can this be consolidated with above
     def open_l2_zarr_store_with_xarray(
         self,
         ship_name: str,
         cruise_name: str,
         sensor_name: str,
         bucket_name: str,
-        endpoint_url=None,
+        # level: str, # TODO: add level
+        endpoint_url: Optional[str] = None,  # needed for moto testing
     ) -> xr.Dataset:
         print("Opening L2 Zarr store in S3 with Xarray.")
         try:
             zarr_path = f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
-            s3fs_manager = S3FSManager(endpoint_url=endpoint_url)
-            store_s3_map = s3fs_manager.s3_map(s3_zarr_store_path=zarr_path)
+            # ds = xr.open_zarr(
+            #     store=zarr_path,
+            #     consolidated=False,
+            #     zarr_format=3,
+            #     storage_options={
+            #         "endpoint_url": endpoint_url,
+            #         # "key": self.key,
+            #         # "secret": self.secret,
+            #     },
+            # )
             kwargs = {"consolidated": False}
             ds = xr.open_dataset(
-                filename_or_obj=store_s3_map,
+                filename_or_obj=zarr_path,
                 engine="zarr",
+                backend_kwargs={
+                    "storage_options": {
+                        "endpoint_url": endpoint_url,
+                    }
+                },
                 **kwargs,
             )
+            return ds
         except Exception as err:
             raise RuntimeError(f"Problem opening Zarr store in S3 as Xarray, {err}")
-        print("Done opening Zarr store in S3 as Xarray.")
-        return ds
 
-    ############################################################################
+    ###########################################################################
 
-    #######################################################
+    ###########################################################################
     # def create_process_synchronizer(self):
     #     # TODO: explore aws redis options
     #     pass
 
-    #######################################################
+    ###########################################################################
     # def verify_cruise_store_data(self):
     #     # TODO: run a check on a finished model store to ensure that
     #     #   none of the time, latitude, longitude, or depth values
     #     #   are NaN.
     #     pass
 
-    #######################################################
+    ###########################################################################
 
 
 ###########################################################

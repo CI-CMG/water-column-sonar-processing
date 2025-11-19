@@ -58,9 +58,10 @@ class ResampleRegrid:
             )
 
             # shift the input data by water_level
-            input_xr.echo_range.values = (
-                input_xr.echo_range.values + water_level
-            )  # water_level # TODO: change
+            # TODO: just ignore the offset
+            # input_xr.echo_range.values = (
+            #     input_xr.echo_range.values + water_level
+            # )  # water_level # TODO: change
 
             channels = input_xr.channel.values
             for channel in range(
