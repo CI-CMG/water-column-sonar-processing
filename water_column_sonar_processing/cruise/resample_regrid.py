@@ -3,7 +3,6 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import xarray as xr
 
 from water_column_sonar_processing.aws import DynamoDBManager
@@ -265,12 +264,12 @@ class ResampleRegrid:
 
                 ping_times = input_xr.ping_time.values
                 # Date format: numpy.datetime64('2007-07-20T02:10:25.845073920') converts to "1184897425.845074"
-                epoch_seconds = [
-                    (pd.Timestamp(i) - pd.Timestamp("1970-01-01")) / pd.Timedelta("1s")
-                    for i in ping_times
-                ]
+                # epoch_seconds = [
+                #     (pd.Timestamp(i) - pd.Timestamp("1970-01-01")) / pd.Timedelta("1s")
+                #     for i in ping_times
+                # ]
                 output_zarr_store["time"][start_ping_time_index:end_ping_time_index] = (
-                    epoch_seconds
+                    input_xr.ping_time.data
                 )
 
                 # --- UPDATING --- #

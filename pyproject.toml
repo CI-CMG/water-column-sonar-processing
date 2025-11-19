@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "25.11.6"
+version = "25.11.7"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
@@ -60,7 +60,7 @@ dev = [
 ]
 # uv sync --all-groups
 lint = [
-    "black",
+    #    "black",
     "ruff==0.14.5",
 ]
 test = [

@@ -6,6 +6,7 @@ import numpy as np
 import xarray as xr
 import zarr
 from zarr.codecs import BloscCodec, BloscShuffle
+from zarr.core.group import Group
 
 from water_column_sonar_processing.utility import Constants, Coordinates, Timestamp
 
@@ -380,7 +381,7 @@ class ZarrManager:
         sensor_name: str,
         output_bucket_name: str,
         endpoint_url: Optional[str] = None,
-    ) -> zarr.core.group.Group:
+    ) -> Group:
         # Mounts a Zarr store using pythons Zarr implementation. The mounted store
         #  will have read/write privileges so that store can be updated.
         print("Opening L2 Zarr store with Zarr for writing.")
@@ -413,21 +414,9 @@ class ZarrManager:
         # level: str, # TODO: add level
         endpoint_url: Optional[str] = None,  # needed for moto testing
     ) -> xr.Dataset:
-        print(
-            "Opening L1 Zarr store in S3 with Xarray."
-        )  # TODO: Is this only used for reading from... yes.
+        print("Opening L1 Zarr store in S3 with Xarray.")
         try:
             zarr_path = f"s3://{input_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr"
-            # ds = xr.open_zarr(
-            #     store=zarr_path,
-            #     consolidated=False,
-            #     zarr_format=3,
-            #     storage_options={
-            #         "endpoint_url": endpoint_url,
-            #         # "key": self.key,
-            #         # "secret": self.secret,
-            #     },
-            # )
             kwargs = {"consolidated": False}
             ds = xr.open_dataset(
                 filename_or_obj=zarr_path,
@@ -459,16 +448,6 @@ class ZarrManager:
         print("Opening L2 Zarr store in S3 with Xarray.")
         try:
             zarr_path = f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
-            # ds = xr.open_zarr(
-            #     store=zarr_path,
-            #     consolidated=False,
-            #     zarr_format=3,
-            #     storage_options={
-            #         "endpoint_url": endpoint_url,
-            #         # "key": self.key,
-            #         # "secret": self.secret,
-            #     },
-            # )
             kwargs = {"consolidated": False}
             ds = xr.open_dataset(
                 filename_or_obj=zarr_path,
