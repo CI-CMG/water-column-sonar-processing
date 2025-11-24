@@ -70,7 +70,47 @@ https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scroll
 
 # Test Coverage
 
-TODO
+```commandline
+uv run pytest --cov=water_column_sonar_processing
+```
+
+Current status:
+
+```commandline
+Name                                                              Stmts   Miss  Cover
+-------------------------------------------------------------------------------------
+water_column_sonar_processing/__init__.py                             3      0   100%
+water_column_sonar_processing/aws/__init__.py                         6      0   100%
+water_column_sonar_processing/aws/dynamodb_manager.py                44      4    91%
+water_column_sonar_processing/aws/s3_manager.py                     161     27    83%
+water_column_sonar_processing/aws/s3fs_manager.py                    18      0   100%
+water_column_sonar_processing/aws/sns_manager.py                     18      1    94%
+water_column_sonar_processing/aws/sqs_manager.py                     17      2    88%
+water_column_sonar_processing/cruise/__init__.py                      3      0   100%
+water_column_sonar_processing/cruise/create_empty_zarr_store.py      43      2    95%
+water_column_sonar_processing/cruise/datatree_manager.py              0      0   100%
+water_column_sonar_processing/cruise/resample_regrid.py              92      7    92%
+water_column_sonar_processing/geometry/__init__.py                    5      0   100%
+water_column_sonar_processing/geometry/elevation_manager.py          29      1    97%
+water_column_sonar_processing/geometry/geometry_manager.py           76     11    86%
+water_column_sonar_processing/geometry/line_simplification.py        39      6    85%
+water_column_sonar_processing/geometry/pmtile_generation.py          77     58    25%
+water_column_sonar_processing/index/__init__.py                       2      0   100%
+water_column_sonar_processing/index/index_manager.py                142    113    20%
+water_column_sonar_processing/model/__init__.py                       2      0   100%
+water_column_sonar_processing/model/zarr_manager.py                  92     11    88%
+water_column_sonar_processing/process.py                             27     27     0%
+water_column_sonar_processing/processing/__init__.py                  3      0   100%
+water_column_sonar_processing/processing/raw_to_netcdf.py            85     24    72%
+water_column_sonar_processing/processing/raw_to_zarr.py              90      4    96%
+water_column_sonar_processing/utility/__init__.py                     5      0   100%
+water_column_sonar_processing/utility/cleaner.py                     13      0   100%
+water_column_sonar_processing/utility/constants.py                   62      0   100%
+water_column_sonar_processing/utility/pipeline_status.py             42      0   100%
+water_column_sonar_processing/utility/timestamp.py                    5      0   100%
+-------------------------------------------------------------------------------------
+TOTAL                                                              1201    298    75%
+```
 
 # Tag a Release
 
