@@ -149,19 +149,19 @@ def test_get_all_cruise_raw_files(tmp_path):
 #######################################################
 #######################################################
 # Indexing bucket with object hashes
-@pytest.mark.skip(reason="requires prod credentials")
-def test_build_merkle_tree():
-    """
-    The goal of this test is to create a merkle tree of an s3 directory.
-    It will iterate over each object, record the keys, the checksum, the
-    size, the __, and organize the information into a networkx graph
-    """
-    input_bucket_name = "noaa-wcsd-pds"
-    calibration_bucket = "noaa-wcsd-pds-index"
-    calibration_key = "calibrated_crusies.csv"
-    index_manager = IndexManager(input_bucket_name, calibration_bucket, calibration_key)
-    foo = index_manager.build_merkle_tree()
-    assert len(foo) > 0
+# @pytest.mark.skip(reason="requires prod credentials")
+# def test_build_merkle_tree():
+#     """
+#     The goal of this test is to create a merkle tree of an s3 directory.
+#     It will iterate over each object, record the keys, the checksum, the
+#     size, the __, and organize the information into a networkx graph
+#     """
+#     input_bucket_name = "noaa-wcsd-pds"
+#     calibration_bucket = "noaa-wcsd-pds-index"
+#     calibration_key = "calibrated_crusies.csv"
+#     index_manager = IndexManager(input_bucket_name, calibration_bucket, calibration_key)
+#     foo = index_manager.build_merkle_tree()
+#     assert len(foo) > 0
 
 
 #######################################################

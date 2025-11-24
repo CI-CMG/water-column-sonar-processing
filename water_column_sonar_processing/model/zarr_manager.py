@@ -424,7 +424,8 @@ class ZarrManager:
                 backend_kwargs={
                     "storage_options": {
                         "endpoint_url": endpoint_url,
-                    }
+                        "anon": True,
+                    },
                 },
                 **kwargs,
             )
@@ -455,11 +456,12 @@ class ZarrManager:
                 backend_kwargs={
                     "storage_options": {
                         "endpoint_url": endpoint_url,
+                        "anon": True,
                     }
                 },
                 **kwargs,
             )
-            return ds
+            return ds  # TODO: Assert that you open it anonymously
         except Exception as err:
             raise RuntimeError(f"Problem opening Zarr store in S3 as Xarray, {err}")
 

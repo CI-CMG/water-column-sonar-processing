@@ -55,7 +55,6 @@ dev = [
     "build",
     "pooch==1.8.2",
     "pre-commit==4.5.0",
-    "pyinstaller==6.16.0",
     # uv run pytest --cov=testing_demo
     "pytest==9.0.1",
     "pytest-cov>=7.0.0",
