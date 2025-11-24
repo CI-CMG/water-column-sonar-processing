@@ -8,7 +8,9 @@ generating geospatial information.
 
 # Setting up the Python Environment
 
-> Python 3.12.12
+> uv python install --reinstall
+> uv venv
+> Python 3.10.12 # 3.13.1
 
 # Installing Dependencies
 
