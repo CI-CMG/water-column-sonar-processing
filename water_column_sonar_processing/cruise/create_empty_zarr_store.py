@@ -19,8 +19,8 @@ class CreateEmptyZarrStore:
         # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
 
     #######################################################
+    @staticmethod
     def create_cruise_level_zarr_store(
-        self,
         output_bucket_name: str,
         ship_name: str,
         cruise_name: str,

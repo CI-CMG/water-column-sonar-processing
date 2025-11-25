@@ -46,7 +46,7 @@ class ElevationManager:
         self,
     ):
         self.DECIMAL_PRECISION = 5  # precision for GPS coordinates
-        self.TIMOUT_SECONDS = 10
+        self.TIMEOUT_SECONDS = 10
 
     #######################################################
     def get_arcgis_elevation(
@@ -71,7 +71,7 @@ class ElevationManager:
             # order: (lng, lat)
             geometry = f'{{"points":{str(chunk)}}}'
             url = f"https://gis.ngdc.noaa.gov/arcgis/rest/services/DEM_mosaics/DEM_global_mosaic/ImageServer/identify?geometry={geometry}&geometryType={geometryType}&returnGeometry=false&returnCatalogItems=false&f=json"
-            result = requests.get(url, timeout=self.TIMOUT_SECONDS)
+            result = requests.get(url, timeout=self.TIMEOUT_SECONDS)
             res = json.loads(result.content.decode("utf8"))
             if "results" in res:
                 for element in res["results"]:

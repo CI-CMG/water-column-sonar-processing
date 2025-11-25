@@ -28,7 +28,7 @@ class ResampleRegrid:
         input_xr,
         ping_times,
         all_cruise_depth_values,  # includes water_level offset
-        water_level,  # this is the offset that will be added to each respective file
+        # water_level,  # this is the offset that will be added to each respective file
     ) -> np.ndarray:
         """
         What gets passed into interpolate data
@@ -201,16 +201,16 @@ class ResampleRegrid:
                     cruise_name=cruise_name,
                     sensor_name=sensor_name,
                     file_name_stem=file_name_stem,
-                    input_bucket_name=bucket_name,
+                    bucket_name=bucket_name,
                     endpoint_url=endpoint_url,
                 )
 
                 # This is the vertical offset of the sensor related to the ocean surface
                 # See https://echopype.readthedocs.io/en/stable/data-proc-additional.html
-                if "water_level" in input_xr_zarr_store.keys():
-                    water_level = input_xr_zarr_store.water_level.values
-                else:
-                    water_level = 0.0
+                # if "water_level" in input_xr_zarr_store.keys():
+                #     water_level = input_xr_zarr_store.water_level.values
+                # else:
+                #     water_level = 0.0
                 #########################################################################
                 # [3] Get needed time indices — along the x-axis
                 # Offset from start index to insert new dataset. Note that missing values are excluded.
@@ -277,7 +277,7 @@ class ResampleRegrid:
                     input_xr=input_xr,
                     ping_times=ping_times,
                     all_cruise_depth_values=all_cruise_depth_values,  # should accommodate the water_level already
-                    water_level=water_level,  # not applied to anything yet
+                    # water_level=water_level,  # not applied to anything yet
                 )
 
                 print(

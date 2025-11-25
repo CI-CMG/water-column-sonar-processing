@@ -118,6 +118,7 @@ class IndexManager:
         for res in page_iterator:
             if "Key" in res:
                 return res["Key"]
+        return None
         # else raise exception?
 
         # DSJ0604-D20060406-T050022.bot 2kB == 2152 'Size'
@@ -188,9 +189,8 @@ class IndexManager:
         return files_list
 
     #################################################################
-    def get_subset_ek60_prefix(
-        self, df: pd.DataFrame
-    ) -> pd.DataFrame:  # TODO: is this used?
+    @staticmethod
+    def get_subset_ek60_prefix(df: pd.DataFrame) -> pd.DataFrame:  # TODO: is this used?
         # Returns all objects with 'EK60' in prefix of file path
         # Note that this can include 'EK80' dataset that are false-positives
         # in dataframe with ['key', 'filename', 'ship', 'cruise', 'sensor', 'size', 'date', 'datagram']
@@ -272,9 +272,8 @@ class IndexManager:
         return all_datagrams
 
     #################################################################
-    def get_ek60_objects(
-        self, df: pd.DataFrame, subset_datagrams: list
-    ) -> pd.DataFrame:
+    @staticmethod
+    def get_ek60_objects(df: pd.DataFrame, subset_datagrams: list) -> pd.DataFrame:
         # for each key write datagram value to all other files in same cruise
         for subset_datagram in subset_datagrams:
             if subset_datagram["DATAGRAM"] == "CON0":

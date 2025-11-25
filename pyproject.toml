@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "25.11.8"
+version = "25.11.9"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
@@ -16,49 +16,47 @@ license-files = ["LICENSE"]
 
 # uv pip install -r pyproject.toml --all-extras
 dependencies = [
-    "black>=25.11.0",
-    "boto3==1.40.70",
-    "boto3-stubs==1.40.70",
-    "botocore==1.40.70",
-    "build>=1.3.0",
-    "echopype==0.11.0",
-    "fiona==1.10.1",
-    "geopandas==1.1.1",
+    "black",
+    "boto3",
+    "boto3-stubs",
+    "botocore",
+    "build",
+    "echopype",
+    "fiona",
+    "geopandas",
     "importlib",
-    "mock==5.2.0",
-    "moto[all]==5.1.17",
-    "moto[server]==5.1.17",
-    "multidict==6.7.0",
-    "netcdf4==1.7.3",
-    "numpy==2.3.5",
-    "pandas==2.3.3",
-    "pandas-stubs==2.3.2.250926",
-    #"pelicanfs==1.0.2", # TODO: add this
-    "pooch==1.8.2",
-    "pyarrow==22.0.0",
-    "pykalman==0.10.2",
-    "python-dotenv==1.2.1",
-    "requests==2.32.5",
+    "mock",
+    "moto[all]",
+    "moto[server]",
+    "multidict",
+    "netcdf4",
+    "numpy",
+    "pandas",
+    "pandas-stubs",
+    "pooch",
+    "pyarrow",
+    "pykalman",
+    "python-dotenv",
+    "requests",
     "s3fs==2025.10.0",
-    "scipy==1.16.3",
-    "setuptools==80.9.0",
-    "shapely==2.1.2",
+    "scipy",
+    "setuptools",
+    "shapely",
     #    "tomllib",
-    "xarray==2025.11.0",
-    "zarr==3.1.5",
+    "xarray",
+    "zarr",
 ]
 
 # uv sync --all-groups
 [dependency-groups]
 dev = [
-    "bandit[toml]==1.9.2",
+    "bandit[toml]",
     "build",
-    "pooch==1.8.2",
-    "pre-commit==4.5.0",
-    # uv run pytest --cov=testing_demo
-    "pytest==9.0.1",
-    "pytest-cov>=7.0.0",
-    "ruff==0.14.6",
+    "pooch",
+    "pre-commit",
+    "pytest",
+    "pytest-cov", # uv run pytest --cov=testing_demo
+    "ruff",
     "tqdm",
 ]
 

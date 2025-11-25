@@ -71,8 +71,8 @@ class LineSimplification:
         pass
 
     #######################################################
+    @staticmethod
     def kalman_filter(
-        self,
         longitudes,
         latitudes,
     ) -> (np.ndarray, np.ndarray):
@@ -102,8 +102,8 @@ class LineSimplification:
         return smoothed_state_means[:, [0, 2]]
 
     #######################################################
+    @staticmethod
     def get_speeds(
-        self,
         times: np.ndarray,  # don't really need time, do need to segment the dataset first
         latitudes: np.ndarray,
         longitudes: np.ndarray,
@@ -136,13 +136,13 @@ class LineSimplification:
         # returns the speed in meters per second #TODO: get speed in knots
         return speed_meters_per_second.to_numpy(dtype="float32")  # includes nan
 
-    def remove_null_island_values(
-        self,
-        epsilon=1e-5,
-    ) -> None:
-        # TODO: low priority
-        print(epsilon)
-        pass
+    # def remove_null_island_values(
+    #     self,
+    #     epsilon=1e-5,
+    # ) -> None:
+    #     # TODO: low priority
+    #     print(epsilon)
+    #     pass
 
     def break_linestring_into_multi_linestring(
         self,

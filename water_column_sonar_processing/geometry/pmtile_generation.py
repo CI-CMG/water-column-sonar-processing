@@ -36,7 +36,8 @@ class PMTileGeneration(object):
         self.sensor_name = "EK60"
 
     #######################################################
-    def check_all_cruises(self, bucket_name, cruises):
+    @staticmethod
+    def check_all_cruises(bucket_name, cruises):
         completed = []
         for cruise_name in cruises:
             print(cruise_name)
@@ -69,7 +70,8 @@ class PMTileGeneration(object):
         return completed
 
     #######################################################
-    def get_cruise_geometry(self, cruise_name, index):
+    @staticmethod
+    def get_cruise_geometry(cruise_name, index):
         print(cruise_name)
         try:
             pieces = []
@@ -119,7 +121,8 @@ class PMTileGeneration(object):
             raise RuntimeError(f"Problem parsing Zarr stores, {err}")
 
     #######################################################
-    def aggregate_geojson_into_dataframe(self, geoms):
+    @staticmethod
+    def aggregate_geojson_into_dataframe(geoms):
         gps_gdf = gpd.GeoDataFrame(
             columns=["id", "ship", "cruise", "sensor", "geometry"],
             geometry="geometry",

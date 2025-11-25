@@ -192,8 +192,8 @@ class GeometryManager:
         #  can include np.nan values?
 
     #######################################################
+    @staticmethod
     def read_s3_geo_json(
-        self,
         ship_name,
         cruise_name,
         sensor_name,

@@ -24,7 +24,7 @@ class ZarrManager:
     #######################################################
     def __init__(
         self,
-        endpoint_url: Optional[str] = None,
+        # endpoint_url: Optional[str] = None,
     ):
         self.__overwrite = True
         # self.endpoint_url = endpoint_url
@@ -34,8 +34,8 @@ class ZarrManager:
         # self.ship_name = ship_name
 
     #######################################################
+    @staticmethod
     def get_depth_values(
-        self,
         max_echo_range: float,  # maximum depth measured from whole cruise
         cruise_min_epsilon: float = 0.25,  # resolution between subsequent measurements
     ):  # TODO: define return type
@@ -404,19 +404,19 @@ class ZarrManager:
             raise RuntimeError(f"Exception encountered opening store with Zarr, {err}")
 
     ###########################################################################
+    @staticmethod
     def open_s3_zarr_store_with_xarray(
-        self,
         ship_name: str,
         cruise_name: str,
         sensor_name: str,
         file_name_stem: str,
-        input_bucket_name: str,
+        bucket_name: str,
         # level: str, # TODO: add level
         endpoint_url: Optional[str] = None,  # needed for moto testing
     ) -> xr.Dataset:
         print("Opening L1 Zarr store in S3 with Xarray.")
         try:
-            zarr_path = f"s3://{input_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr"
+            zarr_path = f"s3://{bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr"
             kwargs = {"consolidated": False}
             ds = xr.open_dataset(
                 filename_or_obj=zarr_path,
@@ -432,13 +432,11 @@ class ZarrManager:
             return ds
         except Exception as err:
             raise RuntimeError(f"Problem opening Zarr store in S3 as Xarray, {err}")
-        # finally:
-        #     print("Exiting opening Zarr store in S3 as Xarray.")
 
     ###########################################################################
     # TODO: can this be consolidated with above
+    @staticmethod
     def open_l2_zarr_store_with_xarray(
-        self,
         ship_name: str,
         cruise_name: str,
         sensor_name: str,

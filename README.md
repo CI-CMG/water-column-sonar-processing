@@ -34,42 +34,6 @@ uv run pytest --cache-clear tests # -W ignore::DeprecationWarning
 or
 > pytest --cache-clear --cov=src tests/ --cov-report=xml
 
-# Instructions
-
-Following this tutorial:
-https://packaging.python.org/en/latest/tutorials/packaging-projects/
-
-# Pre Commit Hook
-
-see here for installation: https://pre-commit.com/
-https://dev.to/rafaelherik/using-trufflehog-and-pre-commit-hook-to-prevent-secret-exposure-edo
-
-```
-uv run pre-commit install --allow-missing-config
-# or
-uv run pre-commit install
-```
-
-# Black
-
-https://ljvmiranda921.github.io/notebook/2018/06/21/precommits-using-black-and-flake8/
-
-```
-Settings > Black
-Execution mode: Package
-Python Interpreter: .../.venv/bin/python
-Use Black Formatter: X On Code reformat, X On Save
-```
-
-# Linting
-
-Ruff
-https://plugins.jetbrains.com/plugin/20574-ruff
-
-# Colab Test
-
-https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scrollTo=AayVyvpBdfIZ
-
 # Test Coverage
 
 ```commandline
@@ -114,12 +78,48 @@ water_column_sonar_processing/utility/timestamp.py                    5      0  
 TOTAL                                                              1201    298    75%
 ```
 
+# Instructions
+
+Following this tutorial:
+https://packaging.python.org/en/latest/tutorials/packaging-projects/
+
+# Pre Commit Hook
+
+see here for installation: https://pre-commit.com/
+https://dev.to/rafaelherik/using-trufflehog-and-pre-commit-hook-to-prevent-secret-exposure-edo
+
+```
+uv run pre-commit install --allow-missing-config
+# or
+uv run pre-commit install
+```
+
+# Black
+
+https://ljvmiranda921.github.io/notebook/2018/06/21/precommits-using-black-and-flake8/
+
+```
+Settings > Black
+Execution mode: Package
+Python Interpreter: .../.venv/bin/python
+Use Black Formatter: X On Code reformat, X On Save
+```
+
+# Linting
+
+Ruff
+https://plugins.jetbrains.com/plugin/20574-ruff
+
+# Colab Test
+
+https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scrollTo=AayVyvpBdfIZ
+
 # Tag a Release
 
 Step 1 --> increment the semantic version in the zarr_manager.py "metadata" & the "pyproject.toml"
 
 ```commandline
-git tag -a v25.11.7 -m "Releasing v25.11.7"
+git tag -a v25.11.9 -m "Releasing v25.11.9"
 git push origin --tags
 ```
 
