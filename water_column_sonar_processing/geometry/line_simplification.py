@@ -75,7 +75,7 @@ class LineSimplification:
     def kalman_filter(
         longitudes,
         latitudes,
-    ) -> (np.ndarray, np.ndarray):
+    ):
         """
         # TODO: need to use masked array to get the right number of values
         """

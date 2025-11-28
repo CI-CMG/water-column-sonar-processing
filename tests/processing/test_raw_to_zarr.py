@@ -157,7 +157,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
 
     # TODO: check the dynamodb dataframe to see if info is updated there
     # ---Verify Data is Populated in Table--- #
-    df_after = dynamo_db_manager.get_table_as_df(
+    df_after = dynamo_db_manager.get_table_as_df(  # TODO: verify the MIN_ECHO_RANGE
         # ship_name=ship_name,
         cruise_name=cruise_name,
         # sensor_name, # TODO: need to add this back for EK80
