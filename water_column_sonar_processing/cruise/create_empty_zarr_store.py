@@ -30,6 +30,7 @@ class CreateEmptyZarrStore:
     ) -> None:
         """
         Initialize zarr store. The water_level needs to be integrated.
+        # tempdir="/tmp", # TODO: create better tmp directory for testing
         """
         tempdir = tempfile.TemporaryDirectory()
         try:

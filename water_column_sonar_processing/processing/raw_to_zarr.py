@@ -216,13 +216,15 @@ class RawToZarr:
             gc.collect()
             print("Done computing volume backscatter strength (Sv) from raw dataset.")
             # Note: detected_seafloor_depth is located at echodata.vendor.detected_seafloor_depth
-            # but is not written out with ds_sv
+            # but is not written out with ds_sv --> add to ds_sv
             if "detected_seafloor_depth" in list(echodata.vendor.variables):
                 ds_sv["detected_seafloor_depth"] = (
                     echodata.vendor.detected_seafloor_depth
                 )
             #
             frequencies = echodata.environment.frequency_nominal.values
+            if len(frequencies) != len(set(frequencies)):
+                raise Exception("Problem number of frequencies does not match channels")
             #################################################################
             # Get GPS coordinates
             gps_data, lat, lon = geometry_manager.read_echodata_gps_data(
@@ -253,7 +255,9 @@ class RawToZarr:
             #     [0.20, min_echo_range]
             # )
 
-            max_echo_range = float(np.nanmax(ds_sv.echo_range))
+            max_echo_range = float(
+                np.nanmax(ds_sv.echo_range)
+            )  # TODO: change to "MAX_ECHO_DEPTH"
 
             # This is the number of missing values found throughout the lat/lon
             num_ping_time_dropna = lat[~np.isnan(lat)].shape[0]  # symmetric to lon
@@ -321,7 +325,6 @@ class RawToZarr:
             #######################################################################
             # TODO: verify count of objects matches, publish message, update status
             #######################################################################
-            print("Finished raw-to-zarr conversion.")
         except Exception as err:
             print(
                 f"Exception encountered creating local Zarr store with echopype: {err}"
@@ -329,11 +332,10 @@ class RawToZarr:
             raise RuntimeError(f"Problem creating local Zarr store, {err}")
         finally:
             gc.collect()
-            print("Finally.")
             cleaner.delete_local_files(
                 file_types=["*.raw", "*.bot", "*.zarr", "*.json"]
             )
-        print("Done creating local zarr store.")
+            print("Finished raw-to-zarr conversion.")
 
     ############################################################################
     ############################################################################

@@ -41,42 +41,11 @@ def resample_regrid_test_path(test_path):
 
 #######################################################
 
-### Test Interpolation ###
-# @mock_aws
-# @pytest.mark.skip(reason="no way of currently testing resample regrid")
-# def test_resample_regrid_functional(resample_regrid_test_path):
-#     # TODO:
-#     #  need to create output zarr store
-#     #  need to create geojson
-#     #  need to populate dynamodb
-#
-#     # Opens s3 input model store as xr and writes dataset to output model store
-#
-#     # HB0706 - 53 files
-#     # bucket_name = 'noaa-wcsd-model-pds'
-#     ship_name = "Henry_B._Bigelow"
-#     cruise_name = "HB0707"
-#     sensor_name = "EK60"
-#     table_name = "prod-echofish"
-#
-#     # TODO: create zarr store & write to s3 bucket
-#
-#     resample_regrid = ResampleRegrid()
-#     resample_regrid.resample_regrid(
-#         ship_name=ship_name,
-#         cruise_name=cruise_name,
-#         sensor_name=sensor_name,
-#         table_name=table_name,
-#     )
-
 
 @mock_aws
 def test_resample_regrid(resample_regrid_test_path, moto_server):
-    # TODO: HB0707 isn't good _enough_ test because the MIN_ECHO_RANGE doesn't change
-
-    # TODO: set up db w all 12 dataset file info for HB0707,
-    # iterate through 2 files ("D20070712-T100505.raw", "D20070712-T152416.raw") and do resample/regrid
-    # verify the output is gridded as expected
+    # Iterates through 2 files ("D20070712-T100505.raw", "D20070712-T152416.raw") and do resample/regrid
+    # verifies the output is gridded as expected
 
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager(endpoint_url=moto_server)
@@ -239,13 +208,6 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
             ),
         )
 
-    # mount and verify:
-    # s3fs_manager = S3FSManager(endpoint_url=moto_server)
-    # s3_path = f"{output_bucket_name}/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr"
-    # zarr_store = s3fs_manager.s3_map(s3_path)
-
-    # TODO: PROBLEM NEED TO DO RAW-TO-ZARR CONVERSIONS FOR FILES SO THAT I CAN
-    #  USE THE FILE-LEVEL ZARR STORES AS INPUTS.
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20070712-T124906.raw"),
         bucket_name=l0_test_bucket_name,
@@ -269,13 +231,8 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     )
     assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 4
 
-    raw_to_zarr = RawToZarr()
     gc.collect()
-    # mock the returned water_level to override 0's, was working but didn't work for writing to zarr
-    # thing = xarray.Dataset
-    # thing.water_level = Mock()
-    # thing.water_level.values = 3.0
-
+    raw_to_zarr = RawToZarr()
     raw_to_zarr.raw_to_zarr(
         table_name=table_name,
         input_bucket_name=l0_test_bucket_name,
@@ -285,7 +242,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         sensor_name=sensor_name,
         raw_file_name="D20070712-T124906.raw",
         endpoint_url=moto_server,
-        include_bot=True,  # added bot
+        include_bot=True,
     )
     raw_to_zarr.raw_to_zarr(
         table_name=table_name,
@@ -296,28 +253,25 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         sensor_name=sensor_name,
         raw_file_name="D20070712-T152416.raw",
         endpoint_url=moto_server,
-        include_bot=True,  # added bot
+        include_bot=True,  # This should just assume we want bot
     )
     gc.collect()
     number_of_files_xx = s3_manager.list_objects(
         bucket_name=l1_l2_test_bucket_name,
         prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
     )
-    assert len(number_of_files_xx) > 72  # 1402
+    assert len(number_of_files_xx) == 1674  # 1402
 
     # [3] create new zarr store and upload
     create_empty_zarr_store = CreateEmptyZarrStore()
-    # TODO: this is out of order, needs to happen after raw-to-zarr L0-to-L1
     create_empty_zarr_store.create_cruise_level_zarr_store(
         output_bucket_name=l1_l2_test_bucket_name,
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         table_name=table_name,
-        # tempdir="/tmp", # TODO: create better tmp directory for testing
-    )
+    )  # TODO: create better tmp directory for testing
     # Assert dataset is in the bucket
-    # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
     assert (
         len(
             s3_manager.list_objects(
@@ -325,7 +279,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
                 prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
             )
         )
-        == 7061
+        == 7766  # 7061
     )
     assert (
         "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"
@@ -342,7 +296,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         sensor_name=sensor_name,
         table_name=table_name,
         bucket_name=l1_l2_test_bucket_name,
-        # TODO: this needs to be passed for each respective file, TEST ONLY TWO
+        # TODO: this needs to be passed for each respective file, TESTING ONLY TWO FILES
         override_select_files=["D20070712-T124906.raw"],
         endpoint_url=moto_server,
     )
@@ -353,13 +307,12 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
         sensor_name=sensor_name,
         table_name=table_name,
         bucket_name=l1_l2_test_bucket_name,
-        # TODO: this needs to be passed for each respective file, TEST ONLY TWO
         override_select_files=["D20070712-T152416.raw"],
         endpoint_url=moto_server,
     )
-    # TODO: verify that the two files in question were properly resampled and regridded
-    # check a couple of samples that are adjacent to one another
-    # assert 2 > 1
+    #
+    #
+    #
 
     test_zarr_manager = ZarrManager()
     test_output_zarr_store = test_zarr_manager.open_l2_zarr_store_with_xarray(
@@ -400,10 +353,9 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # assert not np.isnan(np.sum(test_output_zarr_store.where(cond=(select_times), drop=True).time.values))
 
     # TODO: assert that the test_output_zarr_store.Sv at specific depth equals the input files
-    assert np.nanmax(test_output_zarr_store.bottom.values) == pytest.approx(
-        970.11835
-    )  # uses 18 kHz only
+    assert np.nanmax(test_output_zarr_store.bottom.values) == pytest.approx(970.11835)
     assert np.nanmin(test_output_zarr_store.bottom.values) == pytest.approx(15.936)
+    assert np.isclose(test_output_zarr_store.Sv[3, 60_000, 0], -3.75991)
 
 
 @mock_aws
@@ -430,18 +382,6 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     s3_manager.create_bucket(bucket_name=l0_test_bucket_name)
     s3_manager.create_bucket(bucket_name=l1_l2_test_bucket_name)
     print(s3_manager.list_buckets())
-
-    # D20191106-T001906.raw
-    # s3_manager.upload_file(
-    #     filename=resample_regrid_test_path.joinpath("D20191106-T001906.raw"),
-    #     bucket_name=l0_test_bucket_name,
-    #     key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T001906.raw",
-    # )
-    # s3_manager.upload_file(
-    #     filename=resample_regrid_test_path.joinpath("D20191106-T001906.bot"),
-    #     bucket_name=l0_test_bucket_name,
-    #     key="data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T001906.bot",
-    # )
 
     s3_manager.upload_file(
         filename=resample_regrid_test_path.joinpath("D20191106-T034434.raw"),
@@ -501,14 +441,12 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
 
     # create new zarr store and upload
     create_empty_zarr_store = CreateEmptyZarrStore()
-    # TODO: this is out of order, needs to happen after raw-to-zarr L0-to-L1
     create_empty_zarr_store.create_cruise_level_zarr_store(
         output_bucket_name=l1_l2_test_bucket_name,
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         table_name=table_name,
-        # tempdir="/tmp", # TODO: create better tmp directory for testing
     )
 
     # Assert dataset is in the bucket
@@ -541,28 +479,28 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     )
     print(cruise_df_l0_l1)
 
+    ### RESAMPLING ###
     resample_regrid = ResampleRegrid()
-    resample_regrid.resample_regrid(  # water_level == 7.5
+    resample_regrid.resample_regrid(
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         table_name=table_name,
         bucket_name=l1_l2_test_bucket_name,
-        # TODO: this needs to be passed for each respective file, TEST ONLY TWO
         override_select_files=["D20191106-T034434.raw"],
         endpoint_url=moto_server,
     )
-    resample_regrid.resample_regrid(  # water_level == 7.5
+    resample_regrid.resample_regrid(
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         table_name=table_name,
         bucket_name=l1_l2_test_bucket_name,
-        # TODO: this needs to be passed for each respective file, TEST ONLY TWO
         override_select_files=["D20191106-T042540.raw"],
         endpoint_url=moto_server,
     )
 
+    ### Open for testing ###
     test_zarr_manager = ZarrManager()
     test_output_zarr_store = test_zarr_manager.open_l2_zarr_store_with_xarray(
         ship_name=ship_name,
@@ -572,8 +510,38 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
         endpoint_url=moto_server,
     )
     assert np.isclose(test_output_zarr_store.Sv.depth[0].values, 0.0)
-    assert np.isclose(test_output_zarr_store.Sv.depth[-1].values, 507.4)
-    assert len(test_output_zarr_store.Sv.depth) == 2538
+    assert np.isclose(
+        test_output_zarr_store.Sv.sel(
+            depth=0.57,
+            time=test_output_zarr_store.time[0],
+            frequency=test_output_zarr_store.frequency[0],
+            method="nearest",
+        ).values,
+        -3.53155,  # first non-na values
+    )
+    assert np.isclose(
+        test_output_zarr_store.Sv.sel(
+            depth=0.76,
+            time=test_output_zarr_store.time[0],
+            frequency=test_output_zarr_store.frequency[0],
+            method="nearest",
+        ).values,
+        -5.6355376,  # second non-na value
+    )
+    assert np.isclose(
+        test_output_zarr_store.Sv.sel(
+            depth=499.99,
+            time=test_output_zarr_store.time[0],
+            frequency=test_output_zarr_store.frequency[0],
+            method="nearest",
+        ).values,
+        -81.77733,  # last non-na value
+    )
+    assert np.isclose(test_output_zarr_store.depth[-1].values, 507.4)
+    assert len(test_output_zarr_store.Sv.depth) == 2671  # was 2538 previously
+    assert np.max(test_output_zarr_store.latitude.values) > 0.0
+    assert np.isclose(np.max(test_output_zarr_store.bottom.values), 247.97046)
+    assert np.isclose(np.nanmin(test_output_zarr_store.bottom.values), 178.77365)
     # cruise_select = test_output_zarr_store.sel(
     #     time=slice(
     #         "2019-11-06T04:20:00", "2019-11-06T04:30:00"
