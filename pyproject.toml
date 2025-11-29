@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "25.11.9"
+version = "25.11.10"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
@@ -47,7 +47,7 @@ dependencies = [
     "zarr",
 ]
 
-# uv sync --all-groups
+#  uv sync --all-groups --upgrade
 [dependency-groups]
 dev = [
     "bandit[toml]",

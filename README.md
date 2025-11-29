@@ -119,7 +119,7 @@ https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scroll
 Step 1 --> increment the semantic version in the zarr_manager.py "metadata" & the "pyproject.toml"
 
 ```commandline
-git tag -a v25.11.9 -m "Releasing v25.11.9"
+git tag -a v25.11.10 -m "Releasing v25.11.10"
 git push origin --tags
 ```
 
