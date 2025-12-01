@@ -46,7 +46,7 @@ class ZarrManager:
         all_cruise_depth_values = np.linspace(  # TODO: PROBLEM HERE
             start=0,  # start it at zero
             stop=np.ceil(max_echo_range),  # round up
-            num=int(max_echo_range / cruise_min_epsilon),
+            num=int(np.ceil(max_echo_range) / cruise_min_epsilon) + 1,
             endpoint=True,
         )
 

@@ -243,7 +243,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     # --- Open with Zarr --- #
     root = zarr.open(store=zarr_store, mode="r", zarr_format=3)
     # print(root.info)
-    assert root["Sv"].shape == (4998, 89911, 4)
+    assert root["Sv"].shape == (5001, 89911, 4)
     assert root["time"].attrs["units"] == "nanoseconds since 1970-01-01"
     assert root["time"].attrs["calendar"] == "proleptic_gregorian"
     assert (

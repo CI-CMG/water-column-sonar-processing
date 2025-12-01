@@ -99,7 +99,7 @@ def test_zarr_manager():
     print(cruise_zarr.info)
 
     assert cruise_zarr["Sv"].shape == (
-        1250,
+        1251,
         1201,
         len(frequencies),
     )  # (depth, time, frequency)
@@ -121,7 +121,7 @@ def test_zarr_manager():
 
     # TODO: test to ensure the dimensions are in proper order
     assert file_xr.Sv.dims == ("depth", "time", "frequency")
-    assert file_xr.Sv.shape == (1250, 1201, 4)
+    assert file_xr.Sv.shape == (1251, 1201, 4)
 
     assert file_xr.attrs["processing_software_name"] == "echofish"
     assert file_xr.attrs[
@@ -257,7 +257,7 @@ def test_get_depth_values_shallow_and_small_epsilon():
         max_echo_range=101,
         cruise_min_epsilon=0.17,
     )
-    assert len(depths) == 594
+    assert len(depths) == 595
     assert depths[0] == 0.0
     assert depths[-1] == 101
 
@@ -269,7 +269,7 @@ def test_get_depth_values_shallow_and_large_epsilon():
         max_echo_range=24,
         cruise_min_epsilon=1.31,
     )
-    assert len(depths) == 18
+    assert len(depths) == 19
     assert depths[0] == 0.0  # 1.31
     assert depths[-1] == 24
 
@@ -281,7 +281,7 @@ def test_get_depth_values_deep_and_small_epsilon():
         max_echo_range=221.1,
         cruise_min_epsilon=0.11,
     )
-    assert len(depths) == 2010
+    assert len(depths) == 2019
     assert depths[0] == 0.0
     assert depths[-1] == 222.0  # TODO: do we want this to be np.ceil(x)
 
@@ -293,7 +293,7 @@ def test_get_depth_values_deep_and_large_epsilon():
         max_echo_range=222.2,
         cruise_min_epsilon=1.31,  # int((222.2 - 1.31) / 1.31) + 1 = 169
     )  # 1.31 + 169*1.31 = 222.70
-    assert len(depths) == 169
+    assert len(depths) == 171
     assert depths[0] == 0
     # TODO: would it be better to have whole numbers?
     assert depths[-1] == 223.0
@@ -306,7 +306,7 @@ def test_get_depth_values_half_meter():
         max_echo_range=250.0,
         cruise_min_epsilon=0.50,
     )
-    assert len(depths) == 500
+    assert len(depths) == 501
     assert depths[0] == 0
     assert depths[-1] == 250
 
@@ -317,7 +317,7 @@ def test_get_depth_values_half_meter_shallow():
         max_echo_range=2.0,
         cruise_min_epsilon=0.50,
     )
-    assert len(depths) == 4
+    assert len(depths) == 5
     assert depths[0] == 0
     assert depths[-1] == 2.0
 

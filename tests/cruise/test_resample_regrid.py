@@ -44,8 +44,6 @@ def resample_regrid_test_path(test_path):
 
 
 #######################################################
-
-
 @mock_aws
 def test_resample_regrid(resample_regrid_test_path, moto_server):
     # Iterates through 2 files ("D20070712-T100505.raw", "D20070712-T152416.raw") and do resample/regrid
@@ -360,12 +358,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
 
 
 @mock_aws
-def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
-    # Convert file and ensure that water_level offset is captured
-    # Need to test:
-    #   https://noaa-wcsd-pds.s3.amazonaws.com/data/raw/Henry_B._Bigelow/HB1906/EK60/D20191106-T001906.raw
-    #   d20191106_t001906-t115734_Zsc-DWBA-Schools_All-RegionDefs.evr
-
+def test_resample_regrid_hb1906(resample_regrid_test_path, moto_server):
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager(endpoint_url=moto_server)
 
@@ -541,7 +534,7 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     #     -81.77733,  # last non-na value
     # )
     assert np.isclose(test_output_zarr_store.depth[-1].values, 500.0)
-    assert len(test_output_zarr_store.Sv.depth) == 2499  # was 2538 previously
+    assert len(test_output_zarr_store.Sv.depth) == 2501  # was 2538 previously
     assert np.max(test_output_zarr_store.latitude.values) > 0.0
     assert np.isclose(np.max(test_output_zarr_store.bottom.values), 247.97046)
     assert np.isclose(np.nanmin(test_output_zarr_store.bottom.values), 178.77365)
@@ -568,6 +561,166 @@ def test_resample_regrid_water_level(resample_regrid_test_path, moto_server):
     #     depth=slice(212, 215),  # slice across ctd sidescan
     # )  # noise outside is ~-80.59 dB
     # assert np.isclose(int(np.nanmean(select_outside_noise.Sv)), -80)
+
+
+@mock_aws
+def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
+    # Doesn't test water level anymore
+    dynamo_db_manager = DynamoDBManager()
+    s3_manager = S3Manager(endpoint_url=moto_server)
+
+    ship_name = "Henry_B._Bigelow"
+    cruise_name = "HB0710"
+    sensor_name = "EK60"
+    table_name = "water-column-sonar-table"
+
+    # create dynamodb table
+    dynamo_db_manager.create_water_column_sonar_table(table_name=table_name)
+
+    # create bucket with test files
+    l0_test_bucket_name = "l0_test_bucket"
+    l1_l2_test_bucket_name = "l1_l2_test_input_bucket"
+    s3_manager.create_bucket(bucket_name=l0_test_bucket_name)
+    s3_manager.create_bucket(bucket_name=l1_l2_test_bucket_name)
+    print(s3_manager.list_buckets())
+
+    s3_manager.upload_file(
+        filename=resample_regrid_test_path.joinpath("HB_07_10-D20070907-T121702.raw"),
+        bucket_name=l0_test_bucket_name,
+        key="data/raw/Henry_B._Bigelow/HB0710/EK60/HB_07_10-D20070907-T121702.raw",
+    )
+    s3_manager.upload_file(
+        filename=resample_regrid_test_path.joinpath("HB_07_10-D20070910-T225059.raw"),
+        bucket_name=l0_test_bucket_name,
+        key="data/raw/Henry_B._Bigelow/HB0710/EK60/HB_07_10-D20070910-T225059.raw",
+    )
+
+    assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 2
+
+    gc.collect()
+    raw_to_zarr = RawToZarr()
+    raw_to_zarr.raw_to_zarr(
+        table_name=table_name,
+        input_bucket_name=l0_test_bucket_name,
+        output_bucket_name=l1_l2_test_bucket_name,
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        raw_file_name="HB_07_10-D20070907-T121702.raw",
+        endpoint_url=moto_server,
+        include_bot=False,
+    )
+    raw_to_zarr.raw_to_zarr(
+        table_name=table_name,
+        input_bucket_name=l0_test_bucket_name,
+        output_bucket_name=l1_l2_test_bucket_name,
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        raw_file_name="HB_07_10-D20070910-T225059.raw",
+        endpoint_url=moto_server,
+        include_bot=False,
+    )
+    gc.collect()
+
+    cruise_df_before = dynamo_db_manager.get_table_as_df(
+        cruise_name=cruise_name,
+        table_name=table_name,
+    )
+    print(cruise_df_before)
+
+    # create new zarr store and upload
+    create_empty_zarr_store = CreateEmptyZarrStore()
+    create_empty_zarr_store.create_cruise_level_zarr_store(
+        output_bucket_name=l1_l2_test_bucket_name,
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        table_name=table_name,
+    )
+
+    # Assert dataset is in the bucket
+    assert (
+        len(
+            s3_manager.list_objects(
+                bucket_name=l1_l2_test_bucket_name,
+                prefix=f"{level_2}/Henry_B._Bigelow/HB0710/EK60/HB0710.zarr/",
+            )
+        )
+        > 1
+    )
+    assert (
+        f"{level_2}/Henry_B._Bigelow/HB0710/EK60/HB0710.zarr/zarr.json"
+        in s3_manager.list_objects(
+            bucket_name=l1_l2_test_bucket_name,
+            prefix=f"{level_2}/Henry_B._Bigelow/HB0710/EK60/HB0710.zarr/",
+        )
+    )
+
+    number_of_files_xx = s3_manager.list_objects(
+        bucket_name=l1_l2_test_bucket_name,
+        prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
+    )
+    assert len(number_of_files_xx) > 100  # 1238
+
+    cruise_df_l0_l1 = dynamo_db_manager.get_table_as_df(
+        cruise_name=cruise_name,
+        table_name=table_name,
+    )
+    print(cruise_df_l0_l1)
+
+    ### RESAMPLING ###
+    resample_regrid = ResampleRegrid()
+    resample_regrid.resample_regrid(
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        table_name=table_name,
+        bucket_name=l1_l2_test_bucket_name,
+        override_select_files=["HB_07_10-D20070907-T121702.raw"],
+        endpoint_url=moto_server,
+    )
+    resample_regrid.resample_regrid(
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        table_name=table_name,
+        bucket_name=l1_l2_test_bucket_name,
+        override_select_files=["HB_07_10-D20070910-T225059.raw"],
+        endpoint_url=moto_server,
+    )
+
+    ### Open for testing ###
+    test_zarr_manager = ZarrManager()
+    test_output_zarr_store = test_zarr_manager.open_l2_zarr_store_with_xarray(
+        ship_name=ship_name,
+        cruise_name=cruise_name,
+        sensor_name=sensor_name,
+        bucket_name=l1_l2_test_bucket_name,
+        endpoint_url=moto_server,
+    )
+    assert np.isclose(test_output_zarr_store.Sv.depth[0].values, 0.0)
+    assert np.isclose(
+        test_output_zarr_store.Sv.sel(
+            depth=0.57,
+            time=test_output_zarr_store.time[0],
+            frequency=test_output_zarr_store.frequency[0],
+            method="nearest",
+        ).values,
+        -3.7575889,  # first non-na values, -5.635537, #
+    )
+    assert np.isclose(
+        test_output_zarr_store.Sv.sel(
+            depth=0.76,
+            time=test_output_zarr_store.time[0],
+            frequency=test_output_zarr_store.frequency[0],
+            method="nearest",
+        ).values,
+        -5.8615847,  # -39.27122, #,  # second non-na value
+    )
+    assert np.isclose(test_output_zarr_store.depth[-1].values, 500.0)
+    assert len(test_output_zarr_store.Sv.depth) == 2501  # was 2538 previously
+    assert np.max(test_output_zarr_store.latitude.values) > 0.0
 
 
 @mock_aws
