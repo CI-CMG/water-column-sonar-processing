@@ -565,7 +565,13 @@ def test_resample_regrid_hb1906(resample_regrid_test_path, moto_server):
 
 @mock_aws
 def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
-    # Doesn't test water level anymore
+    # This test focuses on https://colab.research.google.com/drive/1AoNGcsoaCXUXx-r3fYMzXobllb-zotZd?usp=sharing
+    #  across the shelf with change in water-level, sampling delta, & max depth at slice('2007-09-12T06:37:13.912701000', '2007-09-12T06:56:14.390949000')
+    #  "HB_07_10-D20070912-T002400.raw"
+    #    water_level=7.5, min_echo_range=0.19, max_echo_range=499.7215
+    #  "HB_07_10_Cont_Shelf-D20070912-T065606.raw"
+    #    water_level=5.0, min_echo_range=0.01, max_echo_range=2999.4805
+    #  where there are also changes across channels in values.
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager(endpoint_url=moto_server)
 
@@ -585,14 +591,16 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
     print(s3_manager.list_buckets())
 
     s3_manager.upload_file(
-        filename=resample_regrid_test_path.joinpath("HB_07_10-D20070907-T121702.raw"),
+        filename=resample_regrid_test_path.joinpath("HB_07_10-D20070912-T002400.raw"),
         bucket_name=l0_test_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB0710/EK60/HB_07_10-D20070907-T121702.raw",
+        key="data/raw/Henry_B._Bigelow/HB0710/EK60/HB_07_10-D20070912-T002400.raw",
     )
     s3_manager.upload_file(
-        filename=resample_regrid_test_path.joinpath("HB_07_10-D20070910-T225059.raw"),
+        filename=resample_regrid_test_path.joinpath(
+            "HB_07_10_Cont_Shelf-D20070912-T065606.raw"
+        ),
         bucket_name=l0_test_bucket_name,
-        key="data/raw/Henry_B._Bigelow/HB0710/EK60/HB_07_10-D20070910-T225059.raw",
+        key="data/raw/Henry_B._Bigelow/HB0710/EK60/HB_07_10_Cont_Shelf-D20070912-T065606.raw",
     )
 
     assert len(s3_manager.list_objects(bucket_name=l0_test_bucket_name, prefix="")) == 2
@@ -606,7 +614,7 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
-        raw_file_name="HB_07_10-D20070907-T121702.raw",
+        raw_file_name="HB_07_10-D20070912-T002400.raw",
         endpoint_url=moto_server,
         include_bot=False,
     )
@@ -617,7 +625,7 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
         ship_name=ship_name,
         cruise_name=cruise_name,
         sensor_name=sensor_name,
-        raw_file_name="HB_07_10-D20070910-T225059.raw",
+        raw_file_name="HB_07_10_Cont_Shelf-D20070912-T065606.raw",
         endpoint_url=moto_server,
         include_bot=False,
     )
@@ -677,7 +685,7 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
         sensor_name=sensor_name,
         table_name=table_name,
         bucket_name=l1_l2_test_bucket_name,
-        override_select_files=["HB_07_10-D20070907-T121702.raw"],
+        override_select_files=["HB_07_10-D20070912-T002400.raw"],
         endpoint_url=moto_server,
     )
     resample_regrid.resample_regrid(
@@ -686,7 +694,7 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
         sensor_name=sensor_name,
         table_name=table_name,
         bucket_name=l1_l2_test_bucket_name,
-        override_select_files=["HB_07_10-D20070910-T225059.raw"],
+        override_select_files=["HB_07_10_Cont_Shelf-D20070912-T065606.raw"],
         endpoint_url=moto_server,
     )
 
@@ -707,7 +715,7 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
             frequency=test_output_zarr_store.frequency[0],
             method="nearest",
         ).values,
-        -3.7575889,  # first non-na values, -5.635537, #
+        -3.80462,  # first non-na values, -5.635537, #
     )
     assert np.isclose(
         test_output_zarr_store.Sv.sel(
@@ -718,29 +726,65 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
         ).values,
         -5.8615847,  # -39.27122, #,  # second non-na value
     )
-    assert np.isclose(test_output_zarr_store.depth[-1].values, 500.0)
-    assert len(test_output_zarr_store.Sv.depth) == 2501  # was 2538 previously
+    # Test at the seam where depths change
+    # test_output_zarr_store.sel(depth=slice(0, 10), time=slice('2007-09-12T06:37:13.912701000', '2007-09-12T06:56:14.390949000'), frequency=18_000, drop=True)
+    # assert np.isclose(
+    #     test_output_zarr_store.sel(depth=0.6, time='2007-09-12T06:37:13.912701000', frequency=18_000, drop=True).values,
+    #     -3.781107,
+    # )
+    assert np.isclose(
+        test_output_zarr_store.sel(
+            depth=0.6, time="2007-09-12T06:37:13.912701000", frequency=18_000, drop=True
+        ).Sv.values,
+        -3.781107,
+    )
+    assert np.isclose(
+        test_output_zarr_store.sel(
+            depth=0.8, time="2007-09-12T06:37:13.912701000", frequency=18_000, drop=True
+        ).Sv.values,
+        -5.861585,
+    )
+    # on the right hand side
+    assert np.isclose(
+        test_output_zarr_store.sel(
+            depth=0.6, time="2007-09-12T06:56:14.390949000", frequency=18_000, drop=True
+        ).Sv.values,
+        -35.88606,
+    )
+    assert np.isclose(
+        test_output_zarr_store.sel(
+            depth=0.8, time="2007-09-12T06:56:14.390949000", frequency=18_000, drop=True
+        ).Sv.values,
+        -32.680862,
+    )
+    # TODO: get timestamp closest to:
+    # 2007-09-12T06:51:55
+    # 2007-09-12T06:52:05
+    #
+    #
+    assert np.isclose(test_output_zarr_store.depth[-1].values, 3000.0)
+    assert len(test_output_zarr_store.Sv.depth) == 15001  # was 2538 previously
     assert np.max(test_output_zarr_store.latitude.values) > 0.0
 
 
-@mock_aws
-@pytest.mark.skip(reason="TODO: implement this")
-def test_interpolate(resample_regrid_test_path):
-    # Get two raw files with extreme range differences between the two,
-    # generate zarr stores,
-    # get the last part of the first file and first part of the second file
-    # and write out to new zarr stores ...save in test resources
-    # read in the file here
-    """
-    Possible test files:
-        Henry_B._Bigelow HB0707 D20070712-T124906.raw
-            max_echo_range: 249.792, min_echo_range: 0.19, num_ping_time_dropna: 7706
-            raw 158 MB
-        Henry_B._Bigelow HB0707 D20070712-T152416.raw
-            max_echo_range: 999.744, min_echo_range: 0.19, num_ping_time_dropna: 4871
-            raw 200 MB
-    """
-    pass
+# @mock_aws
+# @pytest.mark.skip(reason="TODO: implement this")
+# def test_interpolate(resample_regrid_test_path):
+#     # Get two raw files with extreme range differences between the two,
+#     # generate zarr stores,
+#     # get the last part of the first file and first part of the second file
+#     # and write out to new zarr stores ...save in test resources
+#     # read in the file here
+#     """
+#     Possible test files:
+#         Henry_B._Bigelow HB0707 D20070712-T124906.raw
+#             max_echo_range: 249.792, min_echo_range: 0.19, num_ping_time_dropna: 7706
+#             raw 158 MB
+#         Henry_B._Bigelow HB0707 D20070712-T152416.raw
+#             max_echo_range: 999.744, min_echo_range: 0.19, num_ping_time_dropna: 4871
+#             raw 200 MB
+#     """
+#     pass
 
 
 #######################################################

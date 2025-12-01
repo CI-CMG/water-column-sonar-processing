@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "25.12.0"
+version = "25.12.1"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
@@ -42,7 +42,6 @@ dependencies = [
     "scipy",
     "setuptools",
     "shapely",
-    #    "tomllib",
     "xarray",
     "zarr",
 ]

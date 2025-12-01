@@ -24,8 +24,10 @@ HB0710_RAW = pooch.create(
     base_url="https://noaa-wcsd-pds.s3.amazonaws.com/data/raw/Henry_B._Bigelow/HB0710/EK60/",
     retry_if_failed=1,
     registry={
-        "HB_07_10-D20070907-T121702.raw": "sha256:f043cf36b9bfc8d4568f91157d368e4b771fd714b08f7d44bb0c7f54903baaff",
-        "HB_07_10-D20070910-T225059.raw": "sha256:d6cf79589656ebfb9a406e81974c60bd385ed92605e91f218dd56446fae63315",
+        "HB_07_10-D20070912-T002400.raw": "sha256:19bc8dc5e367ab365f849670330def0b134bbeead4a85d19d50a138ac5f1a151",
+        "HB_07_10_Cont_Shelf-D20070912-T065606.raw": "sha256:c044e3c3c159e812fea456bd07d815a04ebdd68b7b36a0dd5291106fa89d9d2e",
+        # "HB_07_10-D20070907-T121702.raw": "sha256:f043cf36b9bfc8d4568f91157d368e4b771fd714b08f7d44bb0c7f54903baaff",
+        # "HB_07_10-D20070910-T225059.raw": "sha256:d6cf79589656ebfb9a406e81974c60bd385ed92605e91f218dd56446fae63315",
     },
 )
 
@@ -50,8 +52,12 @@ def fetch_raw_files():
     HB1906_RAW.fetch(fname="D20191106-T042540.raw", progressbar=True)
     HB1906_RAW.fetch(fname="D20191106-T042540.bot", progressbar=True)
 
-    HB0710_RAW.fetch(fname="HB_07_10-D20070907-T121702.raw", progressbar=True)
-    HB0710_RAW.fetch(fname="HB_07_10-D20070910-T225059.raw", progressbar=True)
+    # HB0710_RAW.fetch(fname="HB_07_10-D20070907-T121702.raw", progressbar=True)
+    # HB0710_RAW.fetch(fname="HB_07_10-D20070910-T225059.raw", progressbar=True)
+    HB0710_RAW.fetch(fname="HB_07_10-D20070912-T002400.raw", progressbar=True)
+    HB0710_RAW.fetch(
+        fname="HB_07_10_Cont_Shelf-D20070912-T065606.raw", progressbar=True
+    )
 
     HB0707_RAW.fetch(fname="D20070712-T124906.raw", progressbar=True)
     HB0707_RAW.fetch(fname="D20070712-T124906.bot", progressbar=True)

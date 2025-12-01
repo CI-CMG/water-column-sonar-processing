@@ -3169,7 +3169,7 @@ wheels = [
 
 [[package]]
 name = "water-column-sonar-processing"
-version = "25.11.10"
+version = "25.12.1"
 source = { virtual = "." }
 dependencies = [
     { name = "black" },
