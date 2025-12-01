@@ -3,6 +3,7 @@ import tempfile
 
 import numpy as np
 
+from water_column_sonar_processing.utility import Constants
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.model import ZarrManager
 from water_column_sonar_processing.utility import Cleaner
@@ -26,15 +27,14 @@ class CreateEmptyZarrStore:
         cruise_name: str,
         sensor_name: str,
         table_name: str,
-        # override_cruise_min_epsilon=None,
     ) -> None:
         """
-        Initialize zarr store. The water_level needs to be integrated.
+        Initialize zarr store for the entire cruise which aggregates all the raw data.
+        All cruises will be resampled at 20 cm depth.
         # tempdir="/tmp", # TODO: create better tmp directory for testing
         """
         tempdir = tempfile.TemporaryDirectory()
         try:
-            # HB0806 - 123, HB0903 - 220
             dynamo_db_manager = DynamoDBManager()
             s3_manager = S3Manager()
 
@@ -46,7 +46,7 @@ class CreateEmptyZarrStore:
             # TODO: filter the dataframe just for enums >= LEVEL_1_PROCESSING
             # df[df['PIPELINE_STATUS'] < PipelineStatus.LEVEL_1_PROCESSING] = np.nan
 
-            # TODO: VERIFY GEOJSON EXISTS as prerequisite!!!
+            # TODO: VERIFY GEOJSON EXISTS as prerequisite!!! ...no more geojson needed
 
             print(f"DataFrame shape: {df.shape}")
             cruise_channels = list(
@@ -58,18 +58,8 @@ class CreateEmptyZarrStore:
                 df["NUM_PING_TIME_DROPNA"].dropna().astype(int)
             )
 
-            # [3] calculate the max/min measurement resolutions for the whole cruise
-            # cruise_min_echo_range = np.min(
-            #     (df["MIN_ECHO_RANGE"] + df["WATER_LEVEL"]).dropna().astype(float)
-            # )
-
-            # [4] calculate the np.max(max_echo_range + water_level)
-            cruise_max_echo_range = np.max(
-                (df["MAX_ECHO_RANGE"] + df["WATER_LEVEL"]).dropna().astype(float)
-            )
-
-            # TODO: set this to either 1 or 0.5 meters
-            cruise_min_epsilon = np.min(df["MIN_ECHO_RANGE"].dropna().astype(float))
+            # [4] max measurement resolution for the whole cruise
+            cruise_max_echo_range = np.max(df["MAX_ECHO_RANGE"].dropna().astype(float))
 
             print(f"cruise_max_echo_range: {cruise_max_echo_range}")
 
@@ -77,21 +67,18 @@ class CreateEmptyZarrStore:
             cruise_frequencies = [
                 float(i) for i in df["FREQUENCIES"].dropna().values.flatten()[0]
             ]
-            print(cruise_frequencies)
 
             new_width = int(consolidated_zarr_width)
-            print(f"new_width: {new_width}")
-            #################################################################
-            store_name = f"{cruise_name}.zarr"
-            print(store_name)
             ################################################################
-            # Delete existing model store if it exists
-            zarr_prefix = os.path.join("level_2", ship_name, cruise_name, sensor_name)
+            # Delete any existing stores
+            zarr_prefix = os.path.join(
+                str(Constants.LEVEL_2.value), ship_name, cruise_name, sensor_name
+            )
             child_objects = s3_manager.get_child_objects(
                 bucket_name=output_bucket_name,
                 sub_prefix=zarr_prefix,
             )
-            #
+
             if len(child_objects) > 0:
                 s3_manager.delete_nodd_objects(
                     bucket_name=output_bucket_name,
@@ -100,15 +87,6 @@ class CreateEmptyZarrStore:
             ################################################################
             # Create new model store
             zarr_manager = ZarrManager()
-            new_height = len(  # [0.19m down to 1001.744m] = 5272 samples, 10.3 tiles @ 512
-                zarr_manager.get_depth_values(  # these depths should be from min_epsilon to max_range+water_level
-                    # min_echo_range=cruise_min_echo_range,
-                    max_echo_range=cruise_max_echo_range,
-                    cruise_min_epsilon=cruise_min_epsilon,
-                )
-            )
-            print(f"new_height: {new_height}")
-
             zarr_manager.create_zarr_store(
                 path=tempdir.name,
                 ship_name=ship_name,
@@ -117,33 +95,20 @@ class CreateEmptyZarrStore:
                 frequencies=cruise_frequencies,
                 width=new_width,
                 max_echo_range=cruise_max_echo_range,
-                cruise_min_epsilon=cruise_min_epsilon,
+                # cruise_min_epsilon=cruise_min_epsilon,
                 calibration_status=True,
             )
             #################################################################
-            # TODO: would be more elegant to create directly into s3 bucket?
+            # TODO: would be more elegant to create directly into s3 bucket
             s3_manager.upload_zarr_store_to_s3(
                 output_bucket_name=output_bucket_name,
                 local_directory=tempdir.name,
                 object_prefix=zarr_prefix,
                 cruise_name=cruise_name,
             )
-            # https://noaa-wcsd-zarr-pds.s3.amazonaws.com/index.html
             #################################################################
-            # Verify count of the files uploaded
-            # count = self.__get_file_count(store_name=store_name)
-            # #
-            # raw_zarr_files = self.__get_s3_files(  # TODO: just need count
-            #     bucket_name=self.__output_bucket,
-            #     sub_prefix=os.path.join(zarr_prefix, store_name),
-            # )
-            # if len(raw_zarr_files) != count:
-            #     print(f'Problem writing {store_name} with proper count {count}.')
-            #     raise Exception("File count doesnt equal number of s3 Zarr store files.")
-            # else:
-            #     print("File counts match.")
+            # TODO: verify count of the files uploaded
             #################################################################
-            # Success
             # TODO: update enum in dynamodb
             print("Done creating cruise level zarr store.")
             #################################################################

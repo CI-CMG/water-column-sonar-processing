@@ -37,25 +37,22 @@ class ZarrManager:
     @staticmethod
     def get_depth_values(
         max_echo_range: float,  # maximum depth measured from whole cruise
-        cruise_min_epsilon: float = 0.25,  # resolution between subsequent measurements
-    ):  # TODO: define return type
+        cruise_min_epsilon: float = 0.20,  # delta subsequent measurements
+    ) -> np.ndarray[tuple[np.float64]]:
         # Gets the set of depth values that will be used when resampling and
         # regridding the dataset to a cruise level model store.
         # Note: returned values start at zero!
         # For more info see here: https://echopype.readthedocs.io/en/stable/data-proc-additional.html
-        print("Computing depth values.")
         all_cruise_depth_values = np.linspace(  # TODO: PROBLEM HERE
-            start=0,  # just start it at zero
-            stop=max_echo_range,
-            num=int(max_echo_range / cruise_min_epsilon)
-            + 1,  # int(np.ceil(max_echo_range / cruise_min_epsilon))?
+            start=0,  # start it at zero
+            stop=np.ceil(max_echo_range),  # round up
+            num=int(max_echo_range / cruise_min_epsilon),
             endpoint=True,
-        )  # np.arange(min_echo_range, max_echo_range, step=min_echo_range) # this is worse
+        )
 
         if np.any(np.isnan(all_cruise_depth_values)):
             raise Exception("Problem depth values returned were NaN.")
 
-        print("Done computing depth values.")
         return all_cruise_depth_values.round(decimals=2)
 
     #######################################################
@@ -66,9 +63,9 @@ class ZarrManager:
         cruise_name: str,
         sensor_name: str,
         frequencies: list,  # units in Hz
-        width: int,  # TODO: needs better name... "ping_time"
+        width: int,
         max_echo_range: float,
-        cruise_min_epsilon: float,  # smallest resolution in meters
+        # cruise_min_epsilon: float,  # smallest resolution in meters
         calibration_status: bool = False,  # Assume uncalibrated
     ) -> str:
         """
@@ -83,17 +80,10 @@ class ZarrManager:
 
             zarr_path = f"{path}/{cruise_name}.zarr"
             #####################################################################
-            # Colab notebook showing how DataSet is built for Zarr export
-            # https://colab.research.google.com/drive/1r3R4DxPR791paFohnUXy_z10fdlfSJYu?usp=sharing
-            #####################################################################
-
             ##### Depth #####
             depth_data_values = self.get_depth_values(
                 max_echo_range=max_echo_range,
-                cruise_min_epsilon=cruise_min_epsilon,
             )
-            if np.any(np.isnan(depth_data_values)):
-                raise Exception("Some depth values returned were NaN.")
 
             depth_data = np.array(
                 depth_data_values, dtype=Coordinates.DEPTH_DTYPE.value
@@ -120,7 +110,7 @@ class ZarrManager:
                 dims=Coordinates.TIME.value,
                 name=Coordinates.TIME.value,
                 attrs=dict(
-                    # Note: cal & units are written by xr
+                    # Note: cal & units are written automatically by xarray
                     # calendar="proleptic_gregorian",
                     # units="seconds since 1970-01-01 00:00:00",
                     long_name=Coordinates.TIME_LONG_NAME.value,
@@ -238,7 +228,6 @@ class ZarrManager:
                 (len(depth_data), width, len(frequencies)),
                 dtype=np.dtype(Coordinates.SV_DTYPE.value),
             )
-            # print(sv_data.shape)
             sv_da = xr.DataArray(
                 data=sv_data,
                 coords=dict(
@@ -363,7 +352,6 @@ class ZarrManager:
                 zarr_format=3,
                 write_empty_chunks=False,  # Might need to change this
             )
-            # print(ds)
             #####################################################################
             return zarr_path
         except Exception as err:
@@ -386,7 +374,8 @@ class ZarrManager:
         #  will have read/write privileges so that store can be updated.
         print("Opening L2 Zarr store with Zarr for writing.")
         try:
-            store = f"s3://{output_bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
+            level_2 = str(Constants.LEVEL_2.value)
+            store = f"s3://{output_bucket_name}/{level_2}/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
             print(f"endpoint url: {endpoint_url}")
             cruise_zarr = zarr.open(
                 store=store,
@@ -441,12 +430,12 @@ class ZarrManager:
         cruise_name: str,
         sensor_name: str,
         bucket_name: str,
-        # level: str, # TODO: add level
         endpoint_url: Optional[str] = None,  # needed for moto testing
     ) -> xr.Dataset:
         print("Opening L2 Zarr store in S3 with Xarray.")
         try:
-            zarr_path = f"s3://{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
+            level_2 = str(Constants.LEVEL_2.value)
+            zarr_path = f"s3://{bucket_name}/{level_2}/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
             kwargs = {"consolidated": False}
             ds = xr.open_dataset(
                 filename_or_obj=zarr_path,
@@ -459,7 +448,7 @@ class ZarrManager:
                 },
                 **kwargs,
             )
-            return ds  # TODO: Assert that you open it anonymously
+            return ds
         except Exception as err:
             raise RuntimeError(f"Problem opening Zarr store in S3 as Xarray, {err}")
 

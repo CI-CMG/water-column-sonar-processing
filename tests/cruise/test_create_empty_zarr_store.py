@@ -6,8 +6,11 @@ from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 from moto.server import ThreadedMotoServer
 
+from water_column_sonar_processing.utility import Constants
 from water_column_sonar_processing.aws import DynamoDBManager, S3FSManager, S3Manager
 from water_column_sonar_processing.cruise import CreateEmptyZarrStore
+
+level_2 = str(Constants.LEVEL_2.value)
 
 
 #######################################################
@@ -44,7 +47,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     s3_manager = S3Manager(endpoint_url=moto_server)
 
     ship_name = "Henry_B._Bigelow"
-    cruise_name = "HB0707"  # HB0706 (53 files), HB0707 (12 files)
+    cruise_name = "HB0707"
     sensor_name = "EK60"
     table_name = "water-column-sonar-table"
 
@@ -60,12 +63,12 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
     s3_manager.upload_file(
         filename=create_empty_zarr_test_path.joinpath("HB0707.zarr/.zmetadata"),
         bucket_name=output_bucket_name,
-        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata",
+        key=f"{level_2}/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zmetadata",
     )
     s3_manager.upload_file(
         filename=create_empty_zarr_test_path.joinpath("HB0707.zarr/.zattrs"),
         bucket_name=output_bucket_name,
-        key="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zattrs",
+        key=f"{level_2}/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/.zattrs",
     )
     assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 1
 
@@ -215,32 +218,32 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
 
     # assert os.path.exists(f"/tmp/{cruise_name}.zarr") # TODO: create better tmp directory for testing
     # Assert dataset is in the bucket
-    # 'level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr/.zattrs'
+    # 'level_2a/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr'
     assert (
         len(
             s3_manager.list_objects(
                 bucket_name=output_bucket_name,
-                prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
+                prefix=f"{level_2}/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
             )
         )
-        == 5651  # 5651
+        == 7061
     )
     assert (
-        "level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"
+        f"{level_2}/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"
         in s3_manager.list_objects(
             bucket_name=output_bucket_name,
-            prefix="level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
+            prefix=f"{level_2}/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
         )
     )
     # mount and verify:
     s3fs_manager = S3FSManager(endpoint_url=moto_server)
-    s3_path = f"{output_bucket_name}/level_2/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr"
+    s3_path = f"{output_bucket_name}/{level_2}/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr"
     zarr_store = s3fs_manager.s3_map(s3_path)
 
     # --- Open with Zarr --- #
     root = zarr.open(store=zarr_store, mode="r", zarr_format=3)
     # print(root.info)
-    assert root["Sv"].shape == (3999, 89911, 4)
+    assert root["Sv"].shape == (4998, 89911, 4)
     assert root["time"].attrs["units"] == "nanoseconds since 1970-01-01"
     assert root["time"].attrs["calendar"] == "proleptic_gregorian"
     assert (
@@ -255,9 +258,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
 
     # --- Open with Xarray --- #
     kwargs = {"consolidated": False}
-    ds = xr.open_dataset(
-        filename_or_obj=zarr_store, engine="zarr", zarr_format=3, **kwargs
-    )
+    ds = xr.open_dataset(filename_or_obj=zarr_store, engine="zarr", **kwargs)
     # assert ds.Sv.size == 1438216356  # ~1.4 GB
     assert set(list(ds.variables)) == {
         "Sv",

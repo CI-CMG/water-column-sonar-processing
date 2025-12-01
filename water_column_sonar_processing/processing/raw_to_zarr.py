@@ -194,23 +194,14 @@ class RawToZarr:
         try:
             gc.collect()
             print("Opening raw file with echopype.")
-            # s3_file_path = f"s3://{bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}"
-            # s3_file_path = Path(f"s3://noaa-wcsd-pds/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{file_name}")
             echodata = ep.open_raw(
                 raw_file=raw_file_name,
                 sonar_model=sensor_name,
                 include_bot=include_bot,
-                # include_idx=?
-                # use_swap=True,
-                # max_chunk_size=300,
-                # storage_options={'anon': True } # 'endpoint_url': self.endpoint_url} # this was creating problems
             )
             print("Compute volume backscattering strength (Sv) from raw dataset.")
             ds_sv = ep.calibrate.compute_Sv(echodata)
-            ds_sv = ep.consolidate.add_depth(
-                ds_sv, echodata
-            )  # TODO: consolidate with other depth values
-
+            ds_sv = ep.consolidate.add_depth(ds_sv, echodata)
             water_level = get_water_level(ds_sv)
 
             gc.collect()

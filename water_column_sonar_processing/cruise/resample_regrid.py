@@ -214,13 +214,13 @@ class ResampleRegrid:
                 max_echo_range = np.max(
                     cruise_df["MAX_ECHO_RANGE"].dropna().astype(np.float32)
                 )
-                cruise_min_epsilon = np.min(
-                    cruise_df["MIN_ECHO_RANGE"].dropna().astype(float)
-                )
+                # cruise_min_epsilon = np.min(
+                #     cruise_df["MIN_ECHO_RANGE"].dropna().astype(float)
+                # ) # TODO: currently overwriting to 0.25 m
 
                 all_cruise_depth_values = zarr_manager.get_depth_values(
                     max_echo_range=max_echo_range,
-                    cruise_min_epsilon=cruise_min_epsilon,
+                    # cruise_min_epsilon=cruise_min_epsilon,
                 )
 
                 if set(

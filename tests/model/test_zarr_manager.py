@@ -83,7 +83,7 @@ def test_zarr_manager():
         width=1201,  # number of ping samples recorded
         # min_echo_range=0.50,
         max_echo_range=250.00,  # maximum depth found in cruise
-        cruise_min_epsilon=0.50,
+        # cruise_min_epsilon=0.50,
         calibration_status=True,
     )
 
@@ -95,14 +95,11 @@ def test_zarr_manager():
         store=f"{tempdir.name}/{cruise_name}.zarr",
         mode="r+",
         zarr_format=3,
-        # storage_options={
-        #     "endpoint_url": moto_server,
-        # },
     )
     print(cruise_zarr.info)
 
     assert cruise_zarr["Sv"].shape == (
-        501,
+        1250,
         1201,
         len(frequencies),
     )  # (depth, time, frequency)
@@ -124,7 +121,7 @@ def test_zarr_manager():
 
     # TODO: test to ensure the dimensions are in proper order
     assert file_xr.Sv.dims == ("depth", "time", "frequency")
-    assert file_xr.Sv.shape == (501, 1201, 4)
+    assert file_xr.Sv.shape == (1250, 1201, 4)
 
     assert file_xr.attrs["processing_software_name"] == "echofish"
     assert file_xr.attrs[
@@ -178,7 +175,7 @@ def test_open_zarr_with_zarr_read_write():
         width=1201,  # number of ping samples recorded
         # min_echo_range=0.5,
         max_echo_range=250.0,  # maximum depth found in cruise
-        cruise_min_epsilon=0.5,
+        # cruise_min_epsilon=0.5,
         calibration_status=True,
     )
 
@@ -214,7 +211,7 @@ def test_open_zarr_with_xarray():
 
     # initialize model store
     # zarr_name = f"{cruise_name}.model"
-    min_echo_range = 0.50
+    # min_echo_range = 0.50
     max_echo_range = 250.0
 
     zarr_manager = ZarrManager()
@@ -229,7 +226,7 @@ def test_open_zarr_with_xarray():
         frequencies=[18_000, 38_000, 70_000, 120_000],
         width=1201,
         max_echo_range=max_echo_range,
-        cruise_min_epsilon=min_echo_range,
+        # cruise_min_epsilon=min_echo_range,
         calibration_status=True,
     )
 
@@ -260,7 +257,7 @@ def test_get_depth_values_shallow_and_small_epsilon():
         max_echo_range=101,
         cruise_min_epsilon=0.17,
     )
-    assert len(depths) == 595
+    assert len(depths) == 594
     assert depths[0] == 0.0
     assert depths[-1] == 101
 
@@ -272,7 +269,7 @@ def test_get_depth_values_shallow_and_large_epsilon():
         max_echo_range=24,
         cruise_min_epsilon=1.31,
     )
-    assert len(depths) == 19
+    assert len(depths) == 18
     assert depths[0] == 0.0  # 1.31
     assert depths[-1] == 24
 
@@ -284,9 +281,9 @@ def test_get_depth_values_deep_and_small_epsilon():
         max_echo_range=221.1,
         cruise_min_epsilon=0.11,
     )
-    assert len(depths) == 2011
+    assert len(depths) == 2010
     assert depths[0] == 0.0
-    assert depths[-1] == 221.1  # TODO: do we want this to be np.ceil(x)
+    assert depths[-1] == 222.0  # TODO: do we want this to be np.ceil(x)
 
 
 ### Test 4 of 5 for depth values ###
@@ -296,10 +293,10 @@ def test_get_depth_values_deep_and_large_epsilon():
         max_echo_range=222.2,
         cruise_min_epsilon=1.31,  # int((222.2 - 1.31) / 1.31) + 1 = 169
     )  # 1.31 + 169*1.31 = 222.70
-    assert len(depths) == 170
+    assert len(depths) == 169
     assert depths[0] == 0
     # TODO: would it be better to have whole numbers?
-    assert depths[-1] == 222.20
+    assert depths[-1] == 223.0
 
 
 ### Test 5 of 5 for depth values ###
@@ -309,7 +306,7 @@ def test_get_depth_values_half_meter():
         max_echo_range=250.0,
         cruise_min_epsilon=0.50,
     )
-    assert len(depths) == 501
+    assert len(depths) == 500
     assert depths[0] == 0
     assert depths[-1] == 250
 
@@ -320,7 +317,7 @@ def test_get_depth_values_half_meter_shallow():
         max_echo_range=2.0,
         cruise_min_epsilon=0.50,
     )
-    assert len(depths) == 5
+    assert len(depths) == 4
     assert depths[0] == 0
     assert depths[-1] == 2.0
 

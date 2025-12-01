@@ -28,7 +28,7 @@ class Constants(Enum):
 
     LEVEL_0 = "raw"
     LEVEL_1 = "level_1"  # from bucket path
-    LEVEL_2 = "level_2"
+    LEVEL_2 = "level_2a"  # updating zarr store path for zarr v3
     LEVEL_3 = "level_3"
 
     EK60 = "EK60"  # TODO: use for "instrument"
