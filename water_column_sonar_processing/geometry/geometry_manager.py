@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import geopandas
@@ -7,6 +6,7 @@ import pandas as pd
 
 from water_column_sonar_processing.aws import S3Manager
 from water_column_sonar_processing.utility import Cleaner
+
 
 # //  [Decimal / Places / Degrees	/ Object that can be recognized at scale / N/S or E/W at equator, E/W at 23N/S, E/W at 45N/S, E/W at 67N/S]
 #   //  0   1.0	        1° 00′ 0″	        country or large region                             111.32 km	  102.47 km	  78.71 km	43.496 km
@@ -234,10 +234,10 @@ class GeometryManager:
 
     ############################################################################
     # COMES from the raw-to-zarr conversion
-    def __write_geojson_to_file(self, store_name, data) -> None:
-        print("Writing GeoJSON to file.")
-        with open(os.path.join(store_name, "geo.json"), "w") as outfile:
-            outfile.write(data)
+    # def __write_geojson_to_file(self, store_name, data) -> None:
+    #     print("Writing GeoJSON to file.")
+    #     with open(os.path.join(store_name, "geo.json"), "w") as outfile:
+    #         outfile.write(data)
 
 
 ###########################################################

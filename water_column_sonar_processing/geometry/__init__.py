@@ -1,3 +1,4 @@
+from .add_spatiotemporal import Spatiotemporal
 from .elevation_manager import ElevationManager
 from .geometry_manager import GeometryManager
 from .line_simplification import LineSimplification
@@ -8,4 +9,5 @@ __all__ = [
     "GeometryManager",
     "LineSimplification",
     "PMTileGeneration",
+    "Spatiotemporal",
 ]

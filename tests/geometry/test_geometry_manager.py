@@ -29,7 +29,6 @@ def test_geometry_manager(tmp_path):
     # file_name = 'D20070719-T232718.raw'  # too big
     # file_name = 'D20070720-T224031.raw'  # has >4 points in dataset
     file_name = "D20070724-T042400.raw"
-    # file_name_stem = Path(file_name).stem
     ship_name = "Henry_B._Bigelow"
     cruise_name = "HB0706"
     sensor_name = "EK60"
@@ -41,9 +40,9 @@ def test_geometry_manager(tmp_path):
 
     echodata = ep.open_raw(
         raw_file=s3_path,
-        sonar_model=sensor_name,
+        sonar_model="EK60",
         use_swap=True,
-        storage_options={"anon": True},
+        storage_options={"anon": "True"},
     )
 
     geometry_manager = GeometryManager()
@@ -75,26 +74,3 @@ def test_geometry_manager(tmp_path):
 
 
 #######################################################
-"""
-[klucik@ap21 HB0905]$ view D20090923-T153834.raw.error
-[klucik@ap21 HB0905]$ pwd
-/home/klucik/water-column-sonar-ospool/2025/L0-to-L1/log/Henry_B._Bigelow/HB0905
-Traceback (most recent call last):
-  File "/srv/raw_to_zarr_env/water_column_sonar_processing/processing/raw_to_zarr.py", line 218, in raw_to_zarr
-    gps_data, lat, lon = geometry_manager.read_echodata_gps_data(
-                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/srv/raw_to_zarr_env/water_column_sonar_processing/geometry/geometry_manager.py", line 72, in read_echodata_gps_data
-    raise Exception("Problem: NMEA times are not sorted.")
-Exception: Problem: NMEA times are not sorted.
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/srv/raw_to_zarr.py", line 43, in <module>
-    process_raw_to_zarr()
-  File "/srv/raw_to_zarr.py", line 24, in process_raw_to_zarr
-    raw_to_zarr.raw_to_zarr(
-  File "/srv/raw_to_zarr_env/water_column_sonar_processing/processing/raw_to_zarr.py", line 316, in raw_to_zarr
-    raise RuntimeError(f"Problem creating local Zarr store, {err}")
-RuntimeError: Problem creating local Zarr store, Problem: NMEA times are not sorted.
-"""
