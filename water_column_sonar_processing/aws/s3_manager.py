@@ -31,8 +31,6 @@ class S3Manager:
         endpoint_url: Optional[str] = None,
     ):
         self.endpoint_url = endpoint_url
-        # self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
-        # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
         self.s3_region = os.environ.get("AWS_REGION", default="us-east-1")
         self.s3_client_config = Config(max_pool_connections=MAX_POOL_CONNECTIONS)
         self.s3_transfer_config = TransferConfig(
@@ -56,6 +54,7 @@ class S3Manager:
             service_name="s3",
             config=self.s3_client_config,
             region_name=self.s3_region,
+            endpoint_url=self.endpoint_url,
         )
         self.s3_session_noaa_wcsd_zarr_pds = boto3.Session(
             aws_access_key_id=os.environ.get("OUTPUT_BUCKET_ACCESS_KEY"),
@@ -76,6 +75,7 @@ class S3Manager:
                 endpoint_url=self.endpoint_url,
             )
         )
+        #
         self.paginator = self.s3_client.get_paginator("list_objects_v2")
         self.paginator_noaa_wcsd_zarr_pds = (
             self.s3_client_noaa_wcsd_zarr_pds.get_paginator("list_objects_v2")
@@ -117,7 +117,6 @@ class S3Manager:
         return client.list_buckets()
 
     #####################################################################
-    # tested
     def upload_nodd_file(
         self,
         file_name: str,
@@ -133,7 +132,6 @@ class S3Manager:
         return key
 
     #####################################################################
-    # tested
     def upload_files_with_thread_pool_executor(
         self,
         output_bucket_name: str,

@@ -374,8 +374,8 @@ class ZarrManager:
         #  will have read/write privileges so that store can be updated.
         print("Opening L2 Zarr store with Zarr for writing.")
         try:
-            level_2 = str(Constants.LEVEL_2.value)
-            store = f"s3://{output_bucket_name}/{level_2}/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
+            level = str(Constants.LEVEL_2.value)
+            store = f"s3://{output_bucket_name}/{level}/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
             print(f"endpoint url: {endpoint_url}")
             cruise_zarr = zarr.open(
                 store=store,
@@ -434,8 +434,8 @@ class ZarrManager:
     ) -> xr.Dataset:
         print("Opening L2 Zarr store in S3 with Xarray.")
         try:
-            level_2 = str(Constants.LEVEL_2.value)
-            zarr_path = f"s3://{bucket_name}/{level_2}/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
+            level = str(Constants.LEVEL_2.value)
+            zarr_path = f"s3://{bucket_name}/{level}/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
             kwargs = {"consolidated": False}
             ds = xr.open_dataset(
                 filename_or_obj=zarr_path,

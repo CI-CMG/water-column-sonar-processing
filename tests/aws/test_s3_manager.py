@@ -146,7 +146,7 @@ def test_upload_files_with_thread_pool_executor(s3_manager_test_path):
     object_prefix: str = "level_2/Henry_B._Bigelow/HB0707/EK60/"
 
     all_files = []
-    for subdir, dirs, files in os.walk(s3_manager_test_path.joinpath("HB0707.zarr/")):
+    for subdir, dirs, files in os.walk(s3_manager_test_path.joinpath("HB0707.zarr")):
         for file in files:
             local_path: str = os.path.join(subdir, file)
             s3_key = os.path.join(

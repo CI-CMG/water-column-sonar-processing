@@ -29,11 +29,13 @@ class Spatiotemporal:
     #######################################################
     def compute_speed_and_distance(
         self,
-        times: np.ndarray[tuple[int], np.dtype[np.datetime64]],
-        latitudes: np.ndarray,
-        longitudes: np.ndarray,
+        times_ns,  #: np.ndarray[tuple[int], np.dtype[np.int64]],
+        latitudes,  #: np.ndarray,
+        longitudes,  #: np.ndarray,
     ) -> pd.DataFrame:
         try:
+            # fix times
+            times = np.array([np.datetime64(int(i), "ns") for i in times_ns])
             geom = [Point(xy) for xy in zip(longitudes, latitudes)]
             points_df = gpd.GeoDataFrame({"geometry": geom}, crs="EPSG:4326")
             # Conversion to a rectilinear projection coordinate system where distance can be calculated with pythagorean theorem
@@ -83,11 +85,15 @@ class Spatiotemporal:
                 output_bucket_name=bucket_name,
                 endpoint_url=endpoint_url,
             )
-            longitudes = zarr_store["longitude"].values
-            latitudes = zarr_store["latitude"].values
-            times = zarr_store["time"].values
+            longitudes = zarr_store["longitude"][:]
+            latitudes = zarr_store["latitude"][:]
+            times = zarr_store["time"][:]
             #
-            metrics_df = self.compute_speed_and_distance(times, latitudes, longitudes)
+            metrics_df = self.compute_speed_and_distance(
+                times_ns=times,
+                latitudes=latitudes,
+                longitudes=longitudes,
+            )
             # Write the speed and distance to the output zarr store
             zarr_store["speed"][:] = metrics_df.speed_knots.values
             zarr_store["distance"][:] = metrics_df.distance_meters.values
