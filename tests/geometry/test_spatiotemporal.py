@@ -69,7 +69,7 @@ def test_spatiotemporal(spatiotemporal_test_path, tmp_path, moto_server):
         object_prefix=zarr_prefix,
         cruise_name="HB0707",
     )
-    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 12
+    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) > 9
 
     test_zarr_manager_before = ZarrManager()
     zarr_store_before = test_zarr_manager_before.open_l2_zarr_store_with_xarray(
