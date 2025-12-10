@@ -40,6 +40,12 @@ or
 uv run pytest --cov=water_column_sonar_processing
 ```
 
+With line numbers
+
+```commandline
+uv run pytest tests/geometry --cov=water_column_sonar_processing --cov-report term-missing
+```
+
 Current status:
 
 ```commandline

@@ -40,8 +40,17 @@ def spatiotemporal_test_path(test_path):
 
 
 #######################################################
+
+
+def test_meters_per_second_to_knots():
+    spatiotemporal = Spatiotemporal()
+    knots_value = spatiotemporal.meters_per_second_to_knots(10.0)
+
+    assert np.isclose(knots_value, 19.4384)
+
+
 @mock_aws
-def test_spatiotemporal(spatiotemporal_test_path, tmp_path, moto_server):
+def test_add_speed_and_distance(spatiotemporal_test_path, tmp_path, moto_server):
     """
     # TODO: need to find a small file to test with, put into test bucket, read from there into
     This test takes a Zarr store that has been written to the noaa-wcsd-zarr bucket but hasn't
@@ -102,3 +111,34 @@ def test_spatiotemporal(spatiotemporal_test_path, tmp_path, moto_server):
     #
     assert np.mean(test_output_zarr_store.speed.values) > 16  # 16.420208
     assert np.mean(test_output_zarr_store.distance.values) > 9  # 9.899247
+
+
+def test_add_speed_and_distance_exception():
+    ship_name = "Henry_B._Bigelow"
+    cruise_name = "HB0707"
+    sensor_name = "EK60"
+
+    spatiotemporal = Spatiotemporal()
+    error_message = "Exception encountered writing the speed and distance, Exception encountered opening store with Zarr, The AWS Access Key Id you provided does not exist in our records."
+    with pytest.raises(RuntimeError, match=error_message):
+        spatiotemporal.add_speed_and_distance(
+            ship_name=ship_name,
+            cruise_name=cruise_name,
+            sensor_name=sensor_name,
+            bucket_name="test123",
+        )
+
+
+# def test_compute_speed_and_distance_exception():
+#     ship_name = "Henry_B._Bigelow"
+#     cruise_name = "HB0707"
+#     sensor_name = "EK60"
+#
+#     spatiotemporal = Spatiotemporal()
+#     error_message = "Exception encountered writing the speed and distance, Exception encountered opening store with Zarr, The AWS Access Key Id you provided does not exist in our records."
+#     with pytest.raises(RuntimeError, match=error_message):
+#         spatiotemporal.compute_speed_and_distance(
+#             times_ns,  #: np.ndarray[tuple[int], np.dtype[np.int64]],
+#             latitudes,  #: np.ndarray,
+#             longitudes,  #: np.ndarray,
+#         )

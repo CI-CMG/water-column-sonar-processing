@@ -6,7 +6,7 @@ from shapely.geometry import Point
 from water_column_sonar_processing.model import ZarrManager
 
 
-# # Convert "meters per second" to "knots"
+# Convert "meters per second" to "knots"
 # meters_per_second_to_knots = lambda mps_value: mps_value * 1.94384
 
 
