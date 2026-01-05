@@ -29,7 +29,7 @@ dependencies = [
     "moto[all]",
     "moto[server]",
     "multidict",
-    "netcdf4",
+    "netcdf4==1.7.3",
     "numpy",
     "pandas",
     "pandas-stubs",
