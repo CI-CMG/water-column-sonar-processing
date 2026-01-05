@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "25.12.2"
+version = "26.1.0"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
@@ -16,7 +16,7 @@ license-files = ["LICENSE"]
 
 # uv sync --all-groups --upgrade
 dependencies = [
-    "black",
+    #    "black",
     "boto3",
     "boto3-stubs", #~=1.41.5",
     "botocore",
@@ -70,12 +70,3 @@ exclude_dirs = ["tests"]
 [tool.pre-commit-hooks.bandit]
 exclude = ["*/tests/*"]
 
-#[tool.isort]
-#known_first_party = "water_column_sonar_processing"
-#multi_line_output = 3
-#force_grid_wrap = 0
-#include_trailing_comma = true
-#combine_as_imports = true
-#
-#[tool.black]
-#line-length = 88

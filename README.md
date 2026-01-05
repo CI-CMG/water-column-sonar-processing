@@ -18,9 +18,9 @@ generating geospatial information.
 source .venv/bin/activate
 # or ".venv\Scripts\activate" in windows
 
-uv pip install --upgrade pip
-
 uv sync --all-groups
+
+uv pip install --upgrade pip
 
 uv run pre-commit install
 ```
@@ -125,7 +125,7 @@ https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scroll
 Step 1 --> increment the semantic version in the zarr_manager.py "metadata" & the "pyproject.toml"
 
 ```commandline
-git tag -a v25.12.1 -m "Releasing v25.12.1"
+git tag -a v25.12.2 -m "Releasing v25.12.2"
 git push origin --tags
 ```
 
