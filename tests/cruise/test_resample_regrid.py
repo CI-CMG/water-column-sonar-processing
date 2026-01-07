@@ -6,12 +6,11 @@ from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
-from water_column_sonar_processing.utility import Constants
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.cruise import CreateEmptyZarrStore, ResampleRegrid
 from water_column_sonar_processing.model import ZarrManager
 from water_column_sonar_processing.processing import RawToZarr
-
+from water_column_sonar_processing.utility import Constants
 
 level_2 = str(Constants.LEVEL_2.value)
 
@@ -329,7 +328,7 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # start_time = np.datetime64("2007-07-12T12:49:06.313")
     # end_time = np.datetime64("2007-07-12T17:18:03.032")
     assert test_output_zarr_store.time.data[60_000] == np.datetime64(
-        "2007-07-12T15:29:01.032574000"
+        "2007-07-12T15:28:55.032574000"
     )  # TODO: find index of first timestamp
     assert np.max(test_output_zarr_store.time.data) == np.datetime64(
         "2007-07-12T17:18:03.032574000"

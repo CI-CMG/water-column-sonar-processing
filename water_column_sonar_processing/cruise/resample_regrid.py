@@ -6,7 +6,6 @@ import numpy as np
 import xarray as xr
 
 from water_column_sonar_processing.aws import DynamoDBManager
-from water_column_sonar_processing.geometry import GeometryManager
 from water_column_sonar_processing.model import ZarrManager
 
 warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -142,7 +141,7 @@ class ResampleRegrid:
         print("Resample Regrid, Interpolating dataset.")
         try:
             zarr_manager = ZarrManager()
-            geo_manager = GeometryManager()
+            # geo_manager = GeometryManager()
 
             output_zarr_store = zarr_manager.open_s3_zarr_store_with_zarr(
                 ship_name=ship_name,
@@ -232,24 +231,24 @@ class ResampleRegrid:
                 }:
                     raise Exception("Xarray dimensions are not as expected.")
 
-                indices, geospatial = geo_manager.read_s3_geo_json(
-                    ship_name=ship_name,
-                    cruise_name=cruise_name,
-                    sensor_name=sensor_name,
-                    file_name_stem=file_name_stem,
-                    input_xr_zarr_store=input_xr_zarr_store,
-                    endpoint_url=endpoint_url,
-                    output_bucket_name=bucket_name,
-                )
+                # indices, geospatial = geo_manager.read_s3_geo_json(  # TODO: remove this!!!!
+                #     ship_name=ship_name,
+                #     cruise_name=cruise_name,
+                #     sensor_name=sensor_name,
+                #     file_name_stem=file_name_stem,
+                #     input_xr_zarr_store=input_xr_zarr_store,
+                #     endpoint_url=endpoint_url,
+                #     output_bucket_name=bucket_name,
+                # )
 
-                input_xr = input_xr_zarr_store.isel(ping_time=indices)
+                input_xr = input_xr_zarr_store  # .isel(ping_time=indices)
 
                 ping_times = input_xr.ping_time.values
                 output_zarr_store["time"][start_ping_time_index:end_ping_time_index] = (
                     input_xr.ping_time.data
                 )
 
-                # --- UPDATING --- # # TODO: problem, this returns dimensinoless array
+                # --- UPDATING --- # # TODO: problem, this returns dimensionless array
                 regrid_resample = self.interpolate_data(
                     input_xr=input_xr,
                     ping_times=ping_times,
