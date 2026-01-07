@@ -9,11 +9,11 @@ import numpy as np
 from zarr.codecs import Blosc
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
-from water_column_sonar_processing.geometry import GeometryManager
 from water_column_sonar_processing.utility import Cleaner
-
+from water_column_sonar_processing.utility import Constants
 
 # from numcodecs import Blosc
+level_1 = str(Constants.LEVEL_1.value)
 
 
 def get_water_level(ds):
@@ -122,7 +122,8 @@ class RawToZarr:
     @staticmethod
     def __upload_files_to_output_bucket(
         output_bucket_name: str,
-        local_directory: str,  # e.g. 'D20070724-T042400.zarr'  # TODO: problem: if this is not in the current directory
+        local_directory: str,
+        # e.g. 'D20070724-T042400.zarr'  # TODO: problem: if this is not in the current directory
         object_prefix: str,  # e.g. "level_1/Henry_B._Bigelow/HB0706/EK60/"
         endpoint_url,
     ):
@@ -166,7 +167,7 @@ class RawToZarr:
         to the nodd bucket.
         """
         print(f"Opening raw: {raw_file_name} and creating zarr store.")
-        geometry_manager = GeometryManager()
+        # geometry_manager = GeometryManager()
         cleaner = Cleaner()
         cleaner.delete_local_files(
             file_types=["*.zarr", "*.json"]
@@ -217,22 +218,25 @@ class RawToZarr:
             if len(frequencies) != len(set(frequencies)):
                 raise Exception("Problem number of frequencies does not match channels")
             #################################################################
-            # Get GPS coordinates
-            gps_data, lat, lon = geometry_manager.read_echodata_gps_data(
-                echodata=echodata,
-                output_bucket_name=output_bucket_name,
-                ship_name=ship_name,
-                cruise_name=cruise_name,
-                sensor_name=sensor_name,
-                file_name=raw_file_name,
-                endpoint_url=endpoint_url,
-                write_geojson=True,
-            )
+            # add gps data
             ds_sv = ep.consolidate.add_location(ds_sv, echodata)
-            ds_sv.latitude.values = (
-                lat  # overwriting echopype gps values to include missing values
-            )
-            ds_sv.longitude.values = lon
+
+            # Get GPS coordinates
+            # gps_data, lat, lon = geometry_manager.read_echodata_gps_data(
+            #     echodata=echodata,
+            #     output_bucket_name=output_bucket_name,
+            #     ship_name=ship_name,
+            #     cruise_name=cruise_name,
+            #     sensor_name=sensor_name,
+            #     file_name=raw_file_name,
+            #     endpoint_url=endpoint_url,
+            #     write_geojson=True,
+            # )
+
+            # ds_sv.latitude.values = (  # their lat values are better than mine
+            #     lat  # overwriting echopype gps values to include missing values
+            # )
+            # ds_sv.longitude.values = lon
             # gps_data, lat, lon = self.__get_gps_data(echodata=echodata)
             #################################################################
             # Technically the min_echo_range would be 0 m.
@@ -246,12 +250,13 @@ class RawToZarr:
             #     [0.20, min_echo_range]
             # )
 
-            max_echo_range = float(
-                np.nanmax(ds_sv.echo_range)
-            )  # TODO: change to "MAX_ECHO_DEPTH"
+            max_echo_range = float(np.nanmax(ds_sv.echo_range))
 
             # This is the number of missing values found throughout the lat/lon
-            num_ping_time_dropna = lat[~np.isnan(lat)].shape[0]  # symmetric to lon
+            # num_ping_time_dropna = lat[~np.isnan(lat)].shape[0]  # symmetric to lon
+            num_ping_time_drop_na = ds_sv.latitude.shape[
+                0
+            ]  # TODO: just settting to size
             #
             start_time = (
                 np.datetime_as_string(ds_sv.ping_time.values[0], unit="ms") + "Z"
@@ -274,13 +279,13 @@ class RawToZarr:
             )  # ds_sv.Sv.sel(channel=ds_sv.channel.values[0]).shape
             gc.collect()
             #################################################################
-            output_zarr_prefix = f"level_1/{ship_name}/{cruise_name}/{sensor_name}/"
+            output_zarr_prefix = f"{level_1}/{ship_name}/{cruise_name}/{sensor_name}/"
             #################################################################
             # If zarr store already exists then delete
             s3_manager = S3Manager(endpoint_url=endpoint_url)
             child_objects = s3_manager.get_child_objects(
                 bucket_name=output_bucket_name,
-                sub_prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/{Path(raw_file_name).stem}.zarr",
+                sub_prefix=f"{level_1}/{ship_name}/{cruise_name}/{sensor_name}/{Path(raw_file_name).stem}.zarr",
             )
             if len(child_objects) > 0:
                 print(
@@ -306,7 +311,7 @@ class RawToZarr:
                 file_name=raw_file_name,
                 min_echo_range=min_echo_range,
                 max_echo_range=max_echo_range,
-                num_ping_time_dropna=num_ping_time_dropna,
+                num_ping_time_dropna=num_ping_time_drop_na,
                 start_time=start_time,
                 end_time=end_time,
                 frequencies=frequencies,

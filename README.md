@@ -62,16 +62,16 @@ water_column_sonar_processing/cruise/__init__.py                      3      0  
 water_column_sonar_processing/cruise/create_empty_zarr_store.py      38      2    95%
 water_column_sonar_processing/cruise/datatree_manager.py              0      0   100%
 water_column_sonar_processing/cruise/resample_regrid.py              90      6    93%
-water_column_sonar_processing/geometry/__init__.py                    5      0   100%
+water_column_sonar_processing/geometry/__init__.py                    6      0   100%
 water_column_sonar_processing/geometry/elevation_manager.py          29      1    97%
-water_column_sonar_processing/geometry/geometry_manager.py           77     11    86%
+water_column_sonar_processing/geometry/geometry_manager.py           72      8    89%
 water_column_sonar_processing/geometry/line_simplification.py        38      4    89%
 water_column_sonar_processing/geometry/pmtile_generation.py          80     58    28%
+water_column_sonar_processing/geometry/spatiotemporal.py             42      2    95%
 water_column_sonar_processing/index/__init__.py                       2      0   100%
 water_column_sonar_processing/index/index_manager.py                118     91    23%
 water_column_sonar_processing/model/__init__.py                       2      0   100%
-water_column_sonar_processing/model/zarr_manager.py                  93     10    89%
-water_column_sonar_processing/process.py                             27     27     0%
+water_column_sonar_processing/model/zarr_manager.py                  93      8    91%
 water_column_sonar_processing/processing/__init__.py                  3      0   100%
 water_column_sonar_processing/processing/raw_to_netcdf.py            85     24    72%
 water_column_sonar_processing/processing/raw_to_zarr.py              91      5    95%
@@ -81,7 +81,7 @@ water_column_sonar_processing/utility/constants.py                   62      0  
 water_column_sonar_processing/utility/pipeline_status.py             42      0   100%
 water_column_sonar_processing/utility/timestamp.py                    5      0   100%
 -------------------------------------------------------------------------------------
-TOTAL                                                              1176    273    77%
+TOTAL                                                              1187    243    80%
 ```
 
 # Instructions
@@ -125,8 +125,9 @@ https://colab.research.google.com/drive/1KiLMueXiz9WVB9o4RuzYeGjNZ6PsZU7a#scroll
 Step 1 --> increment the semantic version in the zarr_manager.py "metadata" & the "pyproject.toml"
 
 ```commandline
-git tag -a v25.12.2 -m "Releasing v25.12.2"
+git tag -a v26.1.0 -m "Releasing v26.1.0"
 git push origin --tags
+gh release create v26.1.0
 ```
 
 # To Publish To PROD

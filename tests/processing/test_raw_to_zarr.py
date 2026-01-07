@@ -9,6 +9,9 @@ from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3FSManager, S3Manager
 from water_column_sonar_processing.processing import RawToZarr
+from water_column_sonar_processing.utility import Constants
+
+level_1 = str(Constants.LEVEL_1.value)
 
 
 #######################################################
@@ -82,23 +85,25 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
 
     # Put stale geojson to test deleting
     s3_manager.create_bucket(bucket_name=output_bucket_name)
-    s3_manager.upload_file(
-        filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.json"),
-        bucket_name=output_bucket_name,
-        key="spatial/geojson/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.json",
-    )
+    # s3_manager.upload_file(
+    #     filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.json"),
+    #     bucket_name=output_bucket_name,
+    #     key="spatial/geojson/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.json",
+    # )
     # Put zarr store there to test delete
     s3_manager.upload_file(
-        filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.zarr/.zmetadata"),
+        filename=raw_to_zarr_test_path.joinpath(
+            "D20070724-T042400.zarr/.zmetadata"
+        ),  # TODO: do these exist still?
         bucket_name=output_bucket_name,
-        key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zmetadata",
+        key=f"{level_1}/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zmetadata",
     )
     s3_manager.upload_file(
         filename=raw_to_zarr_test_path.joinpath("D20070724-T042400.zarr/.zattrs"),
         bucket_name=output_bucket_name,
-        key="level_1/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zattrs",
+        key=f"{level_1}/Henry_B._Bigelow/HB0706/EK60/D20070724-T042400.zarr/.zattrs",
     )
-    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) == 3
+    assert len(s3_manager.list_objects(bucket_name=output_bucket_name, prefix="")) == 2
 
     assert len(s3_manager.list_buckets()["Buckets"]) == 2
 
@@ -129,7 +134,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
         len(
             s3_manager.list_objects(
                 bucket_name=output_bucket_name,
-                prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
+                prefix=f"{level_1}/{ship_name}/{cruise_name}/{sensor_name}/",
             )
         )
         == 2
@@ -149,7 +154,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     # TODO: test if zarr store is accessible in the s3 bucket
     number_of_files = s3_manager.list_objects(
         bucket_name=output_bucket_name,
-        prefix=f"level_1/{ship_name}/{cruise_name}/{sensor_name}/",
+        prefix=f"{level_1}/{ship_name}/{cruise_name}/{sensor_name}/",
     )
     # Ensure that all the files were uploaded properly
     # assert len(number_of_files) == 72

@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "26.1.0"
+version = "26.1.1"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
@@ -18,7 +18,7 @@ license-files = ["LICENSE"]
 dependencies = [
     #    "black",
     "boto3",
-    "boto3-stubs", #~=1.41.5",
+    "boto3-stubs~=1.41.5", #~=1.41.5",
     "botocore",
     "build",
     "echopype",

@@ -24,7 +24,7 @@ class GeometryManager:
     def __init__(
         self,
     ):
-        self.DECIMAL_PRECISION = 5  # precision for GPS coordinates
+        self.DECIMAL_PRECISION = 6  # precision for GPS coordinates
         self.SIMPLIFICATION_TOLERANCE = 0.0001  # RDP simplification to "street level"
 
     #######################################################
@@ -44,12 +44,10 @@ class GeometryManager:
 
         print("Getting GPS dataset from echopype object.")
         try:
-            latitude = np.round(
-                echodata.platform.latitude.values, self.DECIMAL_PRECISION
-            )
-            longitude = np.round(
-                echodata.platform.longitude.values, self.DECIMAL_PRECISION
-            )
+            latitude = (
+                echodata.platform.latitude.values
+            )  # TODO: DONT get values from here!
+            longitude = echodata.platform.longitude.values
 
             # RE: time coordinates: https://github.com/OSOceanAcoustics/echopype/issues/656#issue-1219104771
             # 'nmea_times' are times from the nmea datalogger associated with GPS
