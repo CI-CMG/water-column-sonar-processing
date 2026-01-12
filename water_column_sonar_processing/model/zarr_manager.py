@@ -228,6 +228,8 @@ class ZarrManager:
                 (len(depth_data), width, len(frequencies)),
                 dtype=np.dtype(Coordinates.SV_DTYPE.value),
             )
+            sv_data[:] = np.nan  # initialize all
+
             sv_da = xr.DataArray(
                 data=sv_data,
                 coords=dict(

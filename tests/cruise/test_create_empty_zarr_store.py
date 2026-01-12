@@ -6,9 +6,9 @@ from dotenv import find_dotenv, load_dotenv
 from moto import mock_aws
 from moto.server import ThreadedMotoServer
 
-from water_column_sonar_processing.utility import Constants
 from water_column_sonar_processing.aws import DynamoDBManager, S3FSManager, S3Manager
 from water_column_sonar_processing.cruise import CreateEmptyZarrStore
+from water_column_sonar_processing.utility import Constants
 
 level_2 = str(Constants.LEVEL_2.value)
 
@@ -226,7 +226,7 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
                 prefix=f"{level_2}/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
             )
         )
-        == 7061
+        == 21  # 7061
     )
     assert (
         f"{level_2}/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"
