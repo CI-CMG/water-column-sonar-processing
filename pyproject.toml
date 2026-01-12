@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "26.1.1"
+version = "26.1.2"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
@@ -51,6 +51,7 @@ dependencies = [
 dev = [
     "bandit[toml]",
     "build",
+    "pip",
     "pooch",
     "pre-commit",
     "pytest",

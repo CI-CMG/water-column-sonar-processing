@@ -224,14 +224,14 @@ class ZarrManager:
             )
 
             ##### Sv #####
-            sv_data = np.empty(
-                (len(depth_data), width, len(frequencies)),
-                dtype=np.dtype(Coordinates.SV_DTYPE.value),
-            )
-            sv_data[:] = np.nan  # initialize all
+            # sv_data = np.empty(
+            #     (len(depth_data), width, len(frequencies)),
+            #     dtype=np.dtype(Coordinates.SV_DTYPE.value),
+            # )
+            # sv_data[:] = np.nan  # initialize all
 
             sv_da = xr.DataArray(
-                data=sv_data,
+                data=np.nan,
                 coords=dict(
                     depth=depth_da,
                     time=time_da,
@@ -256,6 +256,7 @@ class ZarrManager:
                     tiles_size=Constants.TILE_SIZE.value,
                 ),
             )
+            sv_da = sv_da.astype("float32")  # import sys; sys.getsizeof(sv_da);
             #####################################################################
             ### Now create the xarray.Dataset
             ds = xr.Dataset(
