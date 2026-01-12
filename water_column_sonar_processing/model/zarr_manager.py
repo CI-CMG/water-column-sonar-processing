@@ -1,5 +1,6 @@
 import importlib.metadata
 import os
+import sys
 from typing import Optional
 
 import numpy as np
@@ -256,7 +257,9 @@ class ZarrManager:
                     tiles_size=Constants.TILE_SIZE.value,
                 ),
             )
-            sv_da = sv_da.astype("float32")  # import sys; sys.getsizeof(sv_da);
+            sv_da = sv_da.astype("float32")
+            #
+            print(sys.getsizeof(sv_da))
             #####################################################################
             ### Now create the xarray.Dataset
             ds = xr.Dataset(
