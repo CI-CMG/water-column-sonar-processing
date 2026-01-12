@@ -225,14 +225,16 @@ class ZarrManager:
             )
 
             ##### Sv #####
-            sv_data = np.empty(
-                (len(depth_data), width, len(frequencies)),
-                dtype=np.dtype(Coordinates.SV_DTYPE.value),
-            )
+            # sv_data = np.empty(
+            #     # (len(depth_data), width, len(frequencies)),
+            #     (2501, 4_100_782, 4),
+            #     dtype=np.dtype(Coordinates.SV_DTYPE.value),
+            # )
+            # print(f"one: {sys.getsizeof(sv_data)}")
             # sv_data[:] = np.nan  # initialize all
 
             sv_da = xr.DataArray(
-                data=sv_data,
+                data=np.nan,
                 coords=dict(
                     depth=depth_da,
                     time=time_da,
@@ -257,7 +259,7 @@ class ZarrManager:
                     tiles_size=Constants.TILE_SIZE.value,
                 ),
             )
-            # sv_da = sv_da.astype("float32")
+            sv_da = sv_da.astype("float32")
             #
             print(sys.getsizeof(sv_da))
             #####################################################################
@@ -293,12 +295,11 @@ class ZarrManager:
                     tile_size=Constants.TILE_SIZE.value,
                 ),
             )
-
+            print(sys.getsizeof(ds))
             #####################################################################
             # Define the chunk sizes and the encoding
-            spatiotemporal_chunk_size = int(
-                1e6
-            )  # 1_000_000 data points for quickest download
+            # 1_000_000 data points for quickest download
+            spatiotemporal_chunk_size = int(1e6)
             depth_chunk_shape = (512,)  # TODO: parameterize
             time_chunk_shape = (spatiotemporal_chunk_size,)
             frequency_chunk_shape = (len(frequency_data),)
