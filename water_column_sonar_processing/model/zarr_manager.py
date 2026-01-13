@@ -247,7 +247,7 @@ class ZarrManager:
                 dtype=np.dtype(Coordinates.SV_DTYPE.value),
             )
             print(f"one: {sys.getsizeof(sv_data)}")
-            # sv_data[:] = np.nan  # initialize all
+            sv_data[:] = np.nan  # initialize all
 
             sv_da = xr.DataArray(
                 # data=np.nan,
