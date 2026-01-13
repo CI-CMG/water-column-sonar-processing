@@ -246,7 +246,7 @@ class ZarrManager:
                 # (2501, 4_100_782, 4), # large cruise used for testing
                 dtype=np.dtype(Coordinates.SV_DTYPE.value),
             )
-            # print(f"one: {sys.getsizeof(sv_data)}")
+            print(f"one: {sys.getsizeof(sv_data)}")
             # # sv_data[:] = np.nan  # initialize all
 
             sv_da = xr.DataArray(
@@ -276,9 +276,9 @@ class ZarrManager:
                 ),
             )
             sv_da.encoding = {"compressors": [compressor], "chunks": sv_chunk_shape}
-            print(f"two: {sys.getsizeof(sv_data)}")
+            print(f"two: {sys.getsizeof(sv_data)}")  # getting to at least here
             del sv_data
-            sv_da = sv_da.astype("float32")
+            # sv_da = sv_da.astype("float32")
             gc.collect()
             #####################################################################
             ### Now create the xarray.Dataset
@@ -362,7 +362,7 @@ class ZarrManager:
                 mode="w",  # “w” means create (overwrite if exists)
                 encoding=encodings,
                 consolidated=False,
-                # safe_chunks=True,
+                safe_chunks=True,
                 zarr_format=3,
                 write_empty_chunks=False,  # Might need to change this
             )
