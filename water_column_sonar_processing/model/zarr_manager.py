@@ -1,3 +1,4 @@
+import gc
 import importlib.metadata
 import os
 import sys
@@ -225,6 +226,7 @@ class ZarrManager:
             )
 
             ##### Sv #####
+            gc.collect()
             # sv_data = np.empty(
             #     # (len(depth_data), width, len(frequencies)),
             #     (2501, 4_100_782, 4),
@@ -260,7 +262,7 @@ class ZarrManager:
                 ),
             )
             sv_da = sv_da.astype("float32")
-            #
+            gc.collect()
             print(sys.getsizeof(sv_da))
             #####################################################################
             ### Now create the xarray.Dataset
@@ -295,6 +297,7 @@ class ZarrManager:
                     tile_size=Constants.TILE_SIZE.value,
                 ),
             )
+            gc.collect()
             print(sys.getsizeof(ds))
             #####################################################################
             # Define the chunk sizes and the encoding
@@ -349,7 +352,7 @@ class ZarrManager:
                     "chunks": sv_chunk_shape,
                 },
             )
-
+            gc.collect()
             ds.to_zarr(
                 store=zarr_path,
                 mode="w",  # “w” means create (overwrite if exists)
