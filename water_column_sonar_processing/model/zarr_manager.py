@@ -246,11 +246,11 @@ class ZarrManager:
                 # (2501, 4_100_782, 4),
                 dtype=np.dtype(Coordinates.SV_DTYPE.value),
             )
-            print(f"one: {sys.getsizeof(sv_data)}")
-            sv_data[:] = np.nan  # initialize all
+            # print(f"one: {sys.getsizeof(sv_data)}")
+            # # sv_data[:] = np.nan  # initialize all
 
             sv_da = xr.DataArray(
-                # data=np.nan,
+                data=sv_data,
                 coords=dict(
                     depth=depth_da,
                     time=time_da,
@@ -362,7 +362,7 @@ class ZarrManager:
                 mode="w",  # “w” means create (overwrite if exists)
                 encoding=encodings,
                 consolidated=False,
-                safe_chunks=True,
+                # safe_chunks=True,
                 zarr_format=3,
                 write_empty_chunks=False,  # Might need to change this
             )
