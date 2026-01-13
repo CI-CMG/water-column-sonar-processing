@@ -227,12 +227,12 @@ class ZarrManager:
 
             ##### Sv #####
             gc.collect()
-            # sv_data = np.empty(
-            #     # (len(depth_data), width, len(frequencies)),
-            #     (2501, 4_100_782, 4),
-            #     dtype=np.dtype(Coordinates.SV_DTYPE.value),
-            # )
-            # print(f"one: {sys.getsizeof(sv_data)}")
+            sv_data = np.empty(
+                (len(depth_data), width, len(frequencies)),
+                # (2501, 4_100_782, 4),
+                dtype=np.dtype(Coordinates.SV_DTYPE.value),
+            )
+            print(f"one: {sys.getsizeof(sv_data)}")
             # sv_data[:] = np.nan  # initialize all
 
             sv_da = xr.DataArray(
@@ -261,9 +261,10 @@ class ZarrManager:
                     tiles_size=Constants.TILE_SIZE.value,
                 ),
             )
+            print(f"two: {sys.getsizeof(sv_data)}")
+            del sv_data
             sv_da = sv_da.astype("float32")
             gc.collect()
-            print(sys.getsizeof(sv_da))
             #####################################################################
             ### Now create the xarray.Dataset
             ds = xr.Dataset(
@@ -297,8 +298,9 @@ class ZarrManager:
                     tile_size=Constants.TILE_SIZE.value,
                 ),
             )
+            del sv_da
             gc.collect()
-            print(sys.getsizeof(ds))
+            print(f"three: {sys.getsizeof(ds)}")
             #####################################################################
             # Define the chunk sizes and the encoding
             # 1_000_000 data points for quickest download
