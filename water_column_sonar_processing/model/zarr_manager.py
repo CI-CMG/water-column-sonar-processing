@@ -243,7 +243,7 @@ class ZarrManager:
             gc.collect()
             sv_data = np.empty(
                 (len(depth_data), width, len(frequencies)),
-                # (2501, 4_100_782, 4),
+                # (2501, 4_100_782, 4), # large cruise used for testing
                 dtype=np.dtype(Coordinates.SV_DTYPE.value),
             )
             # print(f"one: {sys.getsizeof(sv_data)}")
