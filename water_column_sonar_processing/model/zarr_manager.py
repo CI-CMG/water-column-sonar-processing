@@ -241,13 +241,18 @@ class ZarrManager:
 
             ##### Sv #####
             gc.collect()
-            sv_data = np.empty(
+            # sv_data = np.empty(
+            #     (len(depth_data), width, len(frequencies)),
+            #     # (2501, 4_100_782, 4), # large cruise used for testing
+            #     dtype=np.dtype(Coordinates.SV_DTYPE.value),
+            # )
+            sv_data = np.full(
                 (len(depth_data), width, len(frequencies)),
-                # (2501, 4_100_782, 4), # large cruise used for testing
+                np.nan,
                 dtype=np.dtype(Coordinates.SV_DTYPE.value),
             )
             print(f"one: {sys.getsizeof(sv_data)}")
-            sv_data[:] = np.nan  # initialize all
+            # sv_data[:] = np.nan  # initialize all
 
             sv_da = xr.DataArray(
                 data=sv_data,
