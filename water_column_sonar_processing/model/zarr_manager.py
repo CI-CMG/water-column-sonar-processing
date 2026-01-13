@@ -241,16 +241,16 @@ class ZarrManager:
 
             ##### Sv #####
             gc.collect()
-            # sv_data = np.empty(
-            #     (len(depth_data), width, len(frequencies)),
-            #     # (2501, 4_100_782, 4), # large cruise used for testing
-            #     dtype=np.dtype(Coordinates.SV_DTYPE.value),
-            # )
-            # print(f"one: {sys.getsizeof(sv_data)}")
-            # sv_data[:] = np.nan  # initialize all
+            sv_data = np.empty(
+                (len(depth_data), width, len(frequencies)),
+                # (2501, 4_100_782, 4), # large cruise used for testing
+                dtype=np.dtype(Coordinates.SV_DTYPE.value),
+            )
+            print(f"one: {sys.getsizeof(sv_data)}")
+            sv_data[:] = np.nan  # initialize all
 
             sv_da = xr.DataArray(
-                data=np.nan,  # sv_data,
+                data=sv_data,
                 coords=dict(
                     depth=depth_da,
                     time=time_da,
@@ -277,15 +277,19 @@ class ZarrManager:
                 ),
             )
             sv_da.encoding = {"compressors": [compressor], "chunks": sv_chunk_shape}
-            # print(f"two: {sys.getsizeof(sv_data)}")  # getting to at least here
-            # del sv_data
-            sv_da = sv_da.astype(np.float32)  # was crashing here
+            print(f"two: {sys.getsizeof(sv_data)}")  # getting to at least here
+            del sv_data
+            # sv_da = sv_da.astype(np.float32)  # was crashing here
             gc.collect()
             #####################################################################
             ### Now create the xarray.Dataset
             ds = xr.Dataset(
                 data_vars=dict(
                     Sv=sv_da,
+                    #
+                    bottom=bottom_da,
+                    speed=speed_da,
+                    distance=distance_da,
                 ),
                 coords=dict(
                     depth=depth_da,
@@ -294,9 +298,6 @@ class ZarrManager:
                     #
                     latitude=latitude_da,
                     longitude=longitude_da,
-                    bottom=bottom_da,
-                    speed=speed_da,
-                    distance=distance_da,
                 ),
                 attrs=dict(
                     # --- Metadata --- #
