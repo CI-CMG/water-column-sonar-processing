@@ -241,16 +241,16 @@ class ZarrManager:
 
             ##### Sv #####
             gc.collect()
-            sv_data = np.empty(
-                (len(depth_data), width, len(frequencies)),
-                # (2501, 4_100_782, 4), # large cruise used for testing
-                dtype=np.dtype(Coordinates.SV_DTYPE.value),
-            )
-            print(f"one: {sys.getsizeof(sv_data)}")
-            # # sv_data[:] = np.nan  # initialize all
+            # sv_data = np.empty(
+            #     (len(depth_data), width, len(frequencies)),
+            #     # (2501, 4_100_782, 4), # large cruise used for testing
+            #     dtype=np.dtype(Coordinates.SV_DTYPE.value),
+            # )
+            # print(f"one: {sys.getsizeof(sv_data)}")
+            # sv_data[:] = np.nan  # initialize all
 
             sv_da = xr.DataArray(
-                data=sv_data,
+                data=np.nan,  # sv_data,
                 coords=dict(
                     depth=depth_da,
                     time=time_da,
@@ -273,12 +273,13 @@ class ZarrManager:
                     long_name=Coordinates.SV_LONG_NAME.value,
                     standard_name=Coordinates.SV_STANDARD_NAME.value,
                     tiles_size=Constants.TILE_SIZE.value,
+                    _FillValue=np.nan,
                 ),
             )
             sv_da.encoding = {"compressors": [compressor], "chunks": sv_chunk_shape}
-            print(f"two: {sys.getsizeof(sv_data)}")  # getting to at least here
-            del sv_data
-            # sv_da = sv_da.astype("float32")
+            # print(f"two: {sys.getsizeof(sv_data)}")  # getting to at least here
+            # del sv_data
+            # sv_da = sv_da.astype("float32") # was crashing here
             gc.collect()
             #####################################################################
             ### Now create the xarray.Dataset
@@ -362,7 +363,8 @@ class ZarrManager:
                 mode="w",  # “w” means create (overwrite if exists)
                 encoding=encodings,
                 consolidated=False,
-                safe_chunks=True,
+                safe_chunks=False,
+                align_chunks=True,
                 zarr_format=3,
                 write_empty_chunks=False,  # Might need to change this
             )
