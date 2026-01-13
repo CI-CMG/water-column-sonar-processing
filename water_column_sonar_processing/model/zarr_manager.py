@@ -279,7 +279,7 @@ class ZarrManager:
             sv_da.encoding = {"compressors": [compressor], "chunks": sv_chunk_shape}
             # print(f"two: {sys.getsizeof(sv_data)}")  # getting to at least here
             # del sv_data
-            # sv_da = sv_da.astype("float32") # was crashing here
+            sv_da = sv_da.astype(np.float32)  # was crashing here
             gc.collect()
             #####################################################################
             ### Now create the xarray.Dataset
