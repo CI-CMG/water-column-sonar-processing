@@ -215,21 +215,20 @@ def test_create_empty_zarr_store(create_empty_zarr_test_path, moto_server):
         cruise_name=cruise_name,
         sensor_name=sensor_name,
         table_name=table_name,
-        # tempdir="/tmp",
     )
 
     # assert os.path.exists(f"/tmp/{cruise_name}.zarr") # TODO: create better tmp directory for testing
     # Assert dataset is in the bucket
-    # 'level_2a/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr'
-    # assert (
-    #         len(
-    #             s3_manager.list_objects(
-    #                 bucket_name=output_bucket_name,
-    #                 prefix=f"{level_2}/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
-    #             )
-    #         )
-    #         == 21  # 7061  # 21  # 7061
-    # )
+    "level_2a/Henry_B._Bigelow/HB0707/EK60/HB0707.model/tmp/HB0707.zarr"
+    assert (
+        len(
+            s3_manager.list_objects(
+                bucket_name=output_bucket_name,
+                prefix=f"{level_2}/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/",
+            )
+        )
+        >= 21  # 7061  # 21  # 7061
+    )
     assert (
         f"{level_2}/Henry_B._Bigelow/HB0707/EK60/HB0707.zarr/zarr.json"
         in s3_manager.list_objects(
