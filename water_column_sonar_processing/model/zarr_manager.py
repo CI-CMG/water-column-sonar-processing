@@ -15,7 +15,7 @@ from water_column_sonar_processing.utility import Constants, Coordinates, Timest
 compressor = BloscCodec(  # https://zarr-specs.readthedocs.io/en/latest/v3/codecs/blosc/index.html
     typesize=4,
     cname="zstd",
-    clevel=5,
+    clevel=9,  # 5 --> 9
     shuffle=BloscShuffle.shuffle,
     blocksize=0,
 )
@@ -81,6 +81,20 @@ class ZarrManager:
                 )
 
             zarr_path = f"{path}/{cruise_name}.zarr"
+            #####################################################################
+            # Define the chunk sizes and the encoding
+            # 1_000_000 data points for quickest download
+            spatiotemporal_chunk_size = int(1e6)
+            depth_chunk_shape = (512,)
+            time_chunk_shape = (spatiotemporal_chunk_size,)
+            frequency_chunk_shape = (len(frequencies),)
+            latitude_chunk_shape = (spatiotemporal_chunk_size,)
+            longitude_chunk_shape = (spatiotemporal_chunk_size,)
+            bottom_chunk_shape = (spatiotemporal_chunk_size,)
+            speed_chunk_shape = (spatiotemporal_chunk_size,)
+            distance_chunk_shape = (spatiotemporal_chunk_size,)
+            sv_chunk_shape = (512, 512, 1)  # TODO: move to constants
+
             #####################################################################
             ##### Depth #####
             depth_data_values = self.get_depth_values(
@@ -236,7 +250,7 @@ class ZarrManager:
             # sv_data[:] = np.nan  # initialize all
 
             sv_da = xr.DataArray(
-                data=np.nan,
+                # data=np.nan,
                 coords=dict(
                     depth=depth_da,
                     time=time_da,
@@ -261,6 +275,7 @@ class ZarrManager:
                     tiles_size=Constants.TILE_SIZE.value,
                 ),
             )
+            sv_da.encoding = {"compressors": [compressor], "chunks": sv_chunk_shape}
             print(f"two: {sys.getsizeof(sv_data)}")
             del sv_data
             sv_da = sv_da.astype("float32")
@@ -302,19 +317,6 @@ class ZarrManager:
             gc.collect()
             print(f"three: {sys.getsizeof(ds)}")
             #####################################################################
-            # Define the chunk sizes and the encoding
-            # 1_000_000 data points for quickest download
-            spatiotemporal_chunk_size = int(1e6)
-            depth_chunk_shape = (512,)  # TODO: parameterize
-            time_chunk_shape = (spatiotemporal_chunk_size,)
-            frequency_chunk_shape = (len(frequency_data),)
-            latitude_chunk_shape = (spatiotemporal_chunk_size,)
-            longitude_chunk_shape = (spatiotemporal_chunk_size,)
-            bottom_chunk_shape = (spatiotemporal_chunk_size,)
-            speed_chunk_shape = (spatiotemporal_chunk_size,)
-            distance_chunk_shape = (spatiotemporal_chunk_size,)
-            sv_chunk_shape = (512, 512, 1)  # TODO: move to constants
-
             encodings = dict(
                 depth={
                     "compressors": [compressor],
