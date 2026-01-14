@@ -733,26 +733,26 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
     # )
     assert np.isclose(
         test_output_zarr_store.sel(
-            depth=0.6, time="2007-09-12T06:37:13.912701000", frequency=18_000, drop=True
+            depth=0.6, time="2007-09-12 06:37:13.912700928", frequency=18_000, drop=True
         ).Sv.values,
         -3.781107,
     )
     assert np.isclose(
         test_output_zarr_store.sel(
-            depth=0.8, time="2007-09-12T06:37:13.912701000", frequency=18_000, drop=True
+            depth=0.8, time="2007-09-12 06:37:13.912700928", frequency=18_000, drop=True
         ).Sv.values,
         -5.861585,
     )
     # on the right hand side
     assert np.isclose(
         test_output_zarr_store.sel(
-            depth=0.6, time="2007-09-12T06:56:14.390949000", frequency=18_000, drop=True
+            depth=0.6, time="2007-09-12 06:56:14.390949120", frequency=18_000, drop=True
         ).Sv.values,
         -35.88606,
     )
     assert np.isclose(
         test_output_zarr_store.sel(
-            depth=0.8, time="2007-09-12T06:56:14.390949000", frequency=18_000, drop=True
+            depth=0.8, time="2007-09-12 06:56:14.390949120", frequency=18_000, drop=True
         ).Sv.values,
         -32.680862,
     )
