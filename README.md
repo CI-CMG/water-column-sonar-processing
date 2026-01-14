@@ -131,7 +131,7 @@ Step 1 --> increment the semantic version in the zarr_manager.py "metadata" & th
 ```commandline
 git tag -a v26.1.7 -m "Releasing v26.1.7"
 git push origin --tags
-#gh release create v26.1.6
+#gh release create v26.1.7
 ```
 
 # To Publish To PROD

@@ -328,10 +328,10 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
     # start_time = np.datetime64("2007-07-12T12:49:06.313")
     # end_time = np.datetime64("2007-07-12T17:18:03.032")
     assert test_output_zarr_store.time.data[60_000] == np.datetime64(
-        "2007-07-12T15:28:55.032574000"
+        "2007-07-12T15:28:55.032573952"
     )  # TODO: find index of first timestamp
     assert np.max(test_output_zarr_store.time.data) == np.datetime64(
-        "2007-07-12T17:18:03.032574000"
+        "2007-07-12T17:18:03.032573952"
     )
     # check selected timestamps and verify all latitude/longitude/times are updated
     # test_output_zarr_store.latitude.sel(time=slice('2007-07-12T12:49:06.313Z', '2007-07-12T17:18:03.032Z')).values

@@ -23,7 +23,7 @@ class Constants(Enum):
     # NOTE: larger value here will speed up the TurfJS download of dataset in the UI
     # Problem interpolating the dataset: cannot reshape array of size 65536 into shape...
     # TODO: needs to be enum
-    SPATIOTEMPORAL_CHUNK_SIZE = int(2**16) - 1024
+    SPATIOTEMPORAL_CHUNK_SIZE = int(1e6)  # int(2 ** 16) - 1024
     # TODO: create test for SPATIOTEMPORAL_CHUNK_SIZE with requirement!
 
     LEVEL_0 = "raw"
@@ -59,7 +59,7 @@ class Coordinates(Enum):
     TIME_UNITS = "nanoseconds since 1970-01-01"
     TIME_LONG_NAME = "Timestamp of each ping"
     TIME_STANDARD_NAME = "time"
-    # TIME_CALENDAR = "proleptic_gregorian"
+    TIME_CALENDAR = "proleptic_gregorian"
     # TODO: create test for reading out timestamps in Xarray
 
     FREQUENCY = "frequency"
