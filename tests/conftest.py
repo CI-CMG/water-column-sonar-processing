@@ -32,6 +32,17 @@ HB0710_RAW = pooch.create(
     },
 )
 
+# https://noaa-wcsd-pds.s3.amazonaws.com/index.html#data/raw/Henry_B._Bigelow/HB1006/EK60/
+# HBB-D20100720-T153257.raw
+HB1006_RAW = pooch.create(
+    path=pooch.os_cache("water-column-sonar-processing"),
+    base_url="https://noaa-wcsd-pds.s3.amazonaws.com/data/raw/Henry_B._Bigelow/HB1006/EK60/",
+    retry_if_failed=1,
+    registry={
+        "HBB-D20100720-T153257.raw": "sha256:f6b565ca58444955979e6e3150232ffb5fb9f54fc96cac2273600f42b2f994c7",
+    },
+)
+
 HB1906_RAW = pooch.create(
     path=pooch.os_cache("water-column-sonar-processing"),
     base_url="https://noaa-wcsd-pds.s3.amazonaws.com/data/raw/Henry_B._Bigelow/HB1906/EK60/",
@@ -53,6 +64,8 @@ def fetch_raw_files():
     HB1906_RAW.fetch(fname="D20191106-T042540.raw", progressbar=True)
     HB1906_RAW.fetch(fname="D20191106-T042540.bot", progressbar=True)
 
+    HB1006_RAW.fetch(fname="HBB-D20100720-T153257.raw", progressbar=True)
+
     # HB0710_RAW.fetch(fname="HB_07_10-D20070907-T121702.raw", progressbar=True)
     # HB0710_RAW.fetch(fname="HB_07_10-D20070910-T225059.raw", progressbar=True)
     HB0710_RAW.fetch(fname="HB_07_10-D20070912-T002400.raw", progressbar=True)
@@ -73,6 +86,7 @@ def fetch_raw_files():
 def test_path():
     return {
         "RAW_TO_ZARR_TEST_PATH": TEST_DATA_FOLDER / "raw_to_zarr",
+        "RAW_TO_ZARR_REMOTE_TEST_PATH": fetch_raw_files(),
         # "RAW_TO_NETCDF_TEST_PATH": TEST_DATA_FOLDER / "raw_to_netcdf",
         "INDEX_TEST_PATH": TEST_DATA_FOLDER / "index",
         "ZARR_MANAGER_TEST_PATH": TEST_DATA_FOLDER / "zarr_manager",

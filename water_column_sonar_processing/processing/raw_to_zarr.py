@@ -253,10 +253,11 @@ class RawToZarr:
             max_echo_range = float(np.nanmax(ds_sv.echo_range))
 
             # This is the number of missing values found throughout the lat/lon
-            # num_ping_time_dropna = lat[~np.isnan(lat)].shape[0]  # symmetric to lon
-            num_ping_time_drop_na = ds_sv.latitude.shape[
-                0
-            ]  # TODO: just settting to size
+            lat = ds_sv.latitude.values
+            num_ping_time_drop_na = lat[~np.isnan(lat)].shape[0]  # symmetric to lon
+            # num_ping_time_drop_na = ds_sv.latitude.shape[
+            #     0
+            # ]  # TODO: just settting to size
             #
             start_time = (
                 np.datetime_as_string(ds_sv.ping_time.values[0], unit="ms") + "Z"

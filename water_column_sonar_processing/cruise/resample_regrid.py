@@ -171,6 +171,7 @@ class ResampleRegrid:
                 print(f"Processing file: {file_name_stem}.")
 
                 if f"{file_name_stem}.raw" not in list(cruise_df["FILE_NAME"]):
+                    print("Raw file file_stem not found in dynamodb.")
                     raise Exception("Raw file file_stem not found in dynamodb.")
 
                 # status = PipelineStatus['LEVEL_1_PROCESSING']

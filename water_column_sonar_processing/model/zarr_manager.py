@@ -104,7 +104,7 @@ class ZarrManager:
                 # dtype=np.dtype(Coordinates.TIME_DTYPE.value),
                 data=time_values,
                 chunks=time_chunk_shape,
-                compressor=compressors,
+                compressors=compressors,
                 fill_value=np.nan,
                 attributes=dict(
                     calendar=Coordinates.TIME_CALENDAR.value,
@@ -130,7 +130,7 @@ class ZarrManager:
                 # dtype=np.dtype(Coordinates.DEPTH_DTYPE.value),
                 data=depth_data,
                 chunks=depth_chunk_shape,
-                compressor=compressors,
+                compressors=compressors,
                 # fill_value=np.nan,
                 attributes=dict(
                     units=Coordinates.DEPTH_UNITS.value,
@@ -150,7 +150,7 @@ class ZarrManager:
                 dtype=np.dtype(Coordinates.LATITUDE_DTYPE.value),
                 # data=latitude_values,
                 chunks=latitude_chunk_shape,
-                compressor=compressors,
+                compressors=compressors,
                 fill_value=np.nan,
                 attributes=dict(
                     units=Coordinates.LATITUDE_UNITS.value,
@@ -170,7 +170,7 @@ class ZarrManager:
                 dtype=np.dtype(Coordinates.LONGITUDE_DTYPE.value),
                 # data=longitude_values,
                 chunks=longitude_chunk_shape,
-                compressor=compressors,
+                compressors=compressors,
                 fill_value=np.nan,
                 attributes=dict(
                     units=Coordinates.LONGITUDE_UNITS.value,
@@ -192,7 +192,7 @@ class ZarrManager:
                 dtype=np.dtype(Coordinates.BOTTOM_DTYPE.value),
                 # data=bottom_values,
                 chunks=bottom_chunk_shape,
-                compressor=compressors,
+                compressors=compressors,
                 fill_value=np.nan,
                 attributes=dict(
                     units=Coordinates.BOTTOM_UNITS.value,
@@ -212,7 +212,7 @@ class ZarrManager:
                 dtype=np.dtype(Coordinates.SPEED_DTYPE.value),
                 # data=speed_values,
                 chunks=speed_chunk_shape,
-                compressor=compressors,
+                compressors=compressors,
                 fill_value=np.nan,
                 attributes=dict(
                     units=Coordinates.SPEED_UNITS.value,
@@ -232,7 +232,7 @@ class ZarrManager:
                 dtype=np.dtype(Coordinates.DISTANCE_DTYPE.value),
                 # data=distance_values,
                 chunks=distance_chunk_shape,
-                compressor=compressors,
+                compressors=compressors,
                 fill_value=np.nan,
                 attributes=dict(
                     units=Coordinates.DISTANCE_UNITS.value,
@@ -251,7 +251,7 @@ class ZarrManager:
                 data=frequencies,
                 # chunks=(Constants.SPATIOTEMPORAL_CHUNK_SIZE.value,),
                 chunks=frequency_chunk_shape,
-                compressor=compressors,
+                compressors=compressors,
                 # fill_value=0,
                 attributes=dict(
                     units=Coordinates.FREQUENCY_UNITS.value,
@@ -269,7 +269,7 @@ class ZarrManager:
                 dtype=np.dtype(Coordinates.SV_DTYPE.value),
                 # data=,
                 chunks=sv_chunk_shape,
-                compressor=compressors,
+                compressors=compressors,
                 fill_value=np.nan,
                 attributes=dict(
                     units=Coordinates.SV_UNITS.value,
