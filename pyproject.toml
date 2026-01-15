@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "26.1.9"
+version = "26.1.10"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
