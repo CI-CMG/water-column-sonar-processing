@@ -3,10 +3,10 @@ import tempfile
 
 import numpy as np
 
-from water_column_sonar_processing.utility import Constants
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.model import ZarrManager
 from water_column_sonar_processing.utility import Cleaner
+from water_column_sonar_processing.utility import Constants
 
 
 # TODO: change name to "CreateLocalEmptyZarrStore"
@@ -59,7 +59,10 @@ class CreateEmptyZarrStore:
             )
 
             # [4] max measurement resolution for the whole cruise
-            cruise_max_echo_range = np.max(df["MAX_ECHO_RANGE"].dropna().astype(float))
+            # Each max-echo-range is paired with water-level and then find the max of that
+            cruise_max_echo_range = np.max(
+                (df["MAX_ECHO_RANGE"] + df["WATER_LEVEL"]).dropna().astype(float)
+            )  # max_echo_range now includes water_level
 
             print(f"cruise_max_echo_range: {cruise_max_echo_range}")
 

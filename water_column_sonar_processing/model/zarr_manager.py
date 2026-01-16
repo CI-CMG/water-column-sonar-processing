@@ -65,6 +65,7 @@ class ZarrManager:
     ) -> str:
         """
         Creates a new zarr store in a local temporary directory(?)
+        This includes the water_level on top of the max_echo_range already, nothing extra needs to be done.
         """
         try:
             print(f"Creating local zarr store, {cruise_name}.zarr for ship {ship_name}")

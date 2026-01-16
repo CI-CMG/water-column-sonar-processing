@@ -25,12 +25,16 @@ class ResampleRegrid:
         input_xr: xr.Dataset,
         ping_times: np.ndarray,
         all_cruise_depth_values: np.ndarray,  # includes water_level offset
+        water_level: float = 0.0,
     ) -> np.ndarray:
         """
         Input dataset is passed in along with times and depth values to regrid to.
         """
         print("Interpolating dataset.")
         try:
+            # add offset for the water level to the whole input xarray
+            input_xr.depth.values = input_xr.depth.values + water_level
+
             data = np.empty(
                 (  # Depth / Time / Frequency
                     len(all_cruise_depth_values),
@@ -54,18 +58,17 @@ class ResampleRegrid:
             )
 
             channels = input_xr.channel.values
-            for channel in range(
-                len(channels)
-            ):  # ?TODO: leaving off here, need to subset for just indices in time axis
+            for channel in range(len(channels)):
                 gc.collect()
                 max_depths = np.nanmax(
-                    a=input_xr.depth.sel(channel=input_xr.channel[channel]).values,
+                    a=input_xr.depth.sel(channel=input_xr.channel[channel]).values
+                    + water_level,
                     axis=1,
                 )
                 superset_of_max_depths = set(max_depths)
                 set_of_max_depths = list(
                     {x for x in superset_of_max_depths if x == x}
-                )  # To speed things up resample in groups denoted by max_depth
+                )  # To speed things up resample in groups denoted by max_depth -- so samples might no longer be adjacent
                 for select_max_depth in set_of_max_depths:
                     # TODO: for nan just skip and leave all nan's
                     select_indices = [
@@ -79,12 +82,15 @@ class ResampleRegrid:
                     ].T.values
 
                     times_select = input_xr.ping_time.values[select_indices]
+                    # input_xr.depth[0][0] -> [0., 499.9] before
+                    # input_xr.depth.values = input_xr.depth.values + water_level  # issue here!! overwritting all the data
+                    # input_xr.depth[0][0] -> [7.5, 507.40] after
                     depths_all = input_xr.depth.sel(
                         channel=input_xr.channel[channel],
                         ping_time=input_xr.ping_time[select_indices[0]],
                     ).values
                     depths_select = depths_all[~np.isnan(depths_all)]
-
+                    #
                     da_select = xr.DataArray(
                         data=data_select[: len(depths_select), :],
                         dims=("depth", "time"),
@@ -93,27 +99,23 @@ class ResampleRegrid:
                             "time": times_select,
                         },
                     )
-
-                    resampled = (
-                        da_select.interp(  # TODO: problem here w D20070712-T152416.raw
-                            depth=all_cruise_depth_values,
-                            method="nearest",
-                            assume_sorted=True,
-                        )
-                    )
+                    # 'resampled' is now the interpolated superset of new dimensions
+                    resampled = da_select.interp(  # need to define the data with water level (domain)
+                        depth=all_cruise_depth_values,  # and need to interpolate over the (range)
+                        method="nearest",
+                        assume_sorted=True,
+                    )  # good through here, @27 is -3.11 which is 5.4 m depth
 
                     ### write to outptut ###
-                    regrid_resample.loc[
+                    regrid_resample.loc[  # ~150 MB for 5001x7706x4
                         dict(
                             time=times_select,
                             frequency=input_xr.frequency_nominal.values[channel],
                         )
                     ] = resampled
-                    print(f"updated {len(times_select)} ping times")
+                    # print(f"updated {len(times_select)} ping times")
                     gc.collect()
-            return (
-                regrid_resample.values.copy()
-            )  # gets passed back wo depth, might need to include?
+            return regrid_resample.values.copy()
         except Exception as err:
             raise RuntimeError(f"Problem finding the dynamodb table, {err}")
         finally:
@@ -195,9 +197,13 @@ class ResampleRegrid:
                     endpoint_url=endpoint_url,
                 )
 
+                #########################################################################
                 # This is the vertical offset of the sensor related to the ocean surface
                 # See https://echopype.readthedocs.io/en/stable/data-proc-additional.html
-                # Ignoring water-level for now
+                if "water_level" in input_xr_zarr_store.keys():
+                    water_level = float(input_xr_zarr_store.water_level.values)
+                else:
+                    water_level = 0.0
                 #########################################################################
                 # [3] Get needed time indices — along the x-axis
                 # Offset from start index to insert new dataset. Note that missing values are excluded.
@@ -211,8 +217,10 @@ class ResampleRegrid:
                 start_ping_time_index = ping_time_cumsum[index]
                 end_ping_time_index = ping_time_cumsum[index + 1]
 
-                max_echo_range = np.max(
-                    cruise_df["MAX_ECHO_RANGE"].dropna().astype(np.float32)
+                max_echo_range = np.max(  # Should water level go in here?
+                    (cruise_df["MAX_ECHO_RANGE"] + cruise_df["WATER_LEVEL"])
+                    .dropna()
+                    .astype(np.float32)
                 )
                 # cruise_min_epsilon = np.min(
                 #     cruise_df["MIN_ECHO_RANGE"].dropna().astype(float)
@@ -254,6 +262,7 @@ class ResampleRegrid:
                     input_xr=input_xr,
                     ping_times=ping_times,
                     all_cruise_depth_values=all_cruise_depth_values,  # should accommodate the water_level already
+                    water_level=water_level,
                 )
 
                 print(

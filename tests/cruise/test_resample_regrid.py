@@ -358,6 +358,9 @@ def test_resample_regrid(resample_regrid_test_path, moto_server):
 
 @mock_aws
 def test_resample_regrid_hb1906(resample_regrid_test_path, moto_server):
+    """
+    Note the water-level is 7.5 m for first file
+    """
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager(endpoint_url=moto_server)
 
@@ -507,7 +510,7 @@ def test_resample_regrid_hb1906(resample_regrid_test_path, moto_server):
     assert np.isclose(test_output_zarr_store.Sv.depth[0].values, 0.0)
     assert np.isclose(
         test_output_zarr_store.Sv.sel(
-            depth=0.57,
+            depth=8.02,  # 0.57 + 7.5m (adds water-level to depth)
             time=test_output_zarr_store.time[0],
             frequency=test_output_zarr_store.frequency[0],
             method="nearest",
@@ -516,25 +519,25 @@ def test_resample_regrid_hb1906(resample_regrid_test_path, moto_server):
     )
     assert np.isclose(
         test_output_zarr_store.Sv.sel(
-            depth=0.76,
+            depth=8.26,  # 0.76 + 7.5m (adds water-level)
             time=test_output_zarr_store.time[0],
             frequency=test_output_zarr_store.frequency[0],
             method="nearest",
         ).values,
         -5.6355376,  # -39.27122, #,  # second non-na value
     )
-    # assert np.isclose(
-    #     test_output_zarr_store.Sv.sel(
-    #         depth=499.99, # TODO: problem! It now stops at 379 meters!!!
-    #         time=test_output_zarr_store.time[0],
-    #         frequency=test_output_zarr_store.frequency[0],
-    #         method="nearest",
-    #     ).values,
-    #     -81.77733,  # last non-na value
-    # )
-    assert np.isclose(test_output_zarr_store.depth[-1].values, 500.0)
-    assert len(test_output_zarr_store.Sv.depth) == 2501  # was 2538 previously
-    assert np.max(test_output_zarr_store.latitude.values) > 0.0
+    assert np.isclose(
+        test_output_zarr_store.Sv.sel(
+            depth=507.4,
+            time=test_output_zarr_store.time[0],
+            frequency=test_output_zarr_store.frequency[0],
+            method="nearest",
+        ).values,
+        -75.96839,  # last non-na value
+    )
+    assert np.isclose(test_output_zarr_store.depth[-1].values, 508.0)
+    assert len(test_output_zarr_store.Sv.depth) == 2541
+    assert np.max(test_output_zarr_store.latitude.values) == 43.949574
     assert np.isclose(np.max(test_output_zarr_store.bottom.values), 247.97046)
     assert np.isclose(np.nanmin(test_output_zarr_store.bottom.values), 178.77365)
     # cruise_select = test_output_zarr_store.sel(
@@ -570,7 +573,7 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
     #    water_level=7.5, min_echo_range=0.19, max_echo_range=499.7215
     #  "HB_07_10_Cont_Shelf-D20070912-T065606.raw"
     #    water_level=5.0, min_echo_range=0.01, max_echo_range=2999.4805
-    #  where there are also changes across channels in values.
+    #  where there are also changes across channels/frequencies in values.
     dynamo_db_manager = DynamoDBManager()
     s3_manager = S3Manager(endpoint_url=moto_server)
 
@@ -707,9 +710,9 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
         endpoint_url=moto_server,
     )
     assert np.isclose(test_output_zarr_store.Sv.depth[0].values, 0.0)
-    assert np.isclose(
+    assert np.isclose(  # water-level is 7.5 on left and 5.0 on right
         test_output_zarr_store.Sv.sel(
-            depth=0.57,
+            depth=8.02,
             time=test_output_zarr_store.time[0],
             frequency=test_output_zarr_store.frequency[0],
             method="nearest",
@@ -718,7 +721,7 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
     )
     assert np.isclose(
         test_output_zarr_store.Sv.sel(
-            depth=0.76,
+            depth=8.26,
             time=test_output_zarr_store.time[0],
             frequency=test_output_zarr_store.frequency[0],
             method="nearest",
@@ -727,43 +730,53 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
     )
     # Test at the seam where depths change
     # test_output_zarr_store.sel(depth=slice(0, 10), time=slice('2007-09-12T06:37:13.912701000', '2007-09-12T06:56:14.390949000'), frequency=18_000, drop=True)
-    # assert np.isclose(
-    #     test_output_zarr_store.sel(depth=0.6, time='2007-09-12T06:37:13.912701000', frequency=18_000, drop=True).values,
-    #     -3.781107,
-    # )
     assert np.isclose(
         test_output_zarr_store.sel(
-            depth=0.6, time="2007-09-12 06:37:13.912700928", frequency=18_000, drop=True
+            depth=8.0, time="2007-09-12T06:37:13.912700928", frequency=18_000, drop=True
         ).Sv.values,
         -3.781107,
     )
     assert np.isclose(
         test_output_zarr_store.sel(
-            depth=0.8, time="2007-09-12 06:37:13.912700928", frequency=18_000, drop=True
+            depth=8.2, time="2007-09-12 06:37:13.912700928", frequency=18_000, drop=True
         ).Sv.values,
-        -5.861585,
-    )
-    # on the right hand side
-    assert np.isclose(
-        test_output_zarr_store.sel(
-            depth=0.6, time="2007-09-12 06:56:14.390949120", frequency=18_000, drop=True
-        ).Sv.values,
-        -35.88606,
+        -5.8615847,
     )
     assert np.isclose(
         test_output_zarr_store.sel(
-            depth=0.8, time="2007-09-12 06:56:14.390949120", frequency=18_000, drop=True
+            depth=8.4, time="2007-09-12 06:37:13.912700928", frequency=18_000, drop=True
         ).Sv.values,
-        -32.680862,
+        -42.742767,
     )
-    # TODO: get timestamp closest to:
-    # 2007-09-12T06:51:55
-    # 2007-09-12T06:52:05
+    # AND on the right hand side...
+    assert np.isnan(
+        test_output_zarr_store.sel(
+            depth=5.2, time="2007-09-12 06:56:14.390949120", frequency=18_000, drop=True
+        ).Sv.values
+    )
+    # 2007-09-12T06:56:06.875323904, 2007-09-12T06:56:10.312824064, 2007-09-12T06:56:14.390949120
+    assert np.isclose(  # The data started from a very shallow depth before and is now lower at 10.4?
+        test_output_zarr_store.sel(
+            depth=5.4, time="2007-09-12T06:56:10.312824064", frequency=18_000, drop=True
+        ).Sv.values,
+        -3.114631,
+    )
+    assert np.isclose(  # The data started from a very shallow depth before and is now lower at 10.4?
+        test_output_zarr_store.sel(
+            depth=5.4, time="2007-09-12T06:56:10.312824064", frequency=18_000, drop=True
+        ).Sv.values,
+        -3.114631,
+    )
+    assert np.isclose(
+        test_output_zarr_store.sel(
+            depth=5.4, time="2007-09-12T07:28:29.344073984", frequency=18_000, drop=True
+        ).Sv.values,
+        -3.1028719,
+    )
     #
-    #
-    assert np.isclose(test_output_zarr_store.depth[-1].values, 3000.0)
-    assert len(test_output_zarr_store.Sv.depth) == 15001  # was 2538 previously
-    assert np.max(test_output_zarr_store.latitude.values) > 0.0
+    assert np.isclose(test_output_zarr_store.depth[-1].values, 3005.0)
+    assert len(test_output_zarr_store.Sv.depth) == 15026  # was 2538 previously
+    assert np.max(test_output_zarr_store.latitude.values) == 36.419003
 
 
 # @mock_aws
