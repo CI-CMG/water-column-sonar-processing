@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "26.1.12"
+version = "26.1.13"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
@@ -37,6 +37,7 @@ dependencies = [
     "pykalman==0.11.1",
     "python-dotenv",
     "requests==2.32.5",
+    "ruff>=0.14.13",
     "s3fs==2026.1.0", # problem here, uv finds the wrong one
     "scipy==1.17.0",
     "setuptools==80.9.0",

@@ -61,8 +61,8 @@ class ResampleRegrid:
             for channel in range(len(channels)):
                 gc.collect()
                 max_depths = np.nanmax(
-                    a=input_xr.depth.sel(channel=input_xr.channel[channel]).values
-                    + water_level,
+                    a=input_xr.depth.sel(channel=input_xr.channel[channel]).values,
+                    # + water_level,
                     axis=1,
                 )
                 superset_of_max_depths = set(max_depths)
@@ -131,7 +131,6 @@ class ResampleRegrid:
         table_name,
         bucket_name,
         override_select_files=None,
-        # override_cruise_min_epsilon=None,
         endpoint_url=None,
     ) -> None:
         """
@@ -143,7 +142,6 @@ class ResampleRegrid:
         print("Resample Regrid, Interpolating dataset.")
         try:
             zarr_manager = ZarrManager()
-            # geo_manager = GeometryManager()
 
             output_zarr_store = zarr_manager.open_s3_zarr_store_with_zarr(
                 ship_name=ship_name,
