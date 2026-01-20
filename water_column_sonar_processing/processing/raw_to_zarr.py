@@ -221,44 +221,35 @@ class RawToZarr:
             # add gps data
             ds_sv = ep.consolidate.add_location(ds_sv, echodata)
 
-            # Get GPS coordinates
-            # gps_data, lat, lon = geometry_manager.read_echodata_gps_data(
-            #     echodata=echodata,
-            #     output_bucket_name=output_bucket_name,
-            #     ship_name=ship_name,
-            #     cruise_name=cruise_name,
-            #     sensor_name=sensor_name,
-            #     file_name=raw_file_name,
-            #     endpoint_url=endpoint_url,
-            #     write_geojson=True,
-            # )
+            if np.any(ds_sv.latitude.values > 90.0) or np.any(
+                ds_sv.latitude.values < -90.0
+            ):
+                ds_sv.latitude.values[np.where(ds_sv.latitude.values > 90.0)] = np.nan
+                ds_sv.latitude.values[np.where(ds_sv.latitude.values < -90.0)] = np.nan
 
-            # ds_sv.latitude.values = (  # their lat values are better than mine
-            #     lat  # overwriting echopype gps values to include missing values
-            # )
-            # ds_sv.longitude.values = lon
-            # gps_data, lat, lon = self.__get_gps_data(echodata=echodata)
+            if np.any(ds_sv.longitude.values > 180.0) or np.any(
+                ds_sv.longitude.values < -180.0
+            ):
+                ds_sv.longitude.values[np.where(ds_sv.longitude.values > 180.0)] = (
+                    np.nan
+                )
+                ds_sv.longitude.values[np.where(ds_sv.longitude.values < -180.0)] = (
+                    np.nan
+                )
+
             #################################################################
-            # Technically the min_echo_range would be 0 m.
-            # TODO: this var name is supposed to represent minimum resolution of depth measurements
-            # TODO revert this so that smaller diffs can be used
-            # The most minimum the resolution can be is as small as 0.25 meters
             min_echo_range = np.round(np.nanmin(np.diff(ds_sv.echo_range.values)), 2)
-            # For the HB0710 cruise the depths vary from 499.7215 @19cm to 2999.4805 @ 1cm. Moving that back
-            # inline with the
-            # min_echo_range = np.max( # TODO: I think this is creating problems with the water-level
-            #     [0.20, min_echo_range]
-            # )
-
             max_echo_range = float(np.nanmax(ds_sv.echo_range))
 
             # This is the number of missing values found throughout the lat/lon
             lat = ds_sv.latitude.values
-            num_ping_time_drop_na = lat[~np.isnan(lat)].shape[0]  # symmetric to lon
-            # num_ping_time_drop_na = ds_sv.latitude.shape[
-            #     0
-            # ]  # TODO: just settting to size
-            #
+            lon = ds_sv.longitude.values
+            num_ping_time_drop_na = np.min(
+                [  # Isn't always symmetric
+                    lat[~np.isnan(lat)].shape[0],
+                    lon[~np.isnan(lon)].shape[0],
+                ]
+            )
             start_time = (
                 np.datetime_as_string(ds_sv.ping_time.values[0], unit="ms") + "Z"
             )
@@ -270,14 +261,12 @@ class RawToZarr:
             #################################################################
             # Create the zarr store
             store_name = f"{Path(raw_file_name).stem}.zarr"
-            # Sv = ds_sv.Sv
-            # ds_sv['Sv'] = Sv.astype('int32', copy=False)
             ds_sv.to_zarr(
                 store=store_name,
                 zarr_format=3,
                 consolidated=False,
                 write_empty_chunks=False,
-            )  # ds_sv.Sv.sel(channel=ds_sv.channel.values[0]).shape
+            )
             gc.collect()
             #################################################################
             output_zarr_prefix = f"{level_1}/{ship_name}/{cruise_name}/{sensor_name}/"

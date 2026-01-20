@@ -774,9 +774,10 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
         -3.1028719,
     )
     #
-    assert np.isclose(test_output_zarr_store.depth[-1].values, 3005.0)
+    # assert np.isclose(test_output_zarr_store.depth[-1].values, 3005.0)
     assert len(test_output_zarr_store.Sv.depth) == 15026  # was 2538 previously
     assert np.max(test_output_zarr_store.latitude.values) == 36.419003
+    assert np.max(test_output_zarr_store.depth.values) == 3005.0
 
 
 # @mock_aws
