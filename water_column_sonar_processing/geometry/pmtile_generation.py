@@ -14,6 +14,7 @@ bucket_name = "noaa-wcsd-zarr-pds"
 ship_name = "Henry_B._Bigelow"
 sensor_name = "EK60"
 
+
 # TODO: get pmtiles of all the evr points
 
 
@@ -32,18 +33,18 @@ class PMTileGeneration(object):
         self,
     ):
         self.bucket_name = "noaa-wcsd-zarr-pds"
+        self.level = "level_2a"
         self.ship_name = "Henry_B._Bigelow"
         self.sensor_name = "EK60"
 
     #######################################################
-    @staticmethod
-    def check_all_cruises(bucket_name, cruises):
+    def check_all_cruises(self, cruises):
         completed = []
         for cruise_name in cruises:
             print(cruise_name)
             try:
                 zarr_store = f"{cruise_name}.zarr"
-                s3_zarr_store_path = f"{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{zarr_store}"
+                s3_zarr_store_path = f"{self.bucket_name}/{self.level}/{ship_name}/{cruise_name}/{sensor_name}/{zarr_store}"
                 kwargs = {"consolidated": False}
                 cruise = xr.open_dataset(
                     filename_or_obj=f"s3://{s3_zarr_store_path}",
@@ -70,13 +71,12 @@ class PMTileGeneration(object):
         return completed
 
     #######################################################
-    @staticmethod
-    def get_cruise_geometry(cruise_name, index):
+    def get_cruise_geometry(self, cruise_name, index):
         print(cruise_name)
         try:
             pieces = []
             zarr_store = f"{cruise_name}.zarr"
-            s3_zarr_store_path = f"{bucket_name}/level_2/{ship_name}/{cruise_name}/{sensor_name}/{zarr_store}"
+            s3_zarr_store_path = f"{self.bucket_name}/{self.level}/{ship_name}/{cruise_name}/{sensor_name}/{zarr_store}"
             cruise = xr.open_dataset(
                 filename_or_obj=f"s3://{s3_zarr_store_path}",
                 engine="zarr",
@@ -148,66 +148,67 @@ class PMTileGeneration(object):
         print(gps_gdf)
 
     #######################################################
-    def create_collection_geojson(self):
-        cruises = [
-            "HB0706",
-            "HB0707",
-            "HB0710",
-            "HB0711",
-            "HB0802",
-            "HB0803",
-            "HB0805",
-            "HB0806",
-            "HB0807",
-            "HB0901",
-            "HB0902",
-            "HB0903",
-            "HB0904",
-            "HB0905",
-            "HB1002",
-            "HB1006",
-            "HB1102",
-            "HB1103",
-            "HB1105",
-            "HB1201",
-            "HB1206",
-            "HB1301",
-            "HB1303",
-            "HB1304",
-            "HB1401",
-            "HB1402",
-            "HB1403",
-            "HB1405",
-            "HB1501",
-            "HB1502",
-            "HB1503",
-            "HB1506",
-            "HB1507",
-            "HB1601",
-            "HB1603",
-            "HB1604",
-            "HB1701",
-            "HB1702",
-            "HB1801",
-            "HB1802",
-            "HB1803",
-            "HB1804",
-            "HB1805",
-            "HB1806",
-            "HB1901",
-            "HB1902",
-            "HB1903",
-            "HB1904",
-            "HB1906",
-            "HB1907",
-            "HB2001",
-            "HB2006",
-            "HB2007",
-            "HB20ORT",
-            "HB20TR",
-        ]
+    def create_collection_geojson(self, cruises: list):
+        if cruises is not None:
+            cruises = [
+                "HB0706",
+                "HB0707",
+                "HB0710",
+                "HB0711",
+                # "HB0802",
+                "HB0803",
+                "HB0805",
+                "HB0806",
+                # "HB0807",
+                "HB0901",
+                "HB0902",
+                "HB0903",
+                "HB0904",
+                "HB0905",
+                "HB1002",
+                # "HB1006",
+                "HB1102",
+                # "HB1103",
+                "HB1105",
+                "HB1201",
+                "HB1206",
+                # "HB1301",
+                "HB1303",
+                "HB1304",
+                "HB1401",
+                "HB1402",
+                "HB1403",
+                "HB1405",
+                "HB1501",
+                "HB1502",
+                "HB1503",
+                "HB1506",
+                "HB1507",
+                "HB1601",
+                "HB1603",
+                "HB1604",
+                "HB1701",
+                "HB1702",
+                "HB1801",
+                "HB1802",
+                "HB1803",
+                "HB1804",
+                "HB1805",
+                "HB1806",
+                "HB1901",
+                "HB1902",
+                "HB1903",
+                "HB1904",
+                "HB1906",
+                "HB1907",
+                "HB2001",
+                "HB2006",
+                "HB2007",
+                "HB20ORT",
+                "HB20TR",
+            ]
         completed_cruises = self.check_all_cruises(
-            bucket_name=bucket_name, cruises=cruises
+            cruises=cruises
         )  # TODO: threadpool this
         ### create linestring ###
         geometries = []
