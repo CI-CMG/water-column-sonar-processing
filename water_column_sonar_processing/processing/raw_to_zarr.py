@@ -247,6 +247,15 @@ class RawToZarr:
                 lat[line_indices] = np.nan
                 lon[line_indices] = np.nan
             #
+            # check for visits to null island
+            null_island_indices = list(
+                set.intersection(
+                    set(np.where(np.abs(lat) < 1e-3)[0]),
+                    set(np.where(np.abs(lon) < 1e-3)[0]),
+                )
+            )
+            lat[null_island_indices] = np.nan
+            lon[null_island_indices] = np.nan
             #
             num_ping_time_drop_na = np.min(
                 [  # Note: values are not always symmetric
