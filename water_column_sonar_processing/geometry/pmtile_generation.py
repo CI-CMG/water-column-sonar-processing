@@ -224,6 +224,9 @@ class PMTileGeneration(object):
         print(
             'Now run this: "tippecanoe --no-feature-limit -zg -o dataset.pmtiles -l cruises dataset.geojson --force"'
         )
+        print(
+            "And copy *.pmtiles to ef s3 bucket at https://noaa-wcsd-pds-index.s3.amazonaws.com/water-column-sonar-id.pmtiles"
+        )
         # # water-column-sonar-id.pmtiles
         # linux command: "tippecanoe --no-feature-limit -zg -o water-column-sonar-id.pmtiles -l cruises dataset.geojson --force"
         #   note: 'cruises' is the name of the layer
@@ -232,6 +235,8 @@ class PMTileGeneration(object):
 
     #######################################################
     # TODO: copy the .pmtiles file to the s3 bucket "noaa-wcsd-pds-index"
+
+    # TODO: copy to nodd bucket instead of project bucket
     #######################################################
 
     #######################################################

@@ -9,8 +9,7 @@ import numpy as np
 from zarr.codecs import Blosc
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
-from water_column_sonar_processing.utility import Cleaner
-from water_column_sonar_processing.utility import Constants
+from water_column_sonar_processing.utility import Cleaner, Constants
 
 # from numcodecs import Blosc
 level_1 = str(Constants.LEVEL_1.value)
@@ -244,8 +243,11 @@ class RawToZarr:
             # This is the number of missing values found throughout the lat/lon
             lat = ds_sv.latitude.values
             lon = ds_sv.longitude.values
+            # do speed check here
+            #
+            #
             num_ping_time_drop_na = np.min(
-                [  # Isn't always symmetric
+                [  # Note: values are not always symmetric
                     lat[~np.isnan(lat)].shape[0],
                     lon[~np.isnan(lon)].shape[0],
                 ]
