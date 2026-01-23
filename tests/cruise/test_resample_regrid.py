@@ -768,10 +768,10 @@ def test_resample_regrid_hb0710(resample_regrid_test_path, moto_server):
         -3.114631,
     )
     assert np.isclose(
-        test_output_zarr_store.sel(
-            depth=5.4, time="2007-09-12T07:28:29.344073984", frequency=18_000, drop=True
+        test_output_zarr_store.sel(  # '2007-09-12T07:28:25.265948928'
+            depth=5.4, time="2007-09-12T07:28:25.265948928", frequency=18_000, drop=True
         ).Sv.values,
-        -3.1028719,
+        -3.102872,
     )
     #
     # assert np.isclose(test_output_zarr_store.depth[-1].values, 3005.0)
