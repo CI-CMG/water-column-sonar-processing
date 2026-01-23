@@ -6,7 +6,8 @@ from typing import Optional
 
 import echopype as ep
 import numpy as np
-from zarr.codecs import Blosc
+from geometry import LineSimplification
+from zarr.codecs.blosc import Blosc
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.utility import Cleaner, Constants
@@ -30,19 +31,10 @@ class RawToZarr:
     #######################################################
     def __init__(
         self,
-        # output_bucket_access_key,
-        # output_bucket_secret_access_key,
-        # # overwrite_existing_zarr_store,
     ):
         # TODO: revert to Blosc.BITSHUFFLE, troubleshooting misc error
-        # self.__compressor = Blosc(cname="zstd", clevel=2)  # shuffle=Blosc.NOSHUFFLE
         self.__compressor = Blosc(cname="zstd", clevel=9)
         self.__overwrite = True
-        # self.__num_threads = numcodecs.blosc.get_nthreads()
-        # self.input_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
-        # self.output_bucket_name = os.environ.get("OUTPUT_BUCKET_NAME")
-        # self.__table_name = table_name
-        # # self.__overwrite_existing_zarr_store = overwrite_existing_zarr_store
 
     ############################################################################
     ############################################################################
@@ -245,6 +237,15 @@ class RawToZarr:
             lat = ds_sv.latitude.values
             lon = ds_sv.longitude.values
             # do speed check here
+            line_simplification = LineSimplification()
+            line_indices = line_simplification.get_large_distance_indices(
+                latitudes=lat, longitudes=lon
+            )
+            if (
+                len(line_indices) > 0
+            ):  # want to set the first point as null because it is the outlier
+                lat[line_indices] = np.nan
+                lon[line_indices] = np.nan
             #
             #
             num_ping_time_drop_na = np.min(

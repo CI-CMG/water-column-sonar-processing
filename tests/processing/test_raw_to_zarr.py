@@ -175,6 +175,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     )
     print(df_after)
     assert df_after.shape == (1, 13)
+    assert int(df_after["NUM_PING_TIME_DROPNA"][0]) == 35
 
     # mount and verify:
     file_stem = Path(raw_file_name).stem
@@ -288,23 +289,7 @@ def test_raw_to_zarr_hb1006(moto_server, raw_to_zarr_remote_test_path):
         # sensor_name, # TODO: need to add this back for EK80
         table_name=table_name,
     )
-    assert int(df_after["NUM_PING_TIME_DROPNA"][0]) == 965
-
-    # # mount and verify:
-    # file_stem = Path(raw_file_name).stem
-    # s3fs_manager = S3FSManager(endpoint_url=moto_server)
-    # s3_path = f"{output_bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_stem}.zarr"
-    # zarr_store = s3fs_manager.s3_map(s3_path)
-    #
-    # # --- Open with Xarray --- #
-    # kwargs = {"consolidated": False}
-    # ds = xr.open_dataset(filename_or_obj=zarr_store, engine="zarr", **kwargs)
-    # assert len(list(ds.variables)) == 24
-    #
-    # # --- Open with Zarr --- #
-    # root = zarr.open(store=zarr_store, mode="r")  # , storage_options={'anon': True})
-    # print(root)
-    # assert root["Sv"].shape == (4, 36, 2604)
+    assert int(df_after["NUM_PING_TIME_DROPNA"][0]) == 957
 
 
 #######################################################

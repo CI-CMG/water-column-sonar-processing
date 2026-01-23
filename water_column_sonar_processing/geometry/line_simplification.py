@@ -151,9 +151,11 @@ class LineSimplification:
         points_df.to_crs(epsg=3310, inplace=True)
         distance_diffs = points_df.distance(points_df.shift().geometry)
         # filter all distances > 100 meters
-        return distance_diffs.loc[
+        distance_diffs_indices = distance_diffs.loc[
             lambda x: x > self.max_distance_delta
-        ].index.to_numpy()
+        ].index
+        # Subtract one to get the previous index
+        return distance_diffs_indices.to_numpy() - 1
 
     # def remove_null_island_values(
     #     self,
