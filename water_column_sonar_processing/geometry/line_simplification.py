@@ -16,8 +16,6 @@ from shapely.geometry import Point
 
 # TODO: get line for example HB1906 ...save linestring to array for testing
 
-MAX_SPEED_KNOTS = 50
-
 
 # Lambert's formula ==> better accuracy than haversinte
 # Lambert's formula (the formula used by the calculators above) is the method used to calculate the shortest distance along the surface of an ellipsoid. When used to approximate the Earth and calculate the distance on the Earth surface, it has an accuracy on the order of 10 meters over thousands of kilometers, which is more precise than the haversine formula.
@@ -63,12 +61,15 @@ class LineSimplification:
         private static final double maxAllowedSpeedKnts = 60D;
     """
 
-    # TODO: in the future move to standalone library
     #######################################################
     def __init__(
         self,
+        max_speed_knots: float = 50.0,
+        # maximum distance between sequential points
+        max_distance_delta: float = 100.0,
     ):
-        pass
+        self.max_speed_knots = max_speed_knots
+        self.max_distance_delta = max_distance_delta
 
     #######################################################
     @staticmethod
@@ -102,13 +103,13 @@ class LineSimplification:
         return smoothed_state_means[:, [0, 2]]
 
     #######################################################
-    @staticmethod
     def get_speeds(
+        self,
         times: np.ndarray,  # don't really need time, do need to segment the dataset first
         latitudes: np.ndarray,
         longitudes: np.ndarray,
     ) -> np.ndarray:
-        print(MAX_SPEED_KNOTS)  # TODO: too high
+        print(self.max_speed_knots)
         print(times[0], latitudes[0], longitudes[0])
         # TODO: distance/time ==> need to take position2 - position1 to get speed
 
@@ -120,10 +121,7 @@ class LineSimplification:
         points_df.to_crs(
             epsg=3310, inplace=True
         )  # https://gis.stackexchange.com/questions/293310/finding-distance-between-two-points-with-geoseries-distance
-        distance_diffs = points_df.distance(points_df.shift())
-        # distance_diffs_sorted = distance_diffs.sort_values(
-        #     ascending=False
-        # )  # TODO: get avg cutoff time
+        distance_diffs = points_df.distance(points_df.shift().geometry)
         #
         time_diffs_ns = np.append(0, (times[1:] - times[:-1]).astype(int))
         # time_diffs_ns_sorted = np.sort(time_diffs_ns)
@@ -135,6 +133,27 @@ class LineSimplification:
         )
         # returns the speed in meters per second #TODO: get speed in knots
         return speed_meters_per_second.to_numpy(dtype="float32")  # includes nan
+
+    #######################################################
+    def get_large_distance_indices(
+        self,
+        latitudes: np.ndarray,
+        longitudes: np.ndarray,
+    ) -> np.ndarray:
+        """
+        Returns indices of large distance jumps in data meant to be set to nan.
+        Will help remove null-island values and interpolated values between.
+        """
+        geom = [Point(xy) for xy in zip(longitudes, latitudes)]
+        points_df = gpd.GeoDataFrame({"geometry": geom}, crs="EPSG:4326")
+        # Conversion to UTM, a rectilinear projection coordinate system where
+        # distance can be calculated with pythagorean theorem
+        points_df.to_crs(epsg=3310, inplace=True)
+        distance_diffs = points_df.distance(points_df.shift().geometry)
+        # filter all distances > 100 meters
+        return distance_diffs.loc[
+            lambda x: x > self.max_distance_delta
+        ].index.to_numpy()
 
     # def remove_null_island_values(
     #     self,

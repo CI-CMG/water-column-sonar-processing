@@ -220,6 +220,7 @@ class RawToZarr:
             # add gps data
             ds_sv = ep.consolidate.add_location(ds_sv, echodata)
 
+            # boundary validation
             if np.any(ds_sv.latitude.values > 90.0) or np.any(
                 ds_sv.latitude.values < -90.0
             ):

@@ -65,4 +65,20 @@ def test_get_speeds(line_simplification_tmp_path):
     assert int(np.nanmean(line_speeds)) == 7  # 7.54 meters per second
 
 
+def test_get_large_distance_indices(line_simplification_tmp_path):
+    ### returns large indices where jumps occur and omits them
+    cruise = xr.open_dataset(
+        filename_or_obj=line_simplification_tmp_path.joinpath(
+            "HB1906_geospatial_coordinates.zarr"
+        ),
+        engine="zarr",
+    )
+    latitudes = cruise.latitude.values
+    longitudes = cruise.longitude.values
+
+    line_simplification = LineSimplification()
+    line_indices = line_simplification.get_large_distance_indices(latitudes, longitudes)
+    assert len(line_indices) == 10
+
+
 #######################################################
