@@ -6,10 +6,10 @@ from typing import Optional
 
 import echopype as ep
 import numpy as np
-from geometry import LineSimplification
 from zarr.codecs.blosc import Blosc
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
+from water_column_sonar_processing.geometry import LineSimplification
 from water_column_sonar_processing.utility import Cleaner, Constants
 
 # from numcodecs import Blosc
