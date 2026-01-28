@@ -7,8 +7,12 @@ authors = [
 maintainers = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
-description = "Processing tool for water column sonar data."
+description = "Processing Tool for Water Column Sonar Data"
 keywords = ["ocean", "sonar", "water column", "zarr"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python"
+]
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
@@ -27,7 +31,7 @@ dependencies = [
     "mock",
     "moto[all]==5.1.20",
     "moto[server]==5.1.20",
-    "multidict==6.7.0",
+    "multidict==6.7.1",
     "netcdf4==1.7.3",
     "numpy==2.4.1",
     "pandas==3.0.0",
@@ -40,9 +44,9 @@ dependencies = [
     "ruff==0.14.14",
     "s3fs==2026.1.0", # problem here, uv finds the wrong one
     "scipy==1.17.0",
-    "setuptools==80.10.1",
+    "setuptools==80.10.2",
     "shapely==2.1.2",
-    "xarray==2025.12.0",
+    "xarray==2026.1.0",
     "zarr==3.1.5",
 ]
 
@@ -63,6 +67,7 @@ dev = [
 [project.urls]
 Homepage = "https://echo.fish"
 Repository = "https://github.com/CI-CMG/water-column-sonar-processing"
+Documentation = "https://github.com/CI-CMG/water-column-sonar-processing"
 Issues = "https://github.com/CI-CMG/water-column-sonar-processing/issues"
 
 [tool.bandit]
