@@ -223,6 +223,7 @@ class PMTileGeneration(object):
         #
         print(
             'Now run this: "tippecanoe --no-feature-limit -zg -o dataset.pmtiles -l cruises dataset.geojson --force"'
+            'or this: "tippecanoe --visvalingam --no-feature-limit --no-tile-size-limit -z13 -o dataset_26.2.1.pmtiles -l cruises dataset.geojson"'
         )
         print(
             "And copy *.pmtiles to ef s3 bucket at https://noaa-wcsd-pds-index.s3.amazonaws.com/water-column-sonar-id.pmtiles"

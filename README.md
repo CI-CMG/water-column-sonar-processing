@@ -6,11 +6,32 @@ generating geospatial information.
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/CI-CMG/water-column-sonar-processing/test_action.yaml)
 ![PyPI - Implementation](https://img.shields.io/pypi/v/water-column-sonar-processing) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/CI-CMG/water-column-sonar-processing) ![GitHub repo size](https://img.shields.io/github/repo-size/CI-CMG/water-column-sonar-processing)
 
+# Water Column Story Map
+
+https://storymaps.arcgis.com/stories/e245977def474bdba60952f30576908f
+
+# Ecosystem
+
+The following are all the projects under the 'water-column-sonar' processing portfolio:
+
+- https://github.com/CI-CMG/water-column-sonar-annotation (convert EVR files)
+- https://github.com/CI-CMG/water-column-sonar-processing (main python processing)
+- https://github.com/CI-CMG/water-column-sonar-visualization (experimental WebGL)
+- https://github.com/CI-CMG/water-column-sonar-ospool (converting files in bulk)
+- https://github.com/CI-CMG/water-column-sonar-ui (echofish ui)
+- https://github.com/CI-CMG/water-column-sonar-resampling (experimental DataTree)
+- https://github.com/CI-CMG/water-column-sonar-api (spring boot api w neo4j)
+- https://github.com/CI-CMG/water-column-sonar-knowledge-graph (neo4j graph + IaC)
+- https://github.com/CI-CMG/water-column-sonar-ai (experimental work w SonarAI)
+- https://github.com/CI-CMG/water-column-sonar-stac (coming soon)
+
 # Setting up the Python Environment
 
-> uv python install --reinstall
-> uv venv
-> Python 3.10.12 # 3.13.1
+```
+uv python install --reinstall
+uv venv
+Python 3.10.12 # 3.13.1
+```
 
 # Installing Dependencies
 
