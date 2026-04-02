@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import echopype as ep
+import echopype.qc
 import numpy as np
 from zarr.codecs.blosc import Blosc
 
@@ -193,7 +194,17 @@ class RawToZarr:
             )
             print("Compute volume backscattering strength (Sv) from raw dataset.")
             ds_sv = ep.calibrate.compute_Sv(echodata)
+
+            ### fix any transposed timestamps ###
+            if echopype.qc.exist_reversed_time(ds=ds_sv, time_name="ping_time"):
+                echopype.qc.coerce_increasing_time(
+                    ds=ds_sv, time_name="ping_time", win_len=100
+                )
+                # TODO: catch second error and test
+                # echopype.qc.exist_reversed_time(ds=ds_sv, time_name="ping_time")
+
             ds_sv = ep.consolidate.add_depth(ds_sv, echodata)
+
             water_level = get_water_level(ds_sv)
 
             gc.collect()
