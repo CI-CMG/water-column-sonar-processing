@@ -200,8 +200,8 @@ class RawToZarr:
                 echopype.qc.coerce_increasing_time(
                     ds=ds_sv, time_name="ping_time", win_len=100
                 )
-                # TODO: catch second error and test
-                # echopype.qc.exist_reversed_time(ds=ds_sv, time_name="ping_time")
+                if echopype.qc.exist_reversed_time(ds=ds_sv, time_name="ping_time"):
+                    raise Exception("Attempt to fix reversed timestamps not resolved")
 
             ds_sv = ep.consolidate.add_depth(ds_sv, echodata)
 
