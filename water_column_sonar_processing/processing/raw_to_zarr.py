@@ -6,6 +6,7 @@ from typing import Optional
 
 import echopype as ep
 import echopype.qc
+import echopype.qc.api
 import numpy as np
 from zarr.codecs.blosc import Blosc
 
@@ -188,18 +189,25 @@ class RawToZarr:
             gc.collect()
             print("Opening raw file with echopype.")
             echodata = ep.open_raw(
-                raw_file=raw_file_name,
+                # raw_file=raw_file_name,
+                raw_file=f"s3://{input_bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}",
                 sonar_model=sensor_name,
-                include_bot=include_bot,
+                # include_bot=include_bot,
             )
             print("Compute volume backscattering strength (Sv) from raw dataset.")
             ds_sv = ep.calibrate.compute_Sv(echodata)
-
             ### fix any transposed timestamps ###
             if echopype.qc.exist_reversed_time(ds=ds_sv, time_name="ping_time"):
-                echopype.qc.coerce_increasing_time(
-                    ds=ds_sv, time_name="ping_time", win_len=100
+                # ds_sv["ping_time"].data.flags
+                # echopype.qc.coerce_increasing_time(
+                #     ds=ds_sv, time_name="ping_time", win_len=100
+                # )
+                ds_sv["ping_time"] = ds_sv.ping_time.copy(
+                    data=echopype.qc.api._clean_reversed(
+                        ds_sv["ping_time"].data, win_len=100
+                    )
                 )
+                #
                 if echopype.qc.exist_reversed_time(ds=ds_sv, time_name="ping_time"):
                     raise Exception("Attempt to fix reversed timestamps not resolved")
 
@@ -353,3 +361,29 @@ class RawToZarr:
 
 ################################################################################
 ############################################################################
+# def process_raw():
+#     input_bucket_name = "noaa-wcsd-pds"
+#     output_bucket_name = "noaa-wcsd-zarr-pds"
+#     table_name = "prod-echofish"
+#
+#     ship_name = "Henry_B._Bigelow"
+#     cruise_name = "HB1402"
+#     sensor_name = "EK60"
+#     raw_file_names = ["D20140628-T135855.raw"]
+#
+#     raw_to_zarr = RawToZarr()
+#     for raw_file_name in raw_file_names:
+#         print(raw_file_name)
+#         raw_to_zarr.raw_to_zarr(
+#             table_name=table_name,
+#             input_bucket_name=input_bucket_name,
+#             output_bucket_name=output_bucket_name,
+#             ship_name=ship_name,
+#             cruise_name=cruise_name,
+#             sensor_name=sensor_name,
+#             raw_file_name=raw_file_name,
+#         )
+#
+#
+# if __name__ == "__main__":
+#     process_raw()

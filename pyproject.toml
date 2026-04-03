@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "26.4.0"
+version = "26.4.1"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
@@ -20,9 +20,9 @@ license-files = ["LICENSE"]
 
 # uv sync --all-groups --upgrade
 dependencies = [
-    "boto3==1.41.5",
+    "boto3",
     "boto3-stubs", #~=1.41.5",
-    "botocore==1.41.5",
+    "botocore", #==1.41.5",
     "build",
     "echopype==0.11.0",
     "fiona==1.10.1",
@@ -30,7 +30,7 @@ dependencies = [
     "importlib==1.0.4",
     "mock",
     "moto[all]==5.1.22",
-    "moto[server]==5.1.22",
+    #"moto[server]==5.1.22",
     "multidict==6.7.1",
     "netcdf4==1.7.4",
     "numpy==2.4.4",
@@ -41,7 +41,7 @@ dependencies = [
     "pykalman==0.11.2",
     "python-dotenv",
     "requests==2.33.1",
-    "ruff==0.15.8",
+    "ruff",
     "s3fs==2026.3.0", # problem here, uv finds the wrong one
     "scipy==1.17.1",
     "setuptools==82.0.1",
