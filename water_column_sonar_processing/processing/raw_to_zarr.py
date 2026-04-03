@@ -189,25 +189,20 @@ class RawToZarr:
             gc.collect()
             print("Opening raw file with echopype.")
             echodata = ep.open_raw(
-                # raw_file=raw_file_name,
-                raw_file=f"s3://{input_bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}",
+                raw_file=raw_file_name,
+                # raw_file=f"s3://{input_bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}",
                 sonar_model=sensor_name,
-                # include_bot=include_bot,
+                include_bot=include_bot,
             )
             print("Compute volume backscattering strength (Sv) from raw dataset.")
             ds_sv = ep.calibrate.compute_Sv(echodata)
             ### fix any transposed timestamps ###
             if echopype.qc.exist_reversed_time(ds=ds_sv, time_name="ping_time"):
-                # ds_sv["ping_time"].data.flags
-                # echopype.qc.coerce_increasing_time(
-                #     ds=ds_sv, time_name="ping_time", win_len=100
-                # )
                 ds_sv["ping_time"] = ds_sv.ping_time.copy(
                     data=echopype.qc.api._clean_reversed(
                         ds_sv["ping_time"].data, win_len=100
                     )
                 )
-                #
                 if echopype.qc.exist_reversed_time(ds=ds_sv, time_name="ping_time"):
                     raise Exception("Attempt to fix reversed timestamps not resolved")
 
