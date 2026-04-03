@@ -198,7 +198,7 @@ class RawToZarr:
             ds_sv = ep.calibrate.compute_Sv(echodata)
             ### fix any transposed timestamps ###
             if echopype.qc.exist_reversed_time(ds=ds_sv, time_name="ping_time"):
-                ds_sv["ping_time"] = ds_sv.ping_time.copy(
+                ds_sv["ping_time"] = ds_sv["ping_time"].copy(
                     data=echopype.qc.api._clean_reversed(
                         ds_sv["ping_time"].data, win_len=100
                     )
