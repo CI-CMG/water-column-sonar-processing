@@ -23,7 +23,7 @@ The following are all the projects under the 'water-column-sonar' processing por
 - https://github.com/CI-CMG/water-column-sonar-api (spring boot api w neo4j)
 - https://github.com/CI-CMG/water-column-sonar-knowledge-graph (neo4j graph + IaC)
 - https://github.com/CI-CMG/water-column-sonar-ai (experimental work w SonarAI)
-- https://github.com/CI-CMG/water-column-sonar-stac (coming soon)
+- https://github.com/CI-CMG/water-column-sonar-catalog (STAC catalog)
 
 # Setting up the Python Environment
 

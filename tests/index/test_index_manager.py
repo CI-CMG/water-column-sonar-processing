@@ -59,20 +59,17 @@ def test_get_calibration_information(index_test_path):  # good
     assert "AL0806" not in list(calibration_information["DATASET_NAME"])
 
 
-# @mock_s3
-# def test_index_manager(tmp_path):
-#     input_bucket_name = 'noaa-wcsd-pds'
-#     calibration_bucket = 'noaa-wcsd-pds-index'
-#     calibration_key = 'calibrated_crusies.csv'
-#
-#     index = IndexManager(
-#         input_bucket_name,
-#         calibration_bucket,
-#         calibration_key
-#     )
-#
-#     all_ek60_data = index.index()
-#     print(all_ek60_data)
+# @mock_aws
+@pytest.mark.skip(reason="no way of currently testing this")
+def test_index_manager(tmp_path):
+    input_bucket_name = "noaa-wcsd-pds"
+    calibration_bucket = "noaa-wcsd-pds-index"
+    calibration_key = "calibrated_crusies.csv"
+
+    index = IndexManager(input_bucket_name, calibration_bucket, calibration_key)
+
+    all_ek60_data = index.index()
+    print(all_ek60_data)
 
 
 # Note: this cruise has odd files where raw files aren't the first parsed

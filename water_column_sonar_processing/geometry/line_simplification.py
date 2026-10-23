@@ -1,6 +1,8 @@
 # import json
 import geopandas as gpd
 import numpy as np
+
+# TODO: switch to "UnscentedKalmanFilter" for non-linear system
 from pykalman import KalmanFilter
 from shapely.geometry import Point
 
@@ -87,6 +89,7 @@ class LineSimplification:
         transition_matrix = [[1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 1]]
         observation_matrix = [[1, 0, 0, 0], [0, 0, 1, 0]]
 
+        # TODO: switch to "UnscentedKalmanFilter" for non-linear system
         kf = KalmanFilter(
             transition_matrices=transition_matrix,
             observation_matrices=observation_matrix,
@@ -118,6 +121,7 @@ class LineSimplification:
         points_df = gpd.GeoDataFrame({"geometry": geom}, crs="EPSG:4326")
         # Conversion to UTM, a rectilinear projection coordinate system where distance can be calculated with pythagorean theorem
         # an alternative could be to use EPSG 32663
+        # TODO: EPSG:32663 (depreceated) --> EPSG:4087
         points_df.to_crs(
             epsg=3310, inplace=True
         )  # https://gis.stackexchange.com/questions/293310/finding-distance-between-two-points-with-geoseries-distance

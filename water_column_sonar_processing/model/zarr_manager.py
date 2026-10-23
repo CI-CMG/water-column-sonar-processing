@@ -5,7 +5,7 @@ from typing import Optional
 import numpy as np
 import xarray as xr
 import zarr
-from zarr.codecs import BloscCodec, BloscShuffle
+from zarr.codecs import BloscCodec
 from zarr.core.group import Group
 
 from water_column_sonar_processing.utility import Constants, Coordinates, Timestamp
@@ -14,7 +14,7 @@ from water_column_sonar_processing.utility import Constants, Coordinates, Timest
 compressors = BloscCodec(
     cname="zstd",
     clevel=9,
-    shuffle=BloscShuffle.bitshuffle,
+    shuffle="bitshuffle",
 )
 
 
