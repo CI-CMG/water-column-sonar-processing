@@ -85,28 +85,28 @@ water_column_sonar_processing/aws/sqs_manager.py                     17      2  
 water_column_sonar_processing/cruise/__init__.py                      3      0   100%
 water_column_sonar_processing/cruise/create_empty_zarr_store.py      38      2    95%
 water_column_sonar_processing/cruise/datatree_manager.py              0      0   100%
-water_column_sonar_processing/cruise/resample_regrid.py              87      6    93%
-water_column_sonar_processing/geometry/__init__.py                    6      0   100%
-water_column_sonar_processing/geometry/elevation_manager.py          29      1    97%
+water_column_sonar_processing/cruise/resample_regrid.py              91      8    91%
+water_column_sonar_processing/geometry/__init__.py                    5      0   100%
+water_column_sonar_processing/geometry/elevation_manager.py           0      0   100%
 water_column_sonar_processing/geometry/geometry_manager.py           72     33    54%
-water_column_sonar_processing/geometry/line_simplification.py        38      4    89%
-water_column_sonar_processing/geometry/pmtile_generation.py          80     58    28%
+water_column_sonar_processing/geometry/line_simplification.py        44      4    91%
+water_column_sonar_processing/geometry/pmtile_generation.py          81     61    25%
 water_column_sonar_processing/geometry/spatiotemporal.py             42      2    95%
 water_column_sonar_processing/index/__init__.py                       2      0   100%
 water_column_sonar_processing/index/index_manager.py                118     91    23%
 water_column_sonar_processing/model/__init__.py                       2      0   100%
-water_column_sonar_processing/model/zarr_manager.py                 103      8    92%
+water_column_sonar_processing/model/zarr_manager.py                  94      8    91%
 water_column_sonar_processing/processing/__init__.py                  3      0   100%
 water_column_sonar_processing/processing/raw_to_netcdf.py            85     24    72%
-water_column_sonar_processing/processing/raw_to_zarr.py              88      5    94%
+water_column_sonar_processing/processing/raw_to_zarr.py             110     12    89%
 water_column_sonar_processing/utility/__init__.py                     5      0   100%
 water_column_sonar_processing/utility/cleaner.py                     14      0   100%
-water_column_sonar_processing/utility/constants.py                   62      0   100%
+water_column_sonar_processing/utility/constants.py                   63      0   100%
 water_column_sonar_processing/utility/pipeline_status.py             42      0   100%
 water_column_sonar_processing/utility/timestamp.py                    5      0   100%
 -------------------------------------------------------------------------------------
-TOTAL                                                              1191    268    77%
-=================================================================== 47 passed, 4 skipped, 21 warnings in 337.77s (0:05:37)
+TOTAL                                                              1186    279    76%
+=========== 48 passed, 4 skipped, 7 warnings in 286.94s (0:04:46)
 ```
 
 # Instructions

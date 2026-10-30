@@ -14,7 +14,7 @@ classifiers = [
     "Programming Language :: Python"
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 license = "MIT"
 license-files = ["LICENSE"]
 
@@ -29,7 +29,7 @@ dependencies = [
     "geopandas",
     "importlib",
     "mock",
-    "moto[all,server]==5.1.22",
+    "moto[all,server]",
     "multidict",
     "netcdf4",
     "numpy",
@@ -41,7 +41,7 @@ dependencies = [
     "python-dotenv",
     "requests",
     "ruff",
-    "s3fs==2026.9.0", # problem here, uv finds the wrong one
+    "s3fs==2026.9.0", # Note: problem here, uv finds the wrong one
     "scipy",
     "setuptools",
     "shapely",
