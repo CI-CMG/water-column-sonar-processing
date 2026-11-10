@@ -215,3 +215,9 @@ Python > Debugger > "Gevent Compatible"
 
 > git config --global core.filemode false
 > git config --global core.autocrlf true
+
+# Type Checking 'ty'
+
+https://docs.astral.sh/ty/type-checking/
+
+> ty check

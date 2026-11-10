@@ -2,7 +2,6 @@ import gc
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import echopype as ep
 import echopype.qc
@@ -12,7 +11,7 @@ from zarr.codecs.blosc import Blosc
 
 from water_column_sonar_processing.aws import DynamoDBManager, S3Manager
 from water_column_sonar_processing.geometry import LineSimplification
-from water_column_sonar_processing.utility import Cleaner, Constants
+from water_column_sonar_processing.utility import Cleaner, Constants, Instruments
 
 # from numcodecs import Blosc
 level_1 = str(Constants.LEVEL_1.value)
@@ -145,20 +144,23 @@ class RawToZarr:
     ############################################################################
     def raw_to_zarr(
         self,
-        table_name,
-        input_bucket_name,
-        output_bucket_name,
-        ship_name,
-        cruise_name,
-        sensor_name,
-        raw_file_name,
-        endpoint_url: Optional[str] = None,
+        table_name: str,
+        input_bucket_name: str,
+        output_bucket_name: str,
+        ship_name: str,
+        cruise_name: str,
+        sensor_name: str,
+        raw_file_name: str,
+        endpoint_url: str | None = None,
         include_bot=True,
     ):
         """
         Downloads the raw files, processes them with echopype, writes geojson, and uploads files
         to the nodd bucket.
         """
+        if sensor_name.upper() not in [instrument.value for instrument in Instruments]:
+            raise ValueError()
+
         print(f"Opening raw: {raw_file_name} and creating zarr store.")
         # geometry_manager = GeometryManager()
         cleaner = Cleaner()
@@ -190,14 +192,23 @@ class RawToZarr:
             print("Opening raw file with echopype.")
             echodata = ep.open_raw(
                 raw_file=raw_file_name,
-                # raw_file=f"s3://{input_bucket_name}/data/raw/{ship_name}/{cruise_name}/{sensor_name}/{raw_file_name}",
                 sonar_model=sensor_name,
                 include_bot=include_bot,
             )
             print("Compute volume backscattering strength (Sv) from raw dataset.")
-            ds_sv = ep.calibrate.compute_Sv(echodata)
+            # TODO: , waveform_mode="CW", encode_mode="power") for EK80
+            if sensor_name == "EK80":
+                ds_sv = ep.calibrate.compute_Sv(
+                    echodata, waveform_mode="CW", encode_mode="power"
+                )
+            else:  # EK60
+                ds_sv = ep.calibrate.compute_Sv(echodata)
+
             ### fix any transposed timestamps ###
             if echopype.qc.exist_reversed_time(ds=ds_sv, time_name="ping_time"):
+                #
+                # TODO: use "coerce_increasing_time"
+                #
                 ds_sv["ping_time"] = ds_sv["ping_time"].copy(
                     data=echopype.qc.api._clean_reversed(
                         ds_sv["ping_time"].data, win_len=100
@@ -218,8 +229,11 @@ class RawToZarr:
                 ds_sv["detected_seafloor_depth"] = (
                     echodata.vendor.detected_seafloor_depth
                 )
-            #
-            frequencies = echodata.environment.frequency_nominal.values
+            # TODO: EK80: echodata['Sonar'].frequency_nominal.values
+            if sensor_name == "EK80":
+                frequencies = echodata["Sonar"].frequency_nominal.values
+            else:
+                frequencies = echodata.environment.frequency_nominal.values
             if len(frequencies) != len(set(frequencies)):
                 raise Exception("Problem number of frequencies does not match channels")
             #################################################################
@@ -270,7 +284,6 @@ class RawToZarr:
             )
             lat[null_island_indices] = np.nan
             lon[null_island_indices] = np.nan
-            #
             num_ping_time_drop_na = np.min(
                 [  # Note: values are not always symmetric
                     lat[~np.isnan(lat)].shape[0],

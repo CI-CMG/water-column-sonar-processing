@@ -1,6 +1,6 @@
 [project]
 name = "water-column-sonar-processing"
-version = "26.4.2"
+version = "26.11.1"
 authors = [
     { name = "Rudy Klucik", email = "rudy.klucik@noaa.gov" },
 ]
@@ -61,6 +61,7 @@ dev = [
     "pytest-cov", # uv run pytest --cov=testing_demo
     "ruff",
     "tqdm",
+    #    "ty>=0.0.96",
 ]
 
 [project.urls]

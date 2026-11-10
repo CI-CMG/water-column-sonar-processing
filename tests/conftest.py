@@ -56,6 +56,17 @@ HB1906_RAW = pooch.create(
     },
 )
 
+# EK80 test data
+HB2407_RAW = pooch.create(
+    path=pooch.os_cache("water-column-sonar-processing"),
+    base_url="https://noaa-wcsd-pds.s3.amazonaws.com/data/raw/Henry_B._Bigelow/HB2407/EK80/",
+    retry_if_failed=1,
+    registry={
+        # Size: 269 KB
+        "D20240904-T121523.raw": "sha256:465137a2533e78934daae0469c673276ff1dd39d0f5ab0d8269da01b70eb2cc7"
+    },
+)
+
 
 def fetch_raw_files():
     HB1906_RAW.fetch(fname="D20191106-T034434.raw", progressbar=True)
@@ -63,6 +74,8 @@ def fetch_raw_files():
 
     HB1906_RAW.fetch(fname="D20191106-T042540.raw", progressbar=True)
     HB1906_RAW.fetch(fname="D20191106-T042540.bot", progressbar=True)
+
+    HB2407_RAW.fetch(fname="D20240904-T121523.raw", progressbar=True)
 
     HB1006_RAW.fetch(fname="HBB-D20100720-T153257.raw", progressbar=True)
 
@@ -85,7 +98,8 @@ def fetch_raw_files():
 @pytest.fixture(scope="session")
 def test_path():
     return {
-        "RAW_TO_ZARR_TEST_PATH": TEST_DATA_FOLDER / "raw_to_zarr",
+        "RAW_TO_ZARR_TEST_PATH": TEST_DATA_FOLDER
+        / "raw_to_zarr",  # TODO: remove from project
         "RAW_TO_ZARR_REMOTE_TEST_PATH": fetch_raw_files(),
         # "RAW_TO_NETCDF_TEST_PATH": TEST_DATA_FOLDER / "raw_to_netcdf",
         "INDEX_TEST_PATH": TEST_DATA_FOLDER / "index",

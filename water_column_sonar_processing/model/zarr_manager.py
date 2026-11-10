@@ -1,12 +1,13 @@
 import os
 from importlib import metadata
-from typing import Optional
+from typing import Optional, Any
 
 import numpy as np
 import xarray as xr
 import zarr
+from numpy import dtype, ndarray
+from zarr import Array, Group
 from zarr.codecs import BloscCodec
-from zarr.core.group import Group
 
 from water_column_sonar_processing.utility import Constants, Coordinates, Timestamp
 
@@ -76,7 +77,7 @@ class ZarrManager:
 
             zarr_path = f"{path}/{cruise_name}.zarr"
             #####################################################################
-            frequencies = np.array(
+            frequencies: ndarray[tuple[Any, ...], dtype[Any]] = np.array(
                 frequencies, dtype=np.dtype(Coordinates.FREQUENCY_DTYPE.value)
             )
             #####################################################################
@@ -638,7 +639,7 @@ class ZarrManager:
         sensor_name: str,
         output_bucket_name: str,
         endpoint_url: Optional[str] = None,
-    ) -> Group:
+    ) -> Array[Any] | Group:
         # Mounts a Zarr store using pythons Zarr implementation. The mounted store
         #  will have read/write privileges so that store can be updated.
         print("Opening L2 Zarr store with Zarr for writing.")
@@ -675,7 +676,7 @@ class ZarrManager:
         print("Opening L1 Zarr store in S3 with Xarray.")
         try:
             zarr_path = f"s3://{bucket_name}/level_1/{ship_name}/{cruise_name}/{sensor_name}/{file_name_stem}.zarr"
-            kwargs = {"consolidated": False}
+            # kwargs = {"consolidated": False}
             ds = xr.open_dataset(
                 filename_or_obj=zarr_path,
                 engine="zarr",
@@ -685,7 +686,7 @@ class ZarrManager:
                         "anon": True,
                     },
                 },
-                **kwargs,
+                # **kwargs,
             )
             return ds
         except Exception as err:
@@ -705,7 +706,7 @@ class ZarrManager:
         try:
             level = str(Constants.LEVEL_2.value)
             zarr_path = f"s3://{bucket_name}/{level}/{ship_name}/{cruise_name}/{sensor_name}/{cruise_name}.zarr"
-            kwargs = {"consolidated": False}
+            # kwargs = {"consolidated": False}
             ds = xr.open_dataset(
                 filename_or_obj=zarr_path,
                 engine="zarr",
@@ -715,7 +716,7 @@ class ZarrManager:
                         "anon": True,
                     }
                 },
-                **kwargs,
+                # **kwargs,
             )
             return ds
         except Exception as err:

@@ -88,6 +88,7 @@ def test_create_bucket():
 
     s3_manager = S3Manager()
     s3_manager.create_bucket(bucket_name="test123")
+    assert test_bucket_name
     s3_manager.create_bucket(bucket_name=test_bucket_name)
     s3_manager.create_bucket(bucket_name="test456")
 
@@ -116,6 +117,7 @@ def test_upload_nodd_file(s3_manager_test_path):
     test_bucket_name = os.environ.get("INPUT_BUCKET_NAME")
 
     s3_manager = S3Manager()
+    assert test_bucket_name
     s3_manager.create_bucket(bucket_name=test_bucket_name)
 
     assert len(s3_manager.list_buckets()["Buckets"]) == 1

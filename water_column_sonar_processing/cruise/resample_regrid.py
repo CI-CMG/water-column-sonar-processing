@@ -1,9 +1,11 @@
 import gc
 import warnings
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import xarray as xr
+from zarr import Array
 
 from water_column_sonar_processing.aws import DynamoDBManager
 from water_column_sonar_processing.model import ZarrManager
@@ -143,7 +145,7 @@ class ResampleRegrid:
         try:
             zarr_manager = ZarrManager()
 
-            output_zarr_store = zarr_manager.open_s3_zarr_store_with_zarr(
+            output_zarr_store: Array[Any] = zarr_manager.open_s3_zarr_store_with_zarr(
                 ship_name=ship_name,
                 cruise_name=cruise_name,
                 sensor_name=sensor_name,
@@ -270,7 +272,7 @@ class ResampleRegrid:
                 # write Sv values to cruise-level-model-store
 
                 for fff in range(regrid_resample.shape[-1]):
-                    output_zarr_store["Sv"][
+                    output_zarr_store["Sv"][  # ty: ignore[invalid-argument-type, invalid-assignment]
                         : regrid_resample[:, :, fff].shape[0],
                         start_ping_time_index:end_ping_time_index,
                         fff,
@@ -288,9 +290,9 @@ class ResampleRegrid:
                     detected_seafloor_depths[detected_seafloor_depths == 0.0] = np.nan
                     print(f"min depth measured: {np.nanmin(detected_seafloor_depths)}")
                     print(f"max depth measured: {np.nanmax(detected_seafloor_depths)}")
-                    output_zarr_store["bottom"][
+                    output_zarr_store["bottom"][  # ty: ignore[invalid-argument-type]
                         start_ping_time_index:end_ping_time_index
-                    ] = detected_seafloor_depths
+                    ] = detected_seafloor_depths  # ty: ignore[invalid-assignment]
                 #
                 #########################################################################
                 # [5] write subset of latitude/longitude
@@ -303,10 +305,11 @@ class ResampleRegrid:
                 #     start_ping_time_index:end_ping_time_index
                 # ] = geospatial.dropna()["longitude"].values
                 #########################################################################
-                output_zarr_store["latitude"][
+                output_zarr_store["latitude"][  # ty: ignore[invalid-argument-type, invalid-assignment]
+                    # ty: ignore[invalid-argument-type, invalid-argument-type, invalid-assignment]
                     start_ping_time_index:end_ping_time_index
                 ] = input_xr_zarr_store.latitude.dropna(dim="ping_time").values
-                output_zarr_store["longitude"][
+                output_zarr_store["longitude"][  # ty: ignore[invalid-argument-type, invalid-assignment]
                     start_ping_time_index:end_ping_time_index
                 ] = input_xr_zarr_store.longitude.dropna(dim="ping_time").values
                 #########################################################################
