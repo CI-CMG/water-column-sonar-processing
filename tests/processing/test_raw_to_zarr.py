@@ -190,7 +190,7 @@ def test_raw_to_zarr(moto_server, raw_to_zarr_test_path):
     # --- Open with Zarr --- #
     root = zarr.open(store=zarr_store, mode="r")
     print(root)
-    assert root["Sv"].shape == [4, 36, 2604]  # ty: ignore[unresolved-attribute, invalid-argument-type]
+    assert root["Sv"].shape == (4, 36, 2604)  # ty: ignore[unresolved-attribute, invalid-argument-type]
 
 
 @mock_aws
