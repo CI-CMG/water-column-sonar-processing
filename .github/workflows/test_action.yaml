@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: build python project 🐍
+    name: build water-column-sonar-processing project 🐍
     runs-on: ubuntu-latest
     steps:
       - name: Check out

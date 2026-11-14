@@ -27,6 +27,7 @@ def index_test_path(test_path):
 
 
 #######################################################
+# TODO: to test this, just mock up writing the file to the test bucket
 @pytest.mark.skip(reason="no way of currently testing this")
 @mock_aws
 def test_get_calibration_information(index_test_path):  # good
@@ -68,7 +69,8 @@ def test_index_manager(tmp_path):
 
     index = IndexManager(input_bucket_name, calibration_bucket, calibration_key)
 
-    all_ek60_data = index.index()
+    ### ??? don't know what i'm trying to do ??? ###
+    all_ek60_data = index.get_ek60_objects()  # .index()
     print(all_ek60_data)
 
 

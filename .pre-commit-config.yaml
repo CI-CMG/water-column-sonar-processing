@@ -17,6 +17,16 @@ repos:
         args: [ --fix ]
       - id: ruff-format
 
+  ### Security Scan for AWS Secrets ###
+  - repo: local
+    hooks:
+      - id: trufflehog
+        name: TruffleHog
+        description: Detect secrets in your dataset.
+        entry: bash -c 'trufflehog git file://. --since-commit HEAD --no-verification --fail --no-update'
+        language: system
+        stages: [ "pre-commit", "pre-push" ]
+
   ### Static Security Scan ###
   # To run manually you can do: "bandit -c pyproject.toml -r ."
   - repo: https://github.com/PyCQA/bandit
